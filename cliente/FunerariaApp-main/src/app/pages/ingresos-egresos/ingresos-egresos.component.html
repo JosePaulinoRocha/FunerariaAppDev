@@ -13,32 +13,32 @@
   <div class="search-container">
     <ion-item>
       <ion-label>Buscar por:</ion-label>
-      <ion-select [(ngModel)]="selectedField" placeholder="Seleccionar campo">
+      <ion-select [(ngModel)]="selectedFields" multiple="true" placeholder="Seleccionar campo">
         <ion-select-option *ngFor="let field of searchFields" [value]="field.value">{{ field.label }}</ion-select-option>
       </ion-select>
     </ion-item>
 
-    <div *ngIf="selectedField">
-      <ion-item *ngIf="!isDateField(selectedField)">
-        <ion-label>Valor:</ion-label>
-        <ion-input [(ngModel)]="searchText"></ion-input>
+    <div *ngFor="let field of selectedFields">
+      <ion-item *ngIf="!isDateField(field)">
+        <ion-label>{{ getFieldLabel(field) }}:</ion-label>
+        <ion-input [(ngModel)]="searchValues[field]"></ion-input>
       </ion-item>
     
-      <div *ngIf="isDateField(selectedField)">
+      <div *ngIf="isDateField(field)">
         <ion-item>
-          <ion-label>Desde:</ion-label>
-          <input type="date" [(ngModel)]="dateSearch.startDate">
+          <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
+          <input type="date" [value]="getStartDate(field)" (change)="onStartDateChange($event, field)">
         </ion-item>
         <ion-item>
-          <ion-label>Hasta:</ion-label>
-          <input type="date" [(ngModel)]="dateSearch.endDate">
+          <ion-label>{{ getFieldLabel(field) }} Hasta:</ion-label>
+          <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
         </ion-item>
       </div>
-    
-      <ion-button (click)="applySearch()">Buscar</ion-button>
-      <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
+      
     </div>
-    
+
+    <ion-button (click)="applySearch()">Buscar</ion-button>
+    <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
   </div>
 
   

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { connect } from "../BD/Accesos_BD";
+import { RowDataPacket } from 'mysql2/promise';
 
 export const ObtenerIngresos = async (req: Request, res: Response) => {
     let con;
@@ -28,32 +29,60 @@ export const PostIngresos = async (req: Request, res: Response) => {
         FechaAutorizacion, UsuarioAutorizaID, UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion
     } = req.body;
 
-    console.log("estos datos recibo en PostIngresos", req.body);
+    console.log("Estos datos recibo en PostIngresos:", req.body);
 
     try {
         con = await connect();
 
-        const query = `
+        // Verificar la última combinación
+        const checkCombinationQuery = `
+            SELECT SegmentoID, CategoriaID, SubcategoriaID 
+            FROM combinaciones 
+            WHERE ConceptoID = ? 
+            ORDER BY CombinacionID DESC 
+            LIMIT 1
+        `;
+        const [combinationResult] = await con.query<RowDataPacket[]>(checkCombinationQuery, [ConceptoID]);
+
+        if (combinationResult.length === 0 || 
+            combinationResult[0].SegmentoID !== SegmentoID ||
+            combinationResult[0].CategoriaID !== CategoriaID ||
+            combinationResult[0].SubcategoriaID !== SubcategoriaID) {
+
+            // Insertar nueva combinación si no es igual a la última
+            const insertCombinationQuery = `
+                INSERT INTO combinaciones (ConceptoID, SegmentoID, CategoriaID, SubcategoriaID, FechaModificacion)
+                VALUES (?, ?, ?, ?, NOW())
+            `;
+            const combinationValues = [ConceptoID, SegmentoID, CategoriaID, SubcategoriaID];
+            await con.query(insertCombinationQuery, combinationValues);
+            console.log('Nueva combinación insertada.');
+        } else {
+            console.log('La combinación ya existe.');
+        }
+
+        // Insertar siempre en la tabla ingresos
+        const insertIngresoQuery = `
             INSERT INTO ingresos (
                 Fecha, SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, Descripcion,
                 Proveedor, Piezas, CajaChica, Monto, Saldo, Comprobante, EstatusComprobacionID,
                 FechaAutorizacion, UsuarioAutorizaID, UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        const values = [
+        const ingresoValues = [
             Fecha, SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, Descripcion,
             Proveedor, Piezas, CajaChica, Monto, Saldo, Comprobante, EstatusComprobacionID,
             FechaAutorizacion, UsuarioAutorizaID, UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion
         ];
 
-        console.log('Ejecutando query:', query);
-        console.log('Con valores:', values);
+        console.log('Ejecutando query de ingreso:', insertIngresoQuery);
+        console.log('Con valores:', ingresoValues);
 
-        await con.query(query, values);
-        console.log('Query ejecutado exitosamente.');
+        await con.query(insertIngresoQuery, ingresoValues);
+        console.log('Ingreso insertado exitosamente.');
         result = { message: 'Ingreso creado exitosamente' };
     } catch (error) {
-        console.log('Error en Ingresos');
+        console.log('Error en PostIngresos');
         console.log(error);
         result = { message: 'Error al crear el ingreso' };
     } finally {
