@@ -20,7 +20,7 @@
 
     <div *ngFor="let field of selectedFields">
       <ion-item *ngIf="!isDateField(field)">
-        <ion-label>{{ getFieldLabel(field) }}:</ion-label>
+        <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
         <ion-input [(ngModel)]="searchValues[field]"></ion-input>
       </ion-item>
     
@@ -46,13 +46,16 @@
     <table class="table">
       <thead class="header-row">
         <tr>
-          <th>Ingreso ID</th>
+          <th>ID</th>
           <th><span style="margin-left: 2rem;"></span> Fecha <span style="margin-left: 2rem;"></span></th>
           <th><span style="margin-left: 10rem;"></span> Concepto <span style="margin-left: 10rem;"></span></th>
           <th><span style="margin-left: 10rem;"></span>Descripcion<span style="margin-left: 10rem;"></span></th>
           <th><span style="margin-left: 3rem;"></span>Proveedor<span style="margin-left: 3rem;"></span></th>
           <th>Piezas</th>
           <th><span style="margin-left: 2rem;"></span>Tipo de ingreso<span style="margin-left: 2rem;"></span></th>
+          <th><span style="margin-left: 2rem;"></span>Nombre caja chica<span style="margin-left: 2rem;"></span></th>
+          <th><span style="margin-left: 2rem;"></span>RFC<span style="margin-left: 2rem;"></span></th>
+          <th><span style="margin-left: 6rem;"></span>Dueño cuenta<span style="margin-left: 6rem;"></span></th>
           <th>Monto</th>
           <th>Saldo</th>
           <th><span style="margin-left: 1rem;"></span>Comprobante<span style="margin-left: 1rem;"></span></th>
@@ -78,6 +81,9 @@
           <td [ngClass]="{'green-text': true}">
             {{ income.CajaChica ? 'Caja Chica' : 'Cuenta Bancaria' }}
           </td>
+          <td>{{ income.NombreCajaChica }}</td>
+          <td>{{ income.RFC }}</td>
+          <td>{{ income.NombreDuenoCuenta }}</td>
           <td>{{ income.Monto }}</td>
           <td>{{ income.Saldo }}</td>
           <td>{{ income.Comprobante }}</td>

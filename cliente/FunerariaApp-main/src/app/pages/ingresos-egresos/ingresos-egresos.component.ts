@@ -32,6 +32,9 @@ interface Income {
   NombreUsuarioRecibe: string;
   FechaConciliacion: string;
   ObservacionesDifConciliacion: string;
+  NombreCajaChica?: string;
+  RFC?: string;
+  NombreDuenoCuenta?: string;
   [key: string]: any; // Para permitir acceso dinámico
 }
 
@@ -78,13 +81,16 @@ export class IngresosEgresosComponent implements OnInit {
 
   // Search variables
   searchFields = [
-    { value: 'IngresoID', label: 'Ingreso ID' },
+    { value: 'IngresoID', label: 'ID' },
     { value: 'Fecha', label: 'Fecha' },
     { value: 'NombreConcepto', label: 'Concepto' },
     { value: 'Descripcion', label: 'Descripcion' },
     { value: 'Proveedor', label: 'Proveedor' },
     { value: 'Piezas', label: 'Piezas' },
     { value: 'CajaChica', label: 'Tipo de ingreso' },
+    { value: 'NombreCajaChica', label: 'Nombre Caja Chica' },
+    { value: 'RFC', label: 'RFC' },
+    { value: 'NombreDuenoCuenta', label: 'Nombre Dueño Cuenta' },
     { value: 'Monto', label: 'Monto' },
     { value: 'Saldo', label: 'Saldo' },
     { value: 'Comprobante', label: 'Comprobante' },
@@ -116,6 +122,7 @@ export class IngresosEgresosComponent implements OnInit {
         FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0], // Formatear la fecha
         FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0] // Formatear la fecha
       }));
+      console.log("esta es la data de ingresos/egresos: ", this.incomes);
       this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
       this.updatePaginatedIncomes();
     }, (error) => {

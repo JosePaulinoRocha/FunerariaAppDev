@@ -25,6 +25,9 @@ export interface Ingreso {
   NombreUsuarioRecibe: string;
   FechaConciliacion: string;
   ObservacionesDifConciliacion: string;
+  NombreCajaChica?: string;
+  RFC?: string;
+  NombreDuenoCuenta?: string;
 }
 
 export interface Concepto {
