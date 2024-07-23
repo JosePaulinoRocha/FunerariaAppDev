@@ -113,15 +113,19 @@ export class IngresosEgresosComponent implements OnInit {
   ngOnInit() {
     this.loadIngresos();
   }
-
+  
   loadIngresos() {
     this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
+      // Ordenar los datos por IngresoID en orden descendente
+      data.sort((a, b) => b.IngresoID - a.IngresoID);
+  
       this.incomes = data.map(income => ({
         ...income,
         Fecha: new Date(income.Fecha).toISOString().split('T')[0], // Formatear la fecha
         FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0], // Formatear la fecha
         FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0] // Formatear la fecha
       }));
+      
       console.log("esta es la data de ingresos/egresos: ", this.incomes);
       this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
       this.updatePaginatedIncomes();
@@ -129,7 +133,6 @@ export class IngresosEgresosComponent implements OnInit {
       console.error('Error fetching incomes', error); 
     });
   }
-  
 
   updatePaginatedIncomes() {
     this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
@@ -162,6 +165,7 @@ export class IngresosEgresosComponent implements OnInit {
     this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
       this.incomes = data
         .filter(income => this.matchesSearch(income))
+        .sort((a, b) => b.IngresoID - a.IngresoID) // Ordenar los datos por IngresoID en orden descendente
         .map(income => ({
           ...income,
           Fecha: new Date(income.Fecha).toISOString().split('T')[0], // Formatear la fecha

@@ -42,5 +42,16 @@
         <p>Esta sección permite dar de alta y gestionar usuarios.</p>
       </ion-card-content>
     </ion-card>
+
+    <ion-card *ngIf="isAdmin" (click)="navigateTo('reconciliaciones')">
+      <ion-card-content>
+        <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>
+        <ion-card-title>Reconciliaciones</ion-card-title>
+      </ion-card-content>
+      <ion-card-content>
+        <p>Seccion diseñada para realizar los procesos de reconciliacion.</p>
+      </ion-card-content>
+    </ion-card>
+
   </div>
 </ion-content>

@@ -37,4 +37,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/usuarios/usuarios.component').then((m) => m.UsuariosComponent),
     canActivate: [AuthGuard, AdminGuard],
   },
+  {
+    path: 'reconciliaciones',
+    loadComponent: () => import('./pages/reconciliaciones/reconciliaciones.component').then((m) => m.ReconciliacionesComponent),
+    canActivate: [AuthGuard],
+  },
 ];

@@ -5,7 +5,7 @@ import path from 'path';
 
 import Usuarios from "./routes/Usuarios.routes"
 import Ingresos from "./routes/Ingresos.routes"
-
+import Reconciliaciones from "./routes/Reconciliaciones.routes"
 
 
 const dir = '../../cliente/DirectoriCliente/';
@@ -48,6 +48,7 @@ export class App {
        
         this.app.use('/api/usuarios', Usuarios);
         this.app.use('/api/ingresos', Ingresos);
+        this.app.use('/api/reconciliaciones', Reconciliaciones);
 
 
         this.app.get('*',function (req,res){

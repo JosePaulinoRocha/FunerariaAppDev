@@ -1,0 +1,50 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Reconciliaciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="container">
+    <ion-item>
+      <ion-label>Fecha final:</ion-label>
+      <input type="date" [(ngModel)]="fechaFinal">
+    </ion-item>
+
+    <ion-item>
+      <ion-label style="margin-right: 1rem;">Balance:</ion-label>
+      <ion-input [(ngModel)]="balanceFinal" type="number" placeholder=""></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Tipo de cuenta:</ion-label>
+      <ion-select [(ngModel)]="tipoCuenta" (ionChange)="onTipoCuentaChange($event)">
+        <ion-select-option value="cajaChica">Caja Chica</ion-select-option>
+        <ion-select-option value="cuentaBancaria">Cuenta Bancaria</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <div *ngIf="tipoCuenta === 'cajaChica'">
+      <ion-item>
+        <ion-label>Cuenta caja chica:</ion-label>
+        <ion-select [(ngModel)]="cuentaCajaChica">
+          <ion-select-option *ngFor="let income of incomesCajaChica" [value]="income.IngresoID">{{ income.NombreCajaChica }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
+
+    <div *ngIf="tipoCuenta === 'cuentaBancaria'">
+      <ion-item>
+        <ion-label>Cuenta bancaria:</ion-label>
+        <ion-select [(ngModel)]="cuentaBancaria">
+          <ion-select-option *ngFor="let income of incomesCuentaBancaria" [value]="income.IngresoID">{{ income.NombreDuenoCuenta }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
+
+    <ion-button [disabled]="!isFormValid()" (click)="reconciliar()">Reconciliar</ion-button>
+  </div>
+</ion-content>
