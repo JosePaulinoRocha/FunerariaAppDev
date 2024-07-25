@@ -13,7 +13,6 @@ interface Income {
   Descripcion: string;
   Proveedor: string;
   Piezas: number;
-  CajaChica: boolean;
   Monto: number;
   Saldo: number;
   Comprobante: string;
@@ -32,9 +31,11 @@ interface Income {
   NombreUsuarioRecibe: string;
   FechaConciliacion: string;
   ObservacionesDifConciliacion: string;
-  NombreCajaChica?: string;
+  CuentaID: number;
+  TipoCuentaID: number;
+  NombreCuenta?: string;
   RFC?: string;
-  NombreDuenoCuenta?: string;
+  Reconciliado: boolean;
 }
 
 @Component({
@@ -53,6 +54,7 @@ export class ReconciliacionesComponent implements OnInit {
   tipoCuenta: string = '';
   cuentaCajaChica: number = 0;
   cuentaBancaria: number = 0;
+  showTables: boolean = false;
 
   constructor(private modalController: ModalController, private _reconciliacionServ: ReconciliacionesServices) {}
 
@@ -67,10 +69,24 @@ export class ReconciliacionesComponent implements OnInit {
         Fecha: new Date(income.Fecha).toISOString().split('T')[0],
         FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
         FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
-      }));
-      console.log("esta es la data de cuentas: ", this.incomes);
-      this.incomesCajaChica = this.incomes.filter(income => income.CajaChica);
-      this.incomesCuentaBancaria = this.incomes.filter(income => !income.CajaChica);
+      })).filter(income => !income.Reconciliado);
+
+      const uniqueCajaChica = new Map();
+      const uniqueCuentaBancaria = new Map();
+
+      this.incomes.forEach(income => {
+        if (income.TipoCuentaID === 1 && !uniqueCajaChica.has(income.CuentaID)) {
+          uniqueCajaChica.set(income.CuentaID, income);
+        } else if (income.TipoCuentaID === 2 && !uniqueCuentaBancaria.has(income.CuentaID)) {
+          uniqueCuentaBancaria.set(income.CuentaID, income);
+        }
+      });
+
+      this.incomesCajaChica = Array.from(uniqueCajaChica.values());
+      this.incomesCuentaBancaria = Array.from(uniqueCuentaBancaria.values());
+
+      console.log("Cuentas por caja chica: ", this.incomesCajaChica);
+      console.log("Cuentas por cuenta bancaria: ", this.incomesCuentaBancaria);
     }, (error) => {
       console.error('Error fetching incomes', error); 
     });
@@ -86,6 +102,29 @@ export class ReconciliacionesComponent implements OnInit {
   }
 
   reconciliar() {
-    // Lógica de reconciliación
+    const cuentaID = this.tipoCuenta === 'cajaChica' ? this.cuentaCajaChica : this.cuentaBancaria;
+  
+    // Crear un objeto con los datos que se enviarán en el cuerpo de la solicitud POST
+    const conciliacionData = {
+      fechaFinal: this.fechaFinal,
+      cuentaID: cuentaID
+    };
+  
+    this._reconciliacionServ.getIngresosParaConciliacion(conciliacionData).subscribe((data: Income[]) => {
+      console.log("esta es mi data para conciliar: ", conciliacionData);
+      this.incomes = data.map(income => ({
+        ...income,
+        Fecha: new Date(income.Fecha).toISOString().split('T')[0],
+        FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
+        FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0],
+        Reconciliado: false
+      }));
+
+      console.log("esta es mi data reconciliada: ", this.incomes);
+      this.showTables = true;
+    }, (error) => {
+      console.error('Error fetching incomes for reconciliation', error);
+    });
   }
 }
+

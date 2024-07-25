@@ -1,5 +1,5 @@
 import { Ingreso } from '../Modelos/Reconciliaciones';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -11,16 +11,22 @@ export class ReconciliacionesServices {
   private myAppUrl: string;
   private MyApiUrl: string;
   private MyApiUrlIngreso: string;
+  private MyApiUrlIngresoReconciliacion: string;
 
   constructor(private http: HttpClient) {
     this.myAppUrl = environment.endpoint;
-    this.MyApiUrl = 'api/ingresos/';
+    this.MyApiUrl = 'api/reconciliaciones/';
     this.MyApiUrlIngreso = 'GetIngresos/';
+    this.MyApiUrlIngresoReconciliacion = 'GetIngresosParaConciliacion/';
 
   }
 
   getIngresos(): Observable<Ingreso[]> {
     return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngreso}`);
+  }
+
+  getIngresosParaConciliacion(reconciliacion: any): Observable<any> {
+    return this.http.post<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoReconciliacion}`, reconciliacion);
   }
 
 }

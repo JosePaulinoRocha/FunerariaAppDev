@@ -19,3 +19,27 @@ export const ObtenerIngresos = async (req: Request, res: Response) => {
         return res.json(result);
     }
 };
+
+export const ObtenerIngresosParaConciliacion = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    const { fechaFinal, cuentaID } = req.body; // Usar req.body para POST
+
+    try {
+        con = await connect();
+        let query = `
+            SELECT * FROM vistaingresos
+            WHERE CuentaID = ? AND Fecha <= ? AND Reconciliado = 0
+        `;
+        const [ingresos] = await con.query(query, [cuentaID, fechaFinal]);
+        result = ingresos;
+    } catch (error) {
+        console.log('Error en ObtenerIngresosParaConciliacion');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
