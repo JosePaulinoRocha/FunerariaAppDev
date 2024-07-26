@@ -55,6 +55,7 @@ export class ReconciliacionesComponent implements OnInit {
   cuentaCajaChica: number = 0;
   cuentaBancaria: number = 0;
   showTables: boolean = false;
+  selectedAccountName: string = '';
 
   constructor(private modalController: ModalController, private _reconciliacionServ: ReconciliacionesServices) {}
 
@@ -109,6 +110,14 @@ export class ReconciliacionesComponent implements OnInit {
       fechaFinal: this.fechaFinal,
       cuentaID: cuentaID
     };
+    
+    
+    const selectedAccount = this.tipoCuenta === 'cajaChica'
+    ? this.incomesCajaChica.find(income => income.CuentaID === cuentaID)
+    : this.incomesCuentaBancaria.find(income => income.CuentaID === cuentaID);
+  
+    this.selectedAccountName = selectedAccount ? (selectedAccount.NombreCuenta ?? 'Cuenta no encontrada') : 'Cuenta no encontrada';
+
   
     this._reconciliacionServ.getIngresosParaConciliacion(conciliacionData).subscribe((data: Income[]) => {
       console.log("esta es mi data para conciliar: ", conciliacionData);
