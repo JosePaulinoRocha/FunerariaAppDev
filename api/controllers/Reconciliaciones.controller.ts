@@ -43,3 +43,27 @@ export const ObtenerIngresosParaConciliacion = async (req: Request, res: Respons
     }
 };
 
+export const ObtenerUltimaReconciliacion = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    const { cuentaID } = req.params; // Usar params para GET
+
+    try {
+        con = await connect();
+        let query = `
+            SELECT * FROM Reconciliaciones
+            WHERE CuentaID = ?
+            ORDER BY Fecha DESC
+            LIMIT 1
+        `;
+        const [rows] = await con.query<RowDataPacket[]>(query, [cuentaID]);
+        result = rows.length ? rows[0] : null;
+    } catch (error) {
+        console.log('Error en ObtenerUltimaReconciliacion');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};

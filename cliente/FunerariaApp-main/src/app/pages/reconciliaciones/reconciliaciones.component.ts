@@ -50,18 +50,39 @@ export class ReconciliacionesComponent implements OnInit {
   incomesCajaChica: Income[] = [];
   incomesCuentaBancaria: Income[] = [];
   fechaFinal: string = '';
-  balanceFinal: string = '';
+  balanceFinal: number = 0;
   tipoCuenta: string = '';
   cuentaCajaChica: number = 0;
   cuentaBancaria: number = 0;
   showTables: boolean = false;
   selectedAccountName: string = '';
+  ultimaReconciliacionFecha: string = '';
+  ultimaReconciliacionSaldo: number = 0;
+  diferencia: number = 0;
+  checkedMonto: number = 0;
 
   constructor(private modalController: ModalController, private _reconciliacionServ: ReconciliacionesServices) {}
 
   ngOnInit() {
     this.loadIngresos();
   }
+
+
+  handleCheckboxChange(income: Income): void {
+    if (income.Reconciliado) {
+      this.checkedMonto += income.Monto;
+    } else {
+      this.checkedMonto -= income.Monto;
+    }
+    console.log('Checked Monto:', this.checkedMonto);
+    this.calcularDiferencia();
+  }
+  
+  calcularDiferencia(): void {
+    this.diferencia = this.balanceFinal - this.ultimaReconciliacionSaldo + this.checkedMonto;
+    console.log('Diferencia:', this.diferencia);
+  }
+  
 
   loadIngresos() {
     this._reconciliacionServ.getIngresos().subscribe((data: Income[]) => {
@@ -118,6 +139,22 @@ export class ReconciliacionesComponent implements OnInit {
   
     this.selectedAccountName = selectedAccount ? (selectedAccount.NombreCuenta ?? 'Cuenta no encontrada') : 'Cuenta no encontrada';
 
+    // Obtener la última reconciliación
+    this._reconciliacionServ.getUltimaReconciliacion(cuentaID).subscribe((ultimaReconciliacion: any) => {
+      if (ultimaReconciliacion) {
+        this.ultimaReconciliacionFecha = new Date(ultimaReconciliacion.Fecha).toISOString().split('T')[0];
+        this.ultimaReconciliacionSaldo = ultimaReconciliacion.Saldo;
+      } else {
+        this.ultimaReconciliacionFecha = 'N/A';
+        this.ultimaReconciliacionSaldo = 0;
+      }
+      this.calcularDiferencia(); // Recalcular diferencia después de obtener la última reconciliación
+    }, (error) => {
+      console.error('Error fetching ultima reconciliacion', error);
+      this.ultimaReconciliacionFecha = 'N/A';
+      this.ultimaReconciliacionSaldo = 0;
+      this.calcularDiferencia(); // Recalcular diferencia incluso si hay un error
+    });
   
     this._reconciliacionServ.getIngresosParaConciliacion(conciliacionData).subscribe((data: Income[]) => {
       console.log("esta es mi data para conciliar: ", conciliacionData);
@@ -136,4 +173,3 @@ export class ReconciliacionesComponent implements OnInit {
     });
   }
 }
-

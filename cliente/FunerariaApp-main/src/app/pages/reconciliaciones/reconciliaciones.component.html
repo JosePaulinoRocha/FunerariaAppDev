@@ -79,7 +79,7 @@
                   <td>{{ income.NombreSegmento }}</td>
                   <td>{{ income.Descripcion }}</td>
                   <td>{{ income.Monto }}</td>
-                  <td><input type="checkbox" [(ngModel)]="income.Reconciliado"></td>
+                  <td><input type="checkbox" [(ngModel)]="income.Reconciliado" (ionChange)="handleCheckboxChange(income)"></td>
                 </tr>
               </tbody>
             </table>
@@ -124,10 +124,11 @@
       </div>
 
       <div style="margin-left: 4rem;">
-        <p style="font-size: 16px;">Balance Inicial con fecha de: </p>
-        <p style="font-size: 16px;">Balance final para: </p>
-        <p style="font-size: 16px;">Diferencia: </p>
-        <ion-button style="margin-top: 1rem;">Procesar Reconciliacion</ion-button>
+        <p style="font-size: 16px;">Balance actual de {{selectedAccountName}}: ${{ultimaReconciliacionSaldo}}</p>
+        <p style="font-size: 16px;">Fecha de última reconciliación de {{selectedAccountName}}: {{ultimaReconciliacionFecha}}</p>
+        <p style="font-size: 16px;">Balance final para: ${{ balanceFinal }}</p>
+        <p style="font-size: 16px;">Diferencia: ${{ diferencia }}</p>
+        <ion-button [disabled]="diferencia !== 0" style="margin-top: 1rem;">Procesar Reconciliación</ion-button>
       </div>
 
     </div>
