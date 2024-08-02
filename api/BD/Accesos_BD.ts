@@ -1,15 +1,12 @@
-import { createPool } from 'mysql2/promise';
+import mysql from 'mysql2/promise';
 
+// Cambia la función connect para usar createConnection
 export async function connect() {
-    return createPool(
-       
-         {
-             host: 'localhost',
-             user: 'root',
-             password: '',
-             database: 'funeraria_db',
-             connectionLimit: 10,
-             timezone: 'local',
-         }
-    );
+    return mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '',
+        database: 'funeraria_db',
+        timezone: 'local',
+    });
 }

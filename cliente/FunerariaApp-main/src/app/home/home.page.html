@@ -43,13 +43,23 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="isAdmin" (click)="navigateTo('reconciliaciones')">
+    <ion-card (click)="navigateTo('reconciliaciones')">
       <ion-card-content>
         <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>
         <ion-card-title>Reconciliaciones</ion-card-title>
       </ion-card-content>
       <ion-card-content>
         <p>Seccion diseñada para realizar los procesos de reconciliacion.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card (click)="navigateTo('reconciliaciones-historial')">
+      <ion-card-content>
+        <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>
+        <ion-card-title>Reconciliaciones historial</ion-card-title>
+      </ion-card-content>
+      <ion-card-content>
+        <p>Seccion diseñada para Consultar el historial de reconciliaciones y revertir cambios.</p>
       </ion-card-content>
     </ion-card>
 

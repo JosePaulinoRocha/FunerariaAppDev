@@ -1,14 +1,14 @@
 .table-container {
     width: 100%;
     overflow-x: auto;
-    padding: 1rem;
-
+    padding: 1.5rem;
   }
   
   .table {
     width: 100%;
     border-collapse: collapse;
-    padding: 1rem;
+    padding: 1.5rem;
+
   }
   
   .header-row {
@@ -59,14 +59,6 @@
 }
 
 .color_header_tabla {
-  background-color: #0054E9;
-  color: #FFFFFF;
- }
-
- .text-red {
-  color: red;
-}
-
-.text-green {
-  color: green;
+ background-color: #0054E9;
+ color: #FFFFFF;
 }

@@ -50,14 +50,13 @@
     </div>
 
     <div *ngIf="showTables" class="tamaño_fuente_tablas">
-
       <div class="contenedor_titulos">
         <h1>{{ selectedAccountName }}</h1>
         <h4>Fecha del reporte de reconciliacion: {{ fechaFinal }}</h4>
       </div>
 
       <div class="propiedades_contenedor_tablas">
-
+        <!-- Ingresos Section -->
         <div class="contenedor_ingresos">
           <h2 style="margin-left: 1rem; font-size: 1.2rem;">Ingresos</h2>
           <div class="table-container">
@@ -69,23 +68,30 @@
                   <th>Segmento</th>
                   <th>Descripción</th>
                   <th>Monto</th>
+                  <th>Observaciones</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let income of incomes" class="data-row">
+                <tr *ngFor="let income of ingresos" class="data-row">
                   <td>{{ income.IngresoID }}</td>
                   <td>{{ income.FechaConciliacion }}</td>
                   <td>{{ income.NombreSegmento }}</td>
                   <td>{{ income.Descripcion }}</td>
                   <td>{{ income.Monto }}</td>
-                  <td><input type="checkbox" [(ngModel)]="income.Reconciliado" (ionChange)="handleCheckboxChange(income)"></td>
+                  <td>
+                    <ion-button (click)="openObservacionModal(income)" fill="clear">
+                      <ion-icon name="search-sharp"></ion-icon>
+                    </ion-button>
+                  </td>
+                  <td><input type="checkbox" [(ngModel)]="income.Reconciliado" (ngModelChange)="handleCheckboxChange(income)"></td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
+        <!-- Egresos Section -->
         <div class="contenedor_egresos">
           <h2 style="margin-left: 1rem; font-size: 1.2rem;">Egresos</h2>
           <div class="table-container">
@@ -97,42 +103,37 @@
                   <th>Segmento</th>
                   <th>Concepto</th>
                   <th>Monto</th>
+                  <th>Observaciones</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                <!-- <tr *ngFor="let income of incomes" class="data-row"> -->
-                <tr class="data-row">
-                  <!-- <td>{{ income.IngresoID }}</td>
-                  <td>{{ income.FechaConciliacion }}</td>
-                  <td>{{ income.NombreSegmento }}</td>
-                  <td>{{ income.NombreConcepto }}</td>
-                  <td>{{ income.Monto }}</td>
-                  <td><input type="checkbox" [(ngModel)]="income.Reconciliado"></td> -->
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
+                <tr *ngFor="let egreso of egresos" class="data-row">
+                  <td>{{ egreso.IngresoID }}</td>
+                  <td>{{ egreso.FechaConciliacion }}</td>
+                  <td>{{ egreso.NombreSegmento }}</td>
+                  <td>{{ egreso.NombreConcepto }}</td>
+                  <td>{{ egreso.Monto }}</td>
+                  <td>
+                    <ion-button (click)="openObservacionModal(egreso)" fill="clear">
+                      <ion-icon name="search-sharp"></ion-icon>
+                    </ion-button>
+                  </td>
+                  <td><input type="checkbox" [(ngModel)]="egreso.Reconciliado" (ngModelChange)="handleCheckboxChange(egreso)"></td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-
       </div>
 
       <div style="margin-left: 4rem;">
         <p style="font-size: 16px;">Balance actual de {{selectedAccountName}}: ${{ultimaReconciliacionSaldo}}</p>
         <p style="font-size: 16px;">Fecha de última reconciliación de {{selectedAccountName}}: {{ultimaReconciliacionFecha}}</p>
         <p style="font-size: 16px;">Balance final para: ${{ balanceFinal }}</p>
-        <p style="font-size: 16px;">Diferencia: ${{ diferencia }}</p>
-        <ion-button [disabled]="diferencia !== 0" style="margin-top: 1rem;">Procesar Reconciliación</ion-button>
+        <p style="font-size: 16px;">Diferencia: $ {{ diferencia }}</p>
+        <ion-button [disabled]="diferencia !== 0" (click)="procesarReconciliacion()" style="margin-top: 1rem;">Procesar Reconciliación</ion-button>
       </div>
-
     </div>
-
-
   </div>
 </ion-content>

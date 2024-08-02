@@ -45,56 +45,68 @@
   <div class="table-container">
     <table class="table">
       <thead class="header-row">
-        <tr>
+        <tr class="color_header_tabla">
           <th>ID</th>
           <th><span style="margin-left: 2rem;"></span> Fecha <span style="margin-left: 2rem;"></span></th>
           <th><span style="margin-left: 10rem;"></span> Concepto <span style="margin-left: 10rem;"></span></th>
+          <th><span style="margin-left: 2rem;"></span>Segmento<span style="margin-left: 2rem;"></span></th>
+          <th><span style="margin-left: 3rem;"></span>Categoria<span style="margin-left: 3rem;"></span></th>
+          <th><span style="margin-left: 3rem;"></span>Subcategoria<span style="margin-left: 3rem;"></span></th>
           <th><span style="margin-left: 10rem;"></span>Descripcion<span style="margin-left: 10rem;"></span></th>
           <th><span style="margin-left: 3rem;"></span>Proveedor<span style="margin-left: 3rem;"></span></th>
           <th>Piezas</th>
           <th><span style="margin-left: 2rem;"></span>Tipo de ingreso<span style="margin-left: 2rem;"></span></th>
-          <th><span style="margin-left: 2rem;"></span>Nombre caja chica<span style="margin-left: 2rem;"></span></th>
-          <th><span style="margin-left: 2rem;"></span>RFC<span style="margin-left: 2rem;"></span></th>
-          <th><span style="margin-left: 6rem;"></span>Dueño cuenta<span style="margin-left: 6rem;"></span></th>
+          <th>Cuenta</th>
+          <th>RFC</th>
           <th>Monto</th>
           <th>Saldo</th>
           <th><span style="margin-left: 1rem;"></span>Comprobante<span style="margin-left: 1rem;"></span></th>
-          <th><span style="margin-left: 2rem;"></span>Segmento<span style="margin-left: 2rem;"></span></th>
-          <th><span style="margin-left: 3rem;"></span>Categoria<span style="margin-left: 3rem;"></span></th>
-          <th><span style="margin-left: 3rem;"></span>Subcategoria<span style="margin-left: 3rem;"></span></th>
           <th><span style="margin-left: 4rem;"></span>Estatus<span style="margin-left: 4rem;"></span></th>
           <th>Fecha Autorizacion</th>
           <th>Usuario Autoriza</th>
           <th>Usuario Recibe</th>
           <th>Fecha Conciliacion</th>
+          <th>Reconciliado</th>
+          <th>Ingreso / Egreso</th>
+          <th>Reconciliacion ID</th>
           <th><span style="margin-left: 6rem;"></span>Observaciones<span style="margin-left: 6rem;"></span></th>
         </tr>
       </thead>
-      <tbody>
+      <tbody style="font-size: 12px;">
         <tr *ngFor="let income of paginatedIncomes" class="data-row">
           <td>{{ income.IngresoID }}</td>
           <td>{{ income.Fecha }}</td>
           <td>{{ income.NombreConcepto }}</td>
+          <td>{{ income.NombreSegmento }}</td>
+          <td>{{ income.NombreCategoria }}</td>
+          <td>{{ income.NombreSubcategoria }}</td>
           <td>{{ income.Descripcion }}</td>
           <td>{{ income.Proveedor }}</td>
           <td>{{ income.Piezas }}</td>
           <td [ngClass]="{'green-text': true}">
-            {{ income.CajaChica ? 'Caja Chica' : 'Cuenta Bancaria' }}
+            {{ income.TipoCuenta}}
           </td>
-          <td>{{ income.NombreCajaChica }}</td>
+          <td>{{ income.NombreCuenta }}</td>
           <td>{{ income.RFC }}</td>
-          <td>{{ income.NombreDuenoCuenta }}</td>
           <td>{{ income.Monto }}</td>
-          <td>{{ income.Saldo }}</td>
+          <td>{{ income.SaldoReconciliacion }}</td>
           <td>{{ income.Comprobante }}</td>
-          <td>{{ income.NombreSegmento }}</td>
-          <td>{{ income.NombreCategoria }}</td>
-          <td>{{ income.NombreSubcategoria }}</td>
           <td>{{ income.NombreEstatus }}</td>
           <td>{{ income.FechaAutorizacion }}</td>
           <td>{{ income.NombreUsuarioAutoriza }}</td>
           <td>{{ income.NombreUsuarioRecibe }}</td>
-          <td>{{ income.FechaConciliacion }}</td>
+          <td [ngClass]="{ 'text-red': income.Reconciliado === 0, 'text-green': income.Reconciliado === 1 }">
+            {{ income.FechaConciliacion }}
+          </td>
+          <!-- Mostrar Reconciliado con texto y color condicionales -->
+          <td [ngClass]="{ 'text-red': income.Reconciliado === 0, 'text-green': income.Reconciliado === 1 }">
+            {{ income.Reconciliado === 0 ? 'No reconciliado' : 'Reconciliado' }}
+          </td>
+          <!-- Mostrar TipoIngreso.data con texto condicional -->
+          <td>
+            {{ income.TipoIngreso.data.includes(0) ? 'Ingreso' : 'Egreso' }}
+          </td>
+          <td>{{ income.ReconciliacionID }}</td>
           <td>{{ income.ObservacionesDifConciliacion }}</td>
         </tr>
       </tbody>

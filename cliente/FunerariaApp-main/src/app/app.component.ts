@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { IonicModule, MenuController } from "@ionic/angular";
 import { RouterModule, Router } from '@angular/router';
-import { folder, folderOutline , barChart ,calendar, layers, pricetag, pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, chatboxEllipses, business, home, analytics, images, personCircle, person, mail, call, shieldCheckmark, addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, time, alertCircle, warning, trash, create, cashOutline, peopleOutline } from "ionicons/icons";
+import { folder, folderOutline , barChart ,calendar, layers, pricetag, pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, chatboxEllipses, business, home, analytics, images, personCircle, person, mail, call, shieldCheckmark, addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, time, alertCircle, warning, trash, create, cashOutline, peopleOutline, trashSharp, searchSharp } from "ionicons/icons";
 import { addIcons } from 'ionicons';
 import { AuthService } from 'src/app/Servicios/AuthService';
 import { CommonModule } from '@angular/common';
@@ -22,7 +22,7 @@ export class AppComponent {
       addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, 
       time, alertCircle, warning, trash, create, calendar, business, layers, pricetag, 
       pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, 
-      chatboxEllipses, cashOutline, peopleOutline, folderOutline, folder
+      chatboxEllipses, cashOutline, peopleOutline, folderOutline, folder, trashSharp, searchSharp
     });
   }
 

@@ -42,4 +42,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/reconciliaciones/reconciliaciones.component').then((m) => m.ReconciliacionesComponent),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'reconciliaciones-historial',
+    loadComponent: () => import('./pages/reconciliaciones-historial/reconciliaciones-historial.component').then((m) => m.ReconciliacionesHistorialComponent),
+    canActivate: [AuthGuard],
+  },
 ];

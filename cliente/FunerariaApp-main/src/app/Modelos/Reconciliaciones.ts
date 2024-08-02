@@ -30,3 +30,13 @@ export interface Ingreso {
   RFC?: string;
   Reconciliado: boolean;
 }
+
+
+export interface Reconciliacion {
+  ReconciliacionID: number;
+  Fecha: string;
+  Saldo: number;
+  CuentaID: number;
+  NombreCuenta: string;
+  NombreTipoCuenta: string;
+}

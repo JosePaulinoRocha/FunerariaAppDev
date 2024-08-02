@@ -35,6 +35,19 @@ interface Income {
   NombreCajaChica?: string;
   RFC?: string;
   NombreDuenoCuenta?: string;
+
+  SaldoReconciliacion: number;
+
+  TipoCuenta: string;
+
+  NombreCuenta: string;
+
+  Reconciliado: number;
+
+  TipoIngreso: { data: number[]; type: string; };
+
+  ReconciliacionID: number;
+
   [key: string]: any; // Para permitir acceso dinámico
 }
 
@@ -50,7 +63,7 @@ export class IngresosEgresosComponent implements OnInit {
   incomes: Income[] = [];
   paginatedIncomes: Income[] = [];
   currentPage: number = 1;
-  itemsPerPage: number = 8;
+  itemsPerPage: number = 10;
   totalPages: number = 0;
 
   getStartDate(field: string): string {
@@ -87,12 +100,12 @@ export class IngresosEgresosComponent implements OnInit {
     { value: 'Descripcion', label: 'Descripcion' },
     { value: 'Proveedor', label: 'Proveedor' },
     { value: 'Piezas', label: 'Piezas' },
-    { value: 'CajaChica', label: 'Tipo de ingreso' },
+    { value: 'TipoCuenta', label: 'Tipo de ingreso' },
     { value: 'NombreCajaChica', label: 'Nombre Caja Chica' },
     { value: 'RFC', label: 'RFC' },
     { value: 'NombreDuenoCuenta', label: 'Nombre Dueño Cuenta' },
     { value: 'Monto', label: 'Monto' },
-    { value: 'Saldo', label: 'Saldo' },
+    { value: 'SaldoReconciliacion', label: 'Saldo' },
     { value: 'Comprobante', label: 'Comprobante' },
     { value: 'NombreSegmento', label: 'Segmento' },
     { value: 'NombreCategoria', label: 'Categoria' },
