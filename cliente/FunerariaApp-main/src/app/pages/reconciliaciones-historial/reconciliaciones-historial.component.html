@@ -47,7 +47,7 @@
       <thead class="header-row">
         <tr class="color_header_tabla">
           <th>ID</th>
-          <th>Borrar</th>
+          <th *ngIf="isAdmin">Borrar</th>
           <th><span style="margin-left: 2rem;"></span> Fecha <span style="margin-left: 2rem;"></span></th>
           <th>Saldo</th>
           <th>Cuenta ID</th>
@@ -58,7 +58,7 @@
       <tbody>
         <tr *ngFor="let reconciliacion of paginatedReconciliaciones" class="data-row">
           <td>{{ reconciliacion.ReconciliacionID }}</td>
-          <td>
+          <td *ngIf="isAdmin">
             <ion-icon 
               name="trash-sharp" 
               (click)="deleteReconciliacion(reconciliacion.ReconciliacionID)"

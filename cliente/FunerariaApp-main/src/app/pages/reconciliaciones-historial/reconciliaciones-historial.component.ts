@@ -28,6 +28,7 @@ export class ReconciliacionesHistorialComponent  implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 8;
   totalPages: number = 0;
+  isAdmin: boolean = false;
 
   getStartDate(field: string): string {
     return this.dateSearchValues[field]?.startDate || '';
@@ -72,6 +73,12 @@ export class ReconciliacionesHistorialComponent  implements OnInit {
 
   ngOnInit() {
     this.loadReconciliaciones();
+    this.checkAdminStatus();
+  }
+
+  checkAdminStatus() {
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    this.isAdmin = user.isAdmin === 1;
   }
 
   loadReconciliaciones() {

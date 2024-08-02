@@ -63,7 +63,7 @@ export class IngresosEgresosComponent implements OnInit {
   incomes: Income[] = [];
   paginatedIncomes: Income[] = [];
   currentPage: number = 1;
-  itemsPerPage: number = 10;
+  itemsPerPage: number = 8;
   totalPages: number = 0;
 
   getStartDate(field: string): string {
