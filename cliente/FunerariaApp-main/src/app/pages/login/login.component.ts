@@ -27,17 +27,21 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     // Si hay un usuario en sessionStorage, redirigir a home
-    if (sessionStorage.getItem('user')) {
+    if (this.authService.isLoggedIn()) {
       this.router.navigate(['/home']);
     }
   }
 
   login() {
+    if (this.loginForm.invalid) {
+      return;
+    }
+
     const { email, password } = this.loginForm.value;
     this.authService.login(email, password).subscribe(
       (response) => {
         if (response.success) {
-          sessionStorage.setItem('user', JSON.stringify(response.user)); // Guardar usuario en sessionStorage
+          this.authService.setSession(response); // Guardar token y usuario en sessionStorage
           this.router.navigate(['/home']);
           setTimeout(() => {
             window.location.reload();

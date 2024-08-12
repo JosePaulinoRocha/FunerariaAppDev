@@ -1,14 +1,16 @@
+// routes/usuarios.routes.ts
 import { Router } from 'express';
-import { ObtenerUsuarios, PostUsers, UpdateUser, Login  } from '../controllers/Usuarios.controller';
+import { ObtenerUsuarios, PostUsers, UpdateUser, Login, ObtenerRoles } from '../controllers/Usuarios.controller';
+import { authenticateJWT } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-//modulo usuarios
-router.get('/GetUsuarios', ObtenerUsuarios);
-router.post('/PostUsers', PostUsers);
-router.put('/UpdateUser', UpdateUser);
-
-//login
 router.post('/login', Login);
+
+router.get('/GetUsuarios', authenticateJWT, ObtenerUsuarios);
+router.post('/PostUsers', authenticateJWT, PostUsers);
+router.put('/UpdateUser', authenticateJWT, UpdateUser);
+
+router.get('/GetRoles', authenticateJWT, ObtenerRoles);
 
 export default router;

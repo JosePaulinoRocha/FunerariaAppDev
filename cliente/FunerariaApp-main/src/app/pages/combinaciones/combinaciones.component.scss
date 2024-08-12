@@ -1,0 +1,64 @@
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 1.5rem;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    padding: 1.5rem;
+
+  }
+  
+  .header-row {
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .header-row th {
+    font-weight: bold;
+    text-align: center;
+    padding: 8px;
+    border: 1px solid #ddd;
+    white-space: nowrap;
+  }
+  
+  .data-row {
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .data-row td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ddd;
+  }
+  
+  .page-info {
+    display: inline-block;
+    margin-left: auto;
+    margin-right: 16px;
+    font-weight: bold;
+  }
+  
+  .margin_footer {
+    margin-left: 1rem;
+    width: 98%;
+  }
+
+  .green-text {
+    color: green;
+  }
+
+.search-container {
+  margin: 16px;
+}
+
+.search-container ion-item {
+    margin-bottom: 8px;
+}
+
+.color_header_tabla {
+ background-color: #0054E9;
+ color: #FFFFFF;
+}

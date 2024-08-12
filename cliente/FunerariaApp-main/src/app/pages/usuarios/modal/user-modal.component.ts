@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController, IonicModule } from '@ionic/angular';
+import { ModalController, IonicModule, AlertController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { UsuariosServices } from 'src/app/Servicios/Usuarios.service';
@@ -10,6 +10,13 @@ interface User {
   phone: string;
   email: string;
   isAdmin: boolean;
+  RolID: number;
+  NombreRol: string;
+}
+
+interface Rol {
+  RolID: number;
+  NombreRol: string;
 }
 
 @Component({
@@ -25,13 +32,39 @@ export class UserModalComponent implements OnInit {
     fullName: '',
     phone: '',
     email: '',
-    isAdmin: false
+    isAdmin: false,
+    RolID: 0,
+    NombreRol: '',
   };
+
+  rol: Rol[] = [];
+
   @Input() isEditMode: boolean = false;
 
-  constructor(private modalController: ModalController, private userService: UsuariosServices) {}
+  constructor(private modalController: ModalController, private userService: UsuariosServices, private alertController: AlertController) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.loadRoles();
+  }
+
+  loadRoles() {
+    this.userService.getRoles().subscribe((data: Rol[]) => {
+      this.rol = data;
+      console.log("estos son los roles: ", this.rol)
+    }, (error) => {
+      this.presentAlert('Error fetching rols');
+    });
+  }
+
+  async presentAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Error',
+      message: message,
+      buttons: ['OK'],
+    });
+
+    await alert.present();
+  }
 
   closeModal() {
     this.modalController.dismiss();

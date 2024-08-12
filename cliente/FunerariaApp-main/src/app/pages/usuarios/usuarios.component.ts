@@ -12,6 +12,8 @@ interface User {
   phone: string;
   email: string;
   isAdmin: boolean;
+  RolID : number;
+  NombreRol: string
 }
 
 @Component({

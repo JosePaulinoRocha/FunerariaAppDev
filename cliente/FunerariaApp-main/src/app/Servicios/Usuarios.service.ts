@@ -1,4 +1,4 @@
-import { Usuarios } from '../Modelos/Usuarios';
+import { Usuarios, Roles } from '../Modelos/Usuarios';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -14,12 +14,16 @@ export class UsuariosServices {
   private MyApiUrlUserPost: string;
   private MyApiUrlUserUpdate: string;
 
+  private MyApiUrlRol: string;
+
   constructor(private http: HttpClient) {
     this.myAppUrl = environment.endpoint;
     this.MyApiUrl = 'api/usuarios/';
     this.MyApiUrlUser = 'GetUsuarios/';
     this.MyApiUrlUserPost = 'PostUsers/';
     this.MyApiUrlUserUpdate = 'UpdateUser/';
+
+    this.MyApiUrlRol = 'GetRoles/';
 
   }
 
@@ -33,6 +37,10 @@ export class UsuariosServices {
 
   updateUser(user: any): Observable<any> {
     return this.http.put<Usuarios[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlUserUpdate}`, user);
+  }
+
+  getRoles(): Observable<Roles[]> {
+    return this.http.get<Roles[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlRol}`);
   }
 
 }

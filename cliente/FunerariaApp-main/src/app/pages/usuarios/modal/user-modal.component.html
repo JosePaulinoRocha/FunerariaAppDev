@@ -33,6 +33,13 @@
       </ion-item>
 
       <ion-item>
+        <ion-label position="stacked">Rol</ion-label>
+        <ion-select [(ngModel)]="user.RolID" name="rol" required interface="alert" searchbar="true">
+          <ion-select-option *ngFor="let item of rol" [value]="item.RolID">{{ item.NombreRol }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
         <ion-label>Administrador</ion-label>
         <ion-checkbox [(ngModel)]="user.isAdmin" name="isAdmin"></ion-checkbox>
       </ion-item>

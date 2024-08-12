@@ -1,23 +1,23 @@
 import { Router } from 'express';
-
+import { authenticateJWT } from '../middlewares/authMiddleware';
 import { ObtenerIngresos, ObtenerIngresosParaConciliacion, ObtenerUltimaReconciliacion, CrearReconciliacion, ActualizarIngresos, ObtenerReconciliaciones, EliminarReconciliacion, ActualizarObservacion } from '../controllers/Reconciliaciones.controller';
 
 const router = Router();
 
 //modulo reconciliaciones
-router.get('/GetIngresos', ObtenerIngresos);
-router.post('/GetIngresosParaConciliacion', ObtenerIngresosParaConciliacion);
-router.get('/GetUltimaReconciliacion/:cuentaID', ObtenerUltimaReconciliacion);
+router.get('/GetIngresos', authenticateJWT, ObtenerIngresos);
+router.post('/GetIngresosParaConciliacion', authenticateJWT, ObtenerIngresosParaConciliacion);
+router.get('/GetUltimaReconciliacion/:cuentaID', authenticateJWT, ObtenerUltimaReconciliacion);
 
-router.post('/CreateReconciliacion', CrearReconciliacion);
+router.post('/CreateReconciliacion', authenticateJWT, CrearReconciliacion);
 
-router.put('/UpdateIngresos', ActualizarIngresos);
+router.put('/UpdateIngresos', authenticateJWT, ActualizarIngresos);
 
-router.get('/GetReconciliaciones', ObtenerReconciliaciones);
+router.get('/GetReconciliaciones', authenticateJWT, ObtenerReconciliaciones);
 
-router.delete('/DeleteReconciliacion/:reconciliacionID', EliminarReconciliacion);
+router.delete('/DeleteReconciliacion/:reconciliacionID', authenticateJWT, EliminarReconciliacion);
 
-router.put('/UpdateObservacion/:ingresoID', ActualizarObservacion);
+router.put('/UpdateObservacion/:ingresoID', authenticateJWT, ActualizarObservacion);
 
 
 export default router;

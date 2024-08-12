@@ -1,34 +1,34 @@
 import { Router } from 'express';
-
+import { authenticateJWT } from '../middlewares/authMiddleware';
 import { ObtenerIngresos, PostIngresos , UpdateIngresos , ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus } from '../controllers/Ingresos.controllers';
 
 const router = Router();
 
 //modulo ingresos
-router.get('/GetIngresos', ObtenerIngresos);
-router.post('/PostIngresos', PostIngresos);
-router.put('/UpdateIngresos', UpdateIngresos);
+router.get('/GetIngresos', authenticateJWT, ObtenerIngresos);
+router.post('/PostIngresos', authenticateJWT, PostIngresos);
+router.put('/UpdateIngresos', authenticateJWT, UpdateIngresos);
 
 //Conceptos
-router.get('/GetConceptos', ObtenerConceptos);
+router.get('/GetConceptos', authenticateJWT, ObtenerConceptos);
 
 // Segmentos
-router.get('/GetSegmentos', ObtenerSegmentos);
+router.get('/GetSegmentos', authenticateJWT, ObtenerSegmentos);
 
 // Categorias
-router.get('/GetCategorias', ObtenerCategorias);
+router.get('/GetCategorias', authenticateJWT, ObtenerCategorias);
 
 // Subcategorias
-router.get('/GetSubcategorias', ObtenerSubcategorias);
+router.get('/GetSubcategorias', authenticateJWT, ObtenerSubcategorias);
 
 // Usuarios
-router.get('/GetUsuarios', ObtenerUsuarios);
+router.get('/GetUsuarios', authenticateJWT, ObtenerUsuarios);
 
 // Combinaciones
-router.get('/GetCombinaciones', ObtenerCombinaciones);
+router.get('/GetCombinaciones', authenticateJWT, ObtenerCombinaciones);
 
 // Estatus
-router.get('/GetEstatus', ObtenerEstatus);
+router.get('/GetEstatus', authenticateJWT, ObtenerEstatus);
 
 
 export default router;

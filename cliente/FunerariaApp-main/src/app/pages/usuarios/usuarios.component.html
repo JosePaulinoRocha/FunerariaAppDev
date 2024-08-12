@@ -26,6 +26,7 @@
           <p><ion-icon name="mail" slot="start"></ion-icon> Correo: {{ user.email }}</p>
           <p><ion-icon name="call" slot="start"></ion-icon> Teléfono: {{ user.phone }}</p>
           <p *ngIf="user.isAdmin"><ion-icon name="shield-checkmark" slot="start"></ion-icon> Administrador</p>
+          <p><ion-icon name="person-circle-sharp" slot="start"></ion-icon> Rol: {{ user.NombreRol }}</p>
         </ion-label>
       </ion-item>
     </div>

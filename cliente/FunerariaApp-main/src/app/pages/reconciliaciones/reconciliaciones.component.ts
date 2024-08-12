@@ -216,7 +216,7 @@ export class ReconciliacionesComponent implements OnInit {
                     // Recargar la página después de 3 segundos
                     setTimeout(() => {
                         window.location.reload();
-                    }, 2000);
+                    }, 200);
                 },
                 (error: any) => {
                     console.error('Error actualizando los ingresos', error);

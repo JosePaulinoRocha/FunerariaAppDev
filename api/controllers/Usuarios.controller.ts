@@ -1,44 +1,51 @@
+// controllers/Usuarios.controller.ts
 import { Request, Response } from "express";
 import { connect } from "../BD/Accesos_BD";
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { jwtSecret, jwtExpiresIn } from '../config/jwtConfig';
 
 export const Login = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
-    let con;
-    let result;
-    try {
-      con = await connect();
-      const query = 'SELECT * FROM usuarios WHERE email = ?';
-      const users = (await con.query(query, [email]))[0] as any[];
-      if (users.length > 0) {
-        const user = users[0];
-        if (user.password === password) {
-          result = user;
-        } else {
-          result = null;
-        }
+  const { email, password } = req.body;
+  let con;
+  try {
+    con = await connect();
+    const query = 'SELECT * FROM usuarios WHERE email = ?';
+    const [users] = await con.query(query, [email]) as any[];
+    
+    if (users.length > 0) {
+      const user = users[0];
+      console.log('Usuario encontrado:', user); // Añadir este log
+
+      if (password === user.password) {
+        const payload = {
+          userId: user.userId,
+          isAdmin: user.isAdmin,
+        };
+        const token = jwt.sign(payload, jwtSecret, { expiresIn: jwtExpiresIn });
+        return res.json({ success: true, token, user });
       } else {
-        result = null;
-      }
-    } catch (error) {
-      console.log('Error en Login');
-      console.log(error);
-      result = null;
-    } finally {
-      await con?.end();
-      if (result) {
-        return res.json({ success: true, user: result });
-      } else {
+        console.log('Contraseña incorrecta'); // Añadir este log
         return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
       }
+    } else {
+      console.log('Usuario no encontrado'); // Añadir este log
+      return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
     }
+  } catch (error) {
+    console.log('Error en Login:', error); // Añadir este log
+    return res.status(500).json({ success: false, message: 'Error en el servidor' });
+  } finally {
+    await con?.end();
   }
+};
 
 export const ObtenerUsuarios = async (req: Request, res: Response) => {
     let con;
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM usuarios';
+        let query = 'SELECT * FROM usuarios_vw';
         const Users = (await con.query(query))[0] as any[];
         result = Users;
     } catch (error) {
@@ -102,4 +109,22 @@ export const UpdateUser = async (req: Request, res: Response) => {
         await con?.end();
         return res.json(result);
     }
+};
+
+export const ObtenerRoles = async (req: Request, res: Response) => {
+  let con;
+  let result;
+  try {
+      con = await connect();
+      let query = 'SELECT * FROM Roles';
+      const roles = (await con.query(query))[0] as any[];
+      result = roles;
+  } catch (error) {
+      console.log('Error en roles');
+      console.log(error);
+      result = null;
+  } finally {
+      await con?.end();
+      return res.json(result);
+  }
 };

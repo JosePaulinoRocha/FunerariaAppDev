@@ -1,0 +1,89 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Combinaciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <!-- Search Interface -->
+  <div class="search-container">
+    <ion-item>
+      <ion-label>Buscar por:</ion-label>
+      <ion-select [(ngModel)]="selectedFields" multiple="true" placeholder="Seleccionar campo">
+        <ion-select-option *ngFor="let field of searchFields" [value]="field.value">{{ field.label }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <div *ngFor="let field of selectedFields">
+      <ion-item *ngIf="!isDateField(field)">
+        <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
+        <ion-input [(ngModel)]="searchValues[field]"></ion-input>
+      </ion-item>
+    
+      <div *ngIf="isDateField(field)">
+        <ion-item>
+          <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
+          <input type="date" [value]="getStartDate(field)" (change)="onStartDateChange($event, field)">
+        </ion-item>
+        <ion-item>
+          <ion-label>{{ getFieldLabel(field) }} Hasta:</ion-label>
+          <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
+        </ion-item>
+      </div>
+      
+    </div>
+
+    <ion-button (click)="applySearch()">Buscar</ion-button>
+    <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
+  </div>
+
+  
+  <div class="table-container">
+    <table class="table">
+      <thead class="header-row">
+        <tr class="color_header_tabla">
+          <th>ID</th>
+          <th *ngIf="isAdmin">Validar</th>
+          <th>Concepto</th>
+          <th>Segmento</th>
+          <th>Categoria</th>
+          <th>Subcategoria</th>
+          <th>Fecha Modificacion</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let combinacion of paginatedCombinaciones" class="data-row">
+          <td>{{ combinacion.CombinacionID }}</td>
+          <td *ngIf="isAdmin">
+            <ion-icon 
+              name="checkbox" 
+              (click)="deleteReconciliacion(combinacion.CombinacionID)"
+              style="color: green; cursor: pointer;"
+              aria-label="Validar">
+            </ion-icon>
+          </td>
+          <td>{{ combinacion.NombreConcepto }}</td>
+          <td>{{ combinacion.NombreSegmento }}</td>
+          <td>{{ combinacion.NombreCategoria }}</td>
+          <td>{{ combinacion.NombreSubcategoria }}</td>
+          <td>{{ combinacion.FechaModificacion }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ion-footer class="margin_footer">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+        <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
+      </ion-buttons>
+      <div class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </div>
+    </ion-toolbar>
+  </ion-footer>
+</ion-content>
