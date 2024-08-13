@@ -24,5 +24,11 @@ export class CombinacionesServices {
   getCombinaciones(): Observable<Combinacion[]> {
     return this.http.get<Combinacion[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlCombinaciones}`);
   }
+
+  updateCombinacionValidado(combinacionID: number, validado: boolean): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}UpdateValidado/${combinacionID}`;
+    const body = { validado };
+    return this.http.put(url, body, { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) });
+  }
   
 }

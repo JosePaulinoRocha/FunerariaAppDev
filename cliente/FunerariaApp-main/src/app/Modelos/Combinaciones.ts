@@ -9,4 +9,5 @@ export interface Combinacion {
     SubcategoriaID: number;
     NombreSubcategoria: string;
     FechaModificacion: string;
+    validado: boolean;
   }

@@ -16,6 +16,7 @@ interface Combinacion {
   SubcategoriaID: number;
   NombreSubcategoria: string;
   FechaModificacion: string;
+  validado: boolean;
   [key: string]: any;
 }
 
@@ -62,12 +63,13 @@ export class CombinacionesComponent  implements OnInit {
 
   // Search variables
   searchFields = [
-    { value: 'ReconciliacionID', label: 'ID' },
-    { value: 'Fecha', label: 'Fecha' },
-    { value: 'Saldo', label: 'Saldo' },
-    { value: 'CuentaID', label: 'CuentaID' },
-    { value: 'NombreCuenta', label: 'Nombre Cuenta' },
-    { value: 'NombreTipoCuenta', label: 'Tipo Cuenta' },
+    { value: 'CombinacionID', label: 'ID' },
+    { value: 'NombreConcepto', label: 'Concepto' },
+    { value: 'NombreSegmento', label: 'Segmento' },
+    { value: 'NombreCategoria', label: 'Categoria' },
+    { value: 'NombreSubcategoria', label: 'Subcategoria' },
+    { value: 'FechaModificacion', label: 'Fecha' },
+    { value: 'validado', label: 'Validado' },
   ];
   selectedFields: string[] = [];
   searchValues: { [key: string]: string } = {};
@@ -188,10 +190,27 @@ export class CombinacionesComponent  implements OnInit {
     return this.searchFields.find(f => f.value === field)?.label || field;
   }
 
-  deleteReconciliacion(combinacionID: number) {
-    console.log("este es mi CombinacionID a validar: ", combinacionID)
-
+  deleteReconciliacion(combinacionID: number, validado: boolean) {
+    const mensaje = validado 
+      ? '¿Desea anular esta combinación?' 
+      : '¿Desea validar esta combinación?';
+  
+    if (confirm(mensaje)) {
+      this._combinacionServ.updateCombinacionValidado(combinacionID, !validado).subscribe({
+        next: () => {
+          // Actualizar la lista de combinaciones después de la validación/anulación
+          this.combinaciones = this.combinaciones.map(combinacion => 
+            combinacion.CombinacionID === combinacionID ? { ...combinacion, validado: !validado } : combinacion
+          );
+          this.updatePaginatedCombinaciones();
+          console.log(`Combinación ${!validado ? 'validada' : 'anulada'} exitosamente.`);
+        },
+        error: (err) => {
+          console.error(`Error al ${!validado ? 'validar' : 'anular'} la combinación:`, err);
+        }
+      });
+    }
   }
-
+  
   
 }

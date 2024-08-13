@@ -62,7 +62,7 @@ export const ObtenerUsuarios = async (req: Request, res: Response) => {
 export const PostUsers = async (req: Request, res: Response) => {
   let con;
   let result;
-  const { fullName, phone, email, isAdmin } = req.body;
+  const { fullName, phone, email, RolID, isAdmin } = req.body;
   try {
       con = await connect();
 
@@ -75,8 +75,8 @@ export const PostUsers = async (req: Request, res: Response) => {
           result = { message: 'Email already exists. User not created.' };
       } else {
           // Si no existe, proceder con la inserción
-          query = 'INSERT INTO usuarios (fullName, phone, email, isAdmin, password) VALUES (?, ?, ?, ?, ?)';
-          const values = [fullName, phone, email, isAdmin, 123456];
+          query = 'INSERT INTO usuarios (fullName, phone, email, RolID, isAdmin, password) VALUES (?, ?, ?, ?, ?, ?)';
+          const values = [fullName, phone, email, RolID, isAdmin, 123456];
           await con.query(query, values);
           result = { message: 'User created successfully' };
       }
@@ -94,11 +94,11 @@ export const PostUsers = async (req: Request, res: Response) => {
 export const UpdateUser = async (req: Request, res: Response) => {
     let con;
     let result;
-    const { userId, fullName, phone, email, isAdmin } = req.body;
+    const { userId, fullName, phone, email, RolID, isAdmin } = req.body;
     try {
         con = await connect();
-        let query = 'UPDATE usuarios SET fullName = ?, phone = ?, email = ?, isAdmin = ? WHERE userId = ?';
-        const values = [fullName, phone, email, isAdmin, userId];
+        let query = 'UPDATE usuarios SET fullName = ?, phone = ?, email = ?, RolID = ?, isAdmin = ? WHERE userId = ?';
+        const values = [fullName, phone, email, RolID, isAdmin, userId];
         await con.query(query, values);
         result = { message: 'User updated successfully' };
     } catch (error) {
