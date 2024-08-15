@@ -254,3 +254,49 @@ export const ObtenerEstatus = async (req: Request, res: Response) => {
         return res.json(result);
     }
 };
+
+
+// actualizar combinacion
+
+export const updateCombination = async (req: Request, res: Response) => {
+    let con: any;
+    let result;
+    const { IngresoID, ConceptoID, SegmentoID, CategoriaID, SubcategoriaID } = req.body;
+
+    try {
+        con = await connect();
+
+        // Función para insertar y obtener el nuevo ID si el valor es un string
+        const getOrCreateId = async (table: string, value: number | string) => {
+            if (typeof value === 'string') {
+                const insertQuery = `INSERT INTO ${table} (Nombre) VALUES (?)`;
+                const [insertResult]: any = await con.query(insertQuery, [value]);
+                return insertResult.insertId;
+            }
+            return value;
+        };
+
+        // Obtener o crear los IDs correspondientes
+        const newConceptoID = await getOrCreateId('conceptos', ConceptoID);
+        const newSegmentoID = await getOrCreateId('segmentos', SegmentoID);
+        const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
+        const newSubcategoriaID = await getOrCreateId('subcategorias', SubcategoriaID);
+
+        // Actualizar la tabla ingresos con los nuevos o existentes IDs
+        const updateQuery = `
+            UPDATE ingresos SET
+                ConceptoID = ?, SegmentoID = ?, CategoriaID = ?, SubcategoriaID = ?
+            WHERE IngresoID = ?
+        `;
+        const values = [newConceptoID, newSegmentoID, newCategoriaID, newSubcategoriaID, IngresoID];
+
+        await con.query(updateQuery, values);
+        result = { message: 'Combinación actualizada exitosamente' };
+    } catch (error) {
+        console.error('Error al actualizar la combinación:', error);
+        result = { message: 'Error al actualizar la combinación' };
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};

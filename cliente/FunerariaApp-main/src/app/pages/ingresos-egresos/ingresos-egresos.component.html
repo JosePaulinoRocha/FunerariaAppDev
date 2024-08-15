@@ -47,6 +47,7 @@
       <thead class="header-row">
         <tr class="color_header_tabla">
           <th>ID</th>
+          <th *ngIf="isAdmin">Editar</th>
           <th><span style="margin-left: 2rem;"></span> Fecha <span style="margin-left: 2rem;"></span></th>
           <th><span style="margin-left: 10rem;"></span> Concepto <span style="margin-left: 10rem;"></span></th>
           <th><span style="margin-left: 2rem;"></span>Segmento<span style="margin-left: 2rem;"></span></th>
@@ -75,6 +76,15 @@
       <tbody style="font-size: 12px;">
         <tr *ngFor="let income of paginatedIncomes" class="data-row">
           <td>{{ income.IngresoID }}</td>
+          <td *ngIf="isAdmin">
+            <ion-icon 
+              name="checkbox" 
+              (click)="income.Reconciliado === 1 ? editarCombinacion(income.IngresoID) : null"
+              [style.cursor]="income.Reconciliado === 1 ? 'pointer' : 'default'"
+              [style.color]="income.Reconciliado === 1 ? 'green' : 'grey'"
+              aria-label="Editar">
+            </ion-icon>
+          </td>
           <td>{{ income.Fecha }}</td>
           <td>{{ income.NombreConcepto }}</td>
           <td>{{ income.NombreSegmento }}</td>

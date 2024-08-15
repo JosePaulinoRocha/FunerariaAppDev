@@ -1,0 +1,49 @@
+ion-toolbar {
+    position: relative;
+  }
+  
+  ion-popover {
+    --width: 250px;
+    --height: auto;
+  }
+  
+
+  .notification-button {
+    position: relative;
+    padding: 0;
+    background: none;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+  
+  .notification-icon {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: white !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .notification-icon ion-icon {
+    font-size: 24px;
+    color: var(--ion-color-primary);
+  }
+  
+  .notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: red;
+    color: white;
+    font-size: 12px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  

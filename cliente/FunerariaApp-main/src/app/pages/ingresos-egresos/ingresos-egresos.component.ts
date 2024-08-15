@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
+import { IngresosEgresosModalComponent } from './modal/ingresos-egresos-modal.component';
 
 interface Income {
   IngresoID: number;
@@ -57,7 +58,7 @@ interface Income {
   templateUrl: './ingresos-egresos.component.html',
   styleUrls: ['./ingresos-egresos.component.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule],
+  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule, IngresosEgresosModalComponent],
 })
 export class IngresosEgresosComponent implements OnInit {
   incomes: Income[] = [];
@@ -65,6 +66,7 @@ export class IngresosEgresosComponent implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 8;
   totalPages: number = 0;
+  isAdmin: boolean = false;
 
   getStartDate(field: string): string {
     return this.dateSearchValues[field]?.startDate || '';
@@ -123,8 +125,25 @@ export class IngresosEgresosComponent implements OnInit {
 
   constructor(private modalController: ModalController, private _ingresoServ: IngresosServices) { }
 
+  async editarCombinacion(ingresoID: number) {
+    const ingreso = this.incomes.find(i => i.IngresoID === ingresoID); // Buscar el ingreso por ID
+    const modal = await this.modalController.create({
+      component: IngresosEgresosModalComponent,
+      componentProps: {
+        ingreso: ingreso // Pasar los datos del ingreso al modal
+      }
+    });
+    return await modal.present();
+  }
+
   ngOnInit() {
     this.loadIngresos();
+    this.checkAdminStatus();
+  }
+
+  checkAdminStatus() {
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    this.isAdmin = user.isAdmin === 1;
   }
   
   loadIngresos() {
@@ -234,4 +253,5 @@ export class IngresosEgresosComponent implements OnInit {
   getFieldLabel(field: string): string {
     return this.searchFields.find(f => f.value === field)?.label || field;
   }
+
 }

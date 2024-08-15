@@ -54,5 +54,39 @@
       </ion-list>
     </ion-content>
   </ion-menu>
+
+
+  <!-- <ion-header>
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+      <ion-title>Home</ion-title>
+      <ion-buttons style="background-color: #FFFFFF; border-radius: 100%; margin-right: 1rem;" slot="end">
+        <ion-button (click)="toggleNotifications()" class="notification-button">
+          <div style="color: red;" class="notification-icon">
+            <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+            <span class="notification-badge">{{ notifications.length }}</span>
+          </div>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header> -->
+
+
   <ion-router-outlet id="main-content"></ion-router-outlet>
+
+
+  <ion-popover [isOpen]="isNotificationsOpen" (ionPopoverDidDismiss)="isNotificationsOpen = false">
+    <ng-template>
+      <ion-list>
+        <ion-item *ngFor="let notification of notifications">
+          <ion-icon slot="start" name="alert-circle-outline"></ion-icon>
+          <ion-label>{{ notification }}</ion-label>
+        </ion-item>
+      </ion-list>
+    </ng-template>
+  </ion-popover>
+
+
 </ion-app>

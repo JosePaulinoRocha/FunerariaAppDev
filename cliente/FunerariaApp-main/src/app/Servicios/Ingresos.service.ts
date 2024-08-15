@@ -92,4 +92,9 @@ export class IngresosServices {
     return this.http.get<Estatus[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlEstatus}`);
   }
 
+  updateCombination(updatedData: { IngresoID: number ,ConceptoID: number | string, SegmentoID: number | string, CategoriaID: number | string, SubcategoriaID: number | string }): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}UpdateCombination/`;
+    return this.http.put(url, updatedData);
+  }
+
 }

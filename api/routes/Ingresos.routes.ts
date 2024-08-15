@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateJWT } from '../middlewares/authMiddleware';
-import { ObtenerIngresos, PostIngresos , UpdateIngresos , ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus } from '../controllers/Ingresos.controllers';
+import { ObtenerIngresos, PostIngresos , UpdateIngresos , ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination } from '../controllers/Ingresos.controllers';
 
 const router = Router();
 
@@ -30,5 +30,7 @@ router.get('/GetCombinaciones', authenticateJWT, ObtenerCombinaciones);
 // Estatus
 router.get('/GetEstatus', authenticateJWT, ObtenerEstatus);
 
+// actualizar combinacion
+router.put('/UpdateCombination', authenticateJWT, updateCombination);
 
 export default router;
