@@ -28,19 +28,12 @@ export interface Ingreso {
   NombreCajaChica?: string;
   RFC?: string;
   NombreDuenoCuenta?: string;
-
   SaldoReconciliacion: number;
-
   TipoCuenta: string;
-
   NombreCuenta: string;
-
   Reconciliado: number;
-
   TipoIngreso: { data: number[]; type: string; };
-
   ReconciliacionID: number
-
 }
 
 export interface Concepto {

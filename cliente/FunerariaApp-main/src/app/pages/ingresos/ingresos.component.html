@@ -4,16 +4,18 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>Ingresos</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="openModal()">
-        <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+
   <ion-searchbar [(ngModel)]="searchTerm" placeholder="Buscar ingreso"></ion-searchbar>
+
+  <ion-button expand="block" (click)="openModal()" style="margin: 16px;">
+    <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+    Crear
+  </ion-button>
+
   <div class="income-list">
     <div class="income-card" *ngFor="let income of filteredIncomes()" (click)="openModal(income)">
       <ion-item>

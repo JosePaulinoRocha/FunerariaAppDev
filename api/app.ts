@@ -7,6 +7,7 @@ import Usuarios from "./routes/Usuarios.routes"
 import Ingresos from "./routes/Ingresos.routes"
 import Reconciliaciones from "./routes/Reconciliaciones.routes"
 import Combinaciones from "./routes/Combinaciones.routes"
+import Notificaciones from "./routes/Notificaciones.routes"
 
 
 
@@ -52,6 +53,7 @@ export class App {
         this.app.use('/api/ingresos', Ingresos);
         this.app.use('/api/reconciliaciones', Reconciliaciones);
         this.app.use('/api/combinaciones', Combinaciones);
+        this.app.use('/api/notificaciones', Notificaciones);
 
 
         this.app.get('*',function (req,res){

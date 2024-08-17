@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { ReconciliacionesServices } from 'src/app/Servicios/Reconciliaciones.service';
+import { ReintegrosReconciliacionesModalComponent } from './modal/reintegros-reconciliaciones.component';
 
 interface Reconciliacion {
   ReconciliacionID: number;
@@ -20,7 +21,7 @@ interface Reconciliacion {
   templateUrl: './reconciliaciones-historial.component.html',
   styleUrls: ['./reconciliaciones-historial.component.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule],
+  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule, ReintegrosReconciliacionesModalComponent],
 })
 export class ReconciliacionesHistorialComponent  implements OnInit {
   reconciliaciones: Reconciliacion[] = [];
@@ -29,6 +30,8 @@ export class ReconciliacionesHistorialComponent  implements OnInit {
   itemsPerPage: number = 8;
   totalPages: number = 0;
   isAdmin: boolean = false;
+  showReintegracionesTable: boolean = false;
+  reintegracionesData: any[] = [];
 
   getStartDate(field: string): string {
     return this.dateSearchValues[field]?.startDate || '';
@@ -206,6 +209,46 @@ export class ReconciliacionesHistorialComponent  implements OnInit {
             }
         );
     }
+  }
+
+  ReintegracionesEgresos(reconciliacionID: number) {
+    console.log("este es mi ReconciliacionID para la reintegracion: ", reconciliacionID);
+
+    this._reconciliacionServ.reintegracionReconciliacion(reconciliacionID).subscribe(
+      (response: any[]) => {
+        console.log('Resultados de la consulta de reintegraciones:', response);
+        
+        // Asigna los datos de respuesta a reintegracionesData
+        this.reintegracionesData = response.map(reintegracion => ({
+          IngresoID: reintegracion.IngresoID,
+          TipoCuenta: reintegracion.TipoCuenta,
+          NombreCuenta: reintegracion.NombreCuenta,
+          Monto: reintegracion.Monto,
+          SaldoReconciliacion: reintegracion.SaldoReconciliacion,
+          ReconciliacionID : reintegracion.ReconciliacionID
+        }));
+
+        // Mostrar la nueva tabla y ocultar la anterior
+        this.showReintegracionesTable = true;
+      },
+      error => {
+        console.error('Error al reintegrar:', error);
+        alert('Error al realizar reintegro. Inténtelo de nuevo más tarde.');
+      }
+    );
+  }
+
+  async RealizarReintegro(ingresoID: number) {
+    console.log("este es mi ReconciliacionID para la reintegracion: ", ingresoID);
+
+    const ingreso = this.reintegracionesData.find(i => i.IngresoID === ingresoID); // Buscar el ingreso por ID
+    const modal = await this.modalController.create({
+      component: ReintegrosReconciliacionesModalComponent,
+      componentProps: {
+        ingreso: ingreso // Pasar los datos del ingreso al modal
+      }
+    });
+    return await modal.present();
   }
 
   

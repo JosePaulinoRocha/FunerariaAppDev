@@ -190,3 +190,90 @@ export const ActualizarObservacion = async (req: Request, res: Response) => {
         if (con) con.end();
     }
 };
+
+export const ReintegrarReconciliacion = async (req: Request, res: Response) => {
+    const { reconciliacionID } = req.params;
+    console.log('ID de Reconciliación a consultar:', reconciliacionID);
+
+    let con;
+    try {
+        con = await connect();
+        console.log('Conexión a la base de datos establecida');
+
+        // Consultar los ingresos de la vista 'vistaingresos'
+        const selectQuery = 'SELECT * FROM vistaingresos WHERE ReconciliacionID = ? AND TipoIngreso = 1';
+        const [result] = await con.query(selectQuery, [reconciliacionID]);
+
+        console.log('Resultados obtenidos:', result); // Log de los resultados
+
+        res.json(result);
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error('Error en ObtenerIngresosPorReconciliacion:', error.message);
+            res.status(500).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: 'Unknown error occurred' });
+        }
+    } finally {
+        if (con) await con.end();
+        console.log('Conexión a la base de datos cerrada');
+    }
+};
+
+
+export const ReintegrarMontoReconciliacion = async (req: Request, res: Response) => {
+    const { IngresoID, Monto, ReconciliacionID } = req.body;
+    let con;
+
+    try {
+        con = await connect();
+
+        // Iniciar una transacción
+        await con.beginTransaction();
+
+        // Obtener el monto actual del ingreso
+        const [ingresoRows] = await con.query<RowDataPacket[]>('SELECT Monto FROM Ingresos WHERE IngresoID = ?', [IngresoID]);
+        const ingreso = ingresoRows[0];
+        if (!ingreso) {
+            await con.rollback();
+            return res.status(404).json({ message: 'Ingreso no encontrado' });
+        }
+
+        const montoAnterior = ingreso.Monto;
+        const diferencia = montoAnterior - Monto;
+
+        // Actualizar el monto del ingreso
+        await con.query<ResultSetHeader>('UPDATE Ingresos SET Monto = ? WHERE IngresoID = ?', [Monto, IngresoID]);
+
+        // Obtener el saldo actual de la reconciliación
+        const [reconciliacionRows] = await con.query<RowDataPacket[]>('SELECT Saldo FROM Reconciliaciones WHERE ReconciliacionID = ?', [ReconciliacionID]);
+        const reconciliacion = reconciliacionRows[0];
+        if (!reconciliacion) {
+            await con.rollback();
+            return res.status(404).json({ message: 'Reconciliación no encontrada' });
+        }
+
+        const saldoActual = reconciliacion.Saldo;
+        const saldoNuevo = saldoActual - diferencia;
+
+        // Actualizar el saldo de la reconciliación
+        await con.query<ResultSetHeader>('UPDATE Reconciliaciones SET Saldo = ? WHERE ReconciliacionID = ?', [saldoNuevo, ReconciliacionID]);
+
+        // Confirmar la transacción
+        await con.commit();
+
+        res.json({ success: true, message: 'Monto y saldo actualizados exitosamente' });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error('Error en ActualizarMontoReconciliacion:', error.message);
+            res.status(500).json({ success: false, message: error.message });
+
+            // Deshacer la transacción en caso de error
+            if (con) await con.rollback();
+        } else {
+            res.status(500).json({ success: false, message: 'Unknown error occurred' });
+        }
+    } finally {
+        if (con) await con.end();
+    }
+};

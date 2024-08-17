@@ -9,81 +9,129 @@
 
 <ion-content>
 
-  <!-- Search Interface -->
-  <div class="search-container">
-    <ion-item>
-      <ion-label>Buscar por:</ion-label>
-      <ion-select [(ngModel)]="selectedFields" multiple="true" placeholder="Seleccionar campo">
-        <ion-select-option *ngFor="let field of searchFields" [value]="field.value">{{ field.label }}</ion-select-option>
-      </ion-select>
-    </ion-item>
+  <div *ngIf="!showReintegracionesTable">
 
-    <div *ngFor="let field of selectedFields">
-      <ion-item *ngIf="!isDateField(field)">
-        <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
-        <ion-input [(ngModel)]="searchValues[field]"></ion-input>
+    <div class="search-container">
+      <ion-item>
+        <ion-label>Buscar por:</ion-label>
+        <ion-select [(ngModel)]="selectedFields" multiple="true" placeholder="Seleccionar campo">
+          <ion-select-option *ngFor="let field of searchFields" [value]="field.value">{{ field.label }}</ion-select-option>
+        </ion-select>
       </ion-item>
-    
-      <div *ngIf="isDateField(field)">
-        <ion-item>
-          <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
-          <input type="date" [value]="getStartDate(field)" (change)="onStartDateChange($event, field)">
+
+      <div *ngFor="let field of selectedFields">
+        <ion-item *ngIf="!isDateField(field)">
+          <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
+          <ion-input [(ngModel)]="searchValues[field]"></ion-input>
         </ion-item>
-        <ion-item>
-          <ion-label>{{ getFieldLabel(field) }} Hasta:</ion-label>
-          <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
-        </ion-item>
-      </div>
       
+        <div *ngIf="isDateField(field)">
+          <ion-item>
+            <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
+            <input type="date" [value]="getStartDate(field)" (change)="onStartDateChange($event, field)">
+          </ion-item>
+          <ion-item>
+            <ion-label>{{ getFieldLabel(field) }} Hasta:</ion-label>
+            <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
+          </ion-item>
+        </div>
+        
+      </div>
+
+      <ion-button (click)="applySearch()">Buscar</ion-button>
+      <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
     </div>
 
-    <ion-button (click)="applySearch()">Buscar</ion-button>
-    <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
+    
+    <div class="table-container">
+      <table class="table">
+        <thead class="header-row">
+          <tr class="color_header_tabla">
+            <th>ID</th>
+            <th *ngIf="isAdmin">Eliminar</th>
+            <th *ngIf="isAdmin">Reintegro</th>
+            <th><span style="margin-left: 2rem;"></span> Fecha <span style="margin-left: 2rem;"></span></th>
+            <th>Saldo</th>
+            <th>Cuenta ID</th>
+            <th>Cuenta</th>
+            <th>Tipo Cuenta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let reconciliacion of paginatedReconciliaciones" class="data-row">
+            <td>{{ reconciliacion.ReconciliacionID }}</td>
+            <td *ngIf="isAdmin">
+              <ion-icon 
+                name="trash-sharp" 
+                (click)="deleteReconciliacion(reconciliacion.ReconciliacionID)"
+                style="color: red; cursor: pointer;"
+                aria-label="Eliminar">
+              </ion-icon>
+            </td>
+            <td *ngIf="isAdmin">
+              <ion-icon 
+                name="cash" 
+                (click)="ReintegracionesEgresos(reconciliacion.ReconciliacionID)"
+                style="color: green; cursor: pointer;"
+                aria-label="Reintegro">
+              </ion-icon>
+            </td>
+            <td>{{ reconciliacion.Fecha }}</td>
+            <td>{{ reconciliacion.Saldo }}</td>
+            <td>{{ reconciliacion.CuentaID }}</td>
+            <td>{{ reconciliacion.NombreCuenta }}</td>
+            <td>{{ reconciliacion.NombreTipoCuenta }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ion-footer class="margin_footer">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+          <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
+        </ion-buttons>
+        <div class="page-info">
+          Página {{ currentPage }} de {{ totalPages }}
+        </div>
+      </ion-toolbar>
+    </ion-footer>
+
   </div>
 
-  
-  <div class="table-container">
+
+  <div *ngIf="showReintegracionesTable" class="table-container">
     <table class="table">
       <thead class="header-row">
         <tr class="color_header_tabla">
           <th>ID</th>
-          <th *ngIf="isAdmin">Eliminar</th>
-          <th><span style="margin-left: 2rem;"></span> Fecha <span style="margin-left: 2rem;"></span></th>
-          <th>Saldo</th>
-          <th>Cuenta ID</th>
-          <th>Cuenta</th>
+          <th>Reintegro</th>
           <th>Tipo Cuenta</th>
+          <th>Nombre Cuenta</th>
+          <th>Monto</th>
+          <th>Saldo</th>
+          <th>Reconciliacion ID</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let reconciliacion of paginatedReconciliaciones" class="data-row">
-          <td>{{ reconciliacion.ReconciliacionID }}</td>
+        <tr *ngFor="let reintegracion of reintegracionesData" class="data-row">
+          <td>{{ reintegracion.IngresoID }}</td>
           <td *ngIf="isAdmin">
             <ion-icon 
-              name="trash-sharp" 
-              (click)="deleteReconciliacion(reconciliacion.ReconciliacionID)"
-              style="color: red; cursor: pointer;"
-              aria-label="Eliminar">
+              name="cash" 
+              (click)="RealizarReintegro(reintegracion.IngresoID)"
+              style="color: green; cursor: pointer;"
+              aria-label="Reintegro">
             </ion-icon>
           </td>
-          <td>{{ reconciliacion.Fecha }}</td>
-          <td>{{ reconciliacion.Saldo }}</td>
-          <td>{{ reconciliacion.CuentaID }}</td>
-          <td>{{ reconciliacion.NombreCuenta }}</td>
-          <td>{{ reconciliacion.NombreTipoCuenta }}</td>
+          <td>{{ reintegracion.TipoCuenta }}</td>
+          <td>{{ reintegracion.NombreCuenta }}</td>
+          <td>{{ reintegracion.Monto }}</td>
+          <td>{{ reintegracion.SaldoReconciliacion }}</td>
+          <td>{{ reintegracion.ReconciliacionID }}</td>
         </tr>
       </tbody>
     </table>
   </div>
-  <ion-footer class="margin_footer">
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
-        <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
-      </ion-buttons>
-      <div class="page-info">
-        Página {{ currentPage }} de {{ totalPages }}
-      </div>
-    </ion-toolbar>
-  </ion-footer>
+
 </ion-content>

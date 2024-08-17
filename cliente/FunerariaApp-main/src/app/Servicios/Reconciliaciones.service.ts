@@ -22,6 +22,12 @@ export class ReconciliacionesServices {
 
   private MyApiUrlAgregarObservacion: string;
 
+  private MyApiUrlReintegrarReconciliacion: string;
+
+  private MyApiUrlReintegrarMontoReconciliacion: string;
+
+
+
 
   constructor(private http: HttpClient) {
     this.myAppUrl = environment.endpoint;
@@ -37,6 +43,10 @@ export class ReconciliacionesServices {
     this.MyApiUrlDeleteReconciliacion = 'DeleteReconciliacion/';
 
     this.MyApiUrlAgregarObservacion = 'UpdateObservacion/';
+
+    this.MyApiUrlReintegrarReconciliacion = 'ReintegrarReconciliacion/';
+
+    this.MyApiUrlReintegrarMontoReconciliacion = 'ReintegrarMontoReconciliacion/';
 
 
   }
@@ -72,5 +82,13 @@ export class ReconciliacionesServices {
   updateObservacion(ingresoID: number, observacion: string): Observable<any> {
     return this.http.put<any>(`${this.myAppUrl}${this.MyApiUrl}/UpdateObservacion/${ingresoID}`, { observacion });
 }
+
+  reintegracionReconciliacion(reconciliacionID: number): Observable<any> {
+    return this.http.get<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlReintegrarReconciliacion}${reconciliacionID}`);
+  }
   
+  reintegrar(reintegroData: any): Observable<any> {
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlReintegrarMontoReconciliacion}`, reintegroData);
+  }
+
 }

@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Reintegrar Monto</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form (ngSubmit)="realizarReintegro()" class="ion-padding">
+    <ion-grid>
+      <ion-row>
+        <ion-col size-md="12">
+          <ion-item>
+            <div>
+              <ion-label>ID</ion-label>
+              <ion-input style="width: 30rem;" [value]="ingreso?.IngresoID" readonly></ion-input>
+            </div>
+          </ion-item>
+          <ion-item>
+            <div>
+              <ion-label>Tipo Cuenta</ion-label>
+              <ion-input style="width: 30rem;" [value]="ingreso?.TipoCuenta" readonly></ion-input>
+            </div>
+          </ion-item>
+          <ion-item>
+            <div>
+              <ion-label>Nombre Cuenta</ion-label>
+              <ion-input style="width: 30rem;" [value]="ingreso?.NombreCuenta" readonly></ion-input>
+            </div>
+          </ion-item>
+          <ion-item>
+            <div>
+              <ion-label>Monto</ion-label>
+              <ion-input style="width: 30rem;" [(ngModel)]="ingreso.Monto" name="monto" type="number"></ion-input>
+            </div>
+          </ion-item>
+          <ion-item>
+            <div>
+              <ion-label>Saldo</ion-label>
+              <ion-input style="width: 30rem;" [value]="ingreso?.SaldoReconciliacion" readonly></ion-input>
+            </div>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <ion-footer>
+      <ion-button style="margin-bottom: 1rem;" expand="full" type="submit">Reintegrar</ion-button>
+    </ion-footer>
+  </form>
+</ion-content>

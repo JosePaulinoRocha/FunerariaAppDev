@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateJWT } from '../middlewares/authMiddleware';
-import { ObtenerIngresos, ObtenerIngresosParaConciliacion, ObtenerUltimaReconciliacion, CrearReconciliacion, ActualizarIngresos, ObtenerReconciliaciones, EliminarReconciliacion, ActualizarObservacion } from '../controllers/Reconciliaciones.controller';
+import { ObtenerIngresos, ObtenerIngresosParaConciliacion, ObtenerUltimaReconciliacion, CrearReconciliacion, ActualizarIngresos, ObtenerReconciliaciones, EliminarReconciliacion, ActualizarObservacion, ReintegrarReconciliacion, ReintegrarMontoReconciliacion } from '../controllers/Reconciliaciones.controller';
 
 const router = Router();
 
@@ -18,6 +18,10 @@ router.get('/GetReconciliaciones', authenticateJWT, ObtenerReconciliaciones);
 router.delete('/DeleteReconciliacion/:reconciliacionID', authenticateJWT, EliminarReconciliacion);
 
 router.put('/UpdateObservacion/:ingresoID', authenticateJWT, ActualizarObservacion);
+
+router.get('/ReintegrarReconciliacion/:reconciliacionID', authenticateJWT, ReintegrarReconciliacion);
+
+router.post('/ReintegrarMontoReconciliacion', authenticateJWT, ReintegrarMontoReconciliacion);
 
 
 export default router;

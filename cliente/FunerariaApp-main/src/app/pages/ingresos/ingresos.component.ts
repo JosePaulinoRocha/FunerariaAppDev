@@ -52,17 +52,21 @@ export class IngresosComponent implements OnInit {
 
   loadIngresos() {
     this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
-      this.incomes = data.map(income => ({
-        ...income,
-        Fecha: new Date(income.Fecha).toISOString().split('T')[0], // Formatear la fecha
-        FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0], // Formatear la fecha
-        FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0] // Formatear la fecha
-      }));
+      this.incomes = data
+        .map(income => ({
+          ...income,
+          Fecha: new Date(income.Fecha).toISOString().split('T')[0], // Formatear la fecha
+          FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0], // Formatear la fecha
+          FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0] // Formatear la fecha
+        }))
+        .sort((a, b) => b.IngresoID - a.IngresoID); // Ordenar de más reciente a más antiguo
+  
       console.log("esta es la data de ingresos: ", this.incomes);
     }, (error) => {
       console.error('Error fetching incomes', error); 
     });
   }
+  
   
 
   filteredIncomes(): Income[] {
