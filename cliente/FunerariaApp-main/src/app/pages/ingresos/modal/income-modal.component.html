@@ -16,120 +16,243 @@
         <ion-col size-md="6">
 
           <ion-item>
+            <ion-label position="stacked">Ingreso / Egreso</ion-label>
+            <ion-select placeholder="Ingreso / Egreso" style="width: 13rem;" [(ngModel)]="ingreso.TipoIngreso" name="tipoIngreso" required interface="alert" searchbar="true">
+              <ion-select-option [value]="0">Ingreso</ion-select-option>
+              <ion-select-option [value]="1">Egreso</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
             <ion-label position="stacked">Concepto</ion-label>
-            <ion-select [(ngModel)]="ingreso.ConceptoID" name="concepto" required interface="alert" searchbar="true" (ionChange)="updateCombinations()">
-              <ion-select-option *ngFor="let item of concepto" [value]="item.ConceptoID">{{ item.Nombre }}</ion-select-option>
-            </ion-select>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Fecha</ion-label>
-            <ion-datetime display-format="MM/DD/YYYY" [(ngModel)]="ingreso.Fecha" name="fecha" required></ion-datetime>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Segmento</ion-label>
-            <ion-select [(ngModel)]="ingreso.SegmentoID" name="segmento" required interface="alert" searchbar="true">
-              <ion-select-option *ngFor="let item of segmento" [value]="item.SegmentoID">{{ item.Nombre }}</ion-select-option>
-            </ion-select>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewConcepto" name="isNewConcepto">
+              <ion-item style="font-size: 12px;">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewConcepto">
+              <ion-select placeholder="Concepto" style="width: 13rem;" [(ngModel)]="ingreso.ConceptoID" name="concepto" required interface="alert" searchbar="true" (ionChange)="updateCombinations()">
+                <ion-select-option *ngFor="let item of concepto" [value]="item.ConceptoID">{{ item.Nombre }}</ion-select-option>
+              </ion-select>
+            </div>
+            <div *ngIf="isNewConcepto">
+              <ion-input style="width: 13rem;" [(ngModel)]="newConcepto" name="newConcepto" placeholder="Nuevo Concepto" required></ion-input>
+            </div>
           </ion-item>
 
           <ion-item>
             <ion-label position="stacked">Categoría</ion-label>
-            <ion-select [(ngModel)]="ingreso.CategoriaID" name="categoria" required interface="alert" searchbar="true">
-              <ion-select-option *ngFor="let item of categoria" [value]="item.CategoriaID">{{ item.Nombre }}</ion-select-option>
-            </ion-select>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Subcategoría</ion-label>
-            <ion-select [(ngModel)]="ingreso.SubcategoriaID" name="subcategoria" required interface="alert" searchbar="true">
-              <ion-select-option *ngFor="let item of subcategoria" [value]="item.SubcategoriaID">{{ item.Nombre }}</ion-select-option>
-            </ion-select>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewCategoria" name="isNewCategoria">
+              <ion-item style="font-size: 12px;">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewCategoria">
+              <ion-select placeholder="Categoria" style="width: 13rem;" [(ngModel)]="ingreso.CategoriaID" name="categoria" required interface="alert" searchbar="true">
+                <ion-select-option *ngFor="let item of categoria" [value]="item.CategoriaID">{{ item.Nombre }}</ion-select-option>
+              </ion-select>
+            </div>
+            <div *ngIf="isNewCategoria">
+              <ion-input style="width: 13rem;" [(ngModel)]="newCategoria" name="newCategoria" placeholder="Nueva Categoría" required></ion-input>
+            </div>
           </ion-item>
 
           <ion-item>
             <ion-label position="stacked">Proveedor</ion-label>
-            <ion-input [(ngModel)]="ingreso.Proveedor" name="proveedor" required></ion-input>
+            <ion-input placeholder="Proveedor" style="width: 13rem;" [(ngModel)]="ingreso.Proveedor" name="proveedor" required></ion-input>
           </ion-item>
 
           <ion-item>
-            <ion-label position="stacked">Tipo de Ingreso</ion-label>
-            <ion-select [(ngModel)]="ingreso.CajaChica" name="cajaChica" required interface="alert" searchbar="true">
-              <ion-select-option [value]="true">Caja Chica</ion-select-option>
-              <ion-select-option [value]="false">Cuenta Bancaria</ion-select-option>
+            <ion-label position="stacked">Tipo de Cuenta</ion-label>
+            <ion-select 
+              style="width: 13rem;" 
+              [(ngModel)]="ingreso.TipoCuentaID" 
+              name="tipoCuentaID" 
+              required 
+              interface="alert" 
+              searchbar="true" 
+              placeholder="Tipo cuenta"
+              (ionChange)="onTipoCuentaChange()">
+              <ion-select-option [value]="1">Caja Chica</ion-select-option>
+              <ion-select-option [value]="2">Cuenta Bancaria</ion-select-option>
             </ion-select>
           </ion-item>
 
+          <ion-item *ngIf="!isNewCuenta && ingreso.TipoCuentaID === 1">
+            <ion-label position="stacked">Caja Chica</ion-label>
+            <ion-select placeholder="Caja Chica" style="width: 13rem;" [(ngModel)]="ingreso.CuentaID" name="cuenta" required interface="alert" searchbar="true">
+              <ion-select-option *ngFor="let item of filteredCuentas" [value]="item.CuentaID" placeholder="Seleccione Caja Chica">{{ item.NombreCuenta }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item *ngIf="isNewCuenta && ingreso.TipoCuentaID === 1">
+            <ion-label position="stacked">Nueva Caja Chica</ion-label>
+            <ion-input style="width: 13rem;" [(ngModel)]="newNombreCuenta" name="newNombreCuenta" placeholder="Nuevo Caja Chica" required></ion-input>
+          </ion-item>
+
+          <ion-item *ngIf="!isNewCuenta && ingreso.TipoCuentaID === 2">
+            <ion-label position="stacked">Cuenta Bancaria</ion-label>
+            <ion-select placeholder="Cuenta Bancaria" style="width: 13rem;" [(ngModel)]="ingreso.CuentaID" name="cuenta" required interface="alert" searchbar="true" (ionChange)="onCuentaChange($event)">
+              <ion-label position="stacked">Cuenta Cuenta Bancaria</ion-label>
+              <ion-select-option style="width: 13rem;" *ngFor="let item of filteredCuentas" [value]="item.CuentaID" placeholder="Seleccione Cuenta Bancaria">{{ item.NombreCuenta }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item *ngIf="isNewCuenta && ingreso.TipoCuentaID === 2">
+            <ion-label position="stacked">Nueva Cuenta Bancaria</ion-label>
+            <ion-input style="width: 13rem;" [(ngModel)]="newNombreCuenta" name="newNombreCuenta" placeholder="Nueva Cuenta Bancaria" required></ion-input>
+          </ion-item>
+
           <ion-item>
-            <ion-label position="stacked">Monto</ion-label>
-            <ion-input [(ngModel)]="ingreso.Monto" name="monto" type="number" required></ion-input>
+            <ion-label position="stacked">Comprobante</ion-label>
+            <input style="margin-bottom: 2rem;" type="file" (change)="onFileSelected($event)" accept="application/pdf, image/*" />
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Fecha</ion-label>
+            <input style="margin-bottom: 2rem;" type="date" [(ngModel)]="ingreso.Fecha" name="fecha" required>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Fecha de Autorización</ion-label>
+            <input style="margin-bottom: 2rem;" type="date" [(ngModel)]="ingreso.FechaAutorizacion" name="fechaAutorizacion" required>
           </ion-item>
 
           <ion-item>
             <ion-label position="stacked">Fecha de Conciliación</ion-label>
-            <ion-datetime display-format="MM/DD/YYYY" [(ngModel)]="ingreso.FechaConciliacion" name="fechaConciliacion" required></ion-datetime>
+            <input style="margin-bottom: 2rem;" type="date" [(ngModel)]="ingreso.FechaConciliacion" name="fechaConciliacion" required>
           </ion-item>
-          
+
         </ion-col>
 
         <ion-col size-md="6">
+
           <ion-item>
             <ion-label position="stacked">Descripción</ion-label>
-            <ion-input [(ngModel)]="ingreso.Descripcion" name="descripcion" required></ion-input>
+            <ion-input placeholder="Descripcion" style="width: 13rem;" [(ngModel)]="ingreso.Descripcion" name="descripcion" required></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Segmento</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewSegmento" name="isNewSegmento">
+              <ion-item style="font-size: 12px;">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewSegmento">
+              <ion-select placeholder="Segmento" style="width: 13rem;" [(ngModel)]="ingreso.SegmentoID" name="segmento" required interface="alert" searchbar="true">
+                <ion-select-option *ngFor="let item of segmento" [value]="item.SegmentoID">{{ item.Nombre }}</ion-select-option>
+              </ion-select>
+            </div>
+            <div *ngIf="isNewSegmento">
+              <ion-input style="width: 13rem;" [(ngModel)]="newSegmento" name="newSegmento" placeholder="Nuevo Segmento" required></ion-input>
+            </div>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Subcategoría</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewSubcategoria" name="isNewSubcategoria">
+              <ion-item style="font-size: 12px;">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewSubcategoria">
+              <ion-select placeholder="Subcategoria" style="width: 13rem;" [(ngModel)]="ingreso.SubcategoriaID" name="subcategoria" required interface="alert" searchbar="true">
+                <ion-select-option *ngFor="let item of subcategoria" [value]="item.SubcategoriaID">{{ item.Nombre }}</ion-select-option>
+              </ion-select>
+            </div>
+            <div *ngIf="isNewSubcategoria">
+              <ion-input style="width: 13rem;" [(ngModel)]="newSubcategoria" name="newSubcategoria" placeholder="Nueva Subcategoría" required></ion-input>
+            </div>
           </ion-item>
 
           <ion-item>
             <ion-label position="stacked">Piezas</ion-label>
-            <ion-input [(ngModel)]="ingreso.Piezas" name="piezas" type="number" required></ion-input>
+            <ion-input placeholder="Piezas" style="width: 13rem;" [(ngModel)]="ingreso.Piezas" name="piezas" type="number"></ion-input>
+          </ion-item>
+
+          <ion-item style="height: 5rem;" *ngIf="ingreso.TipoCuentaID">
+            <ion-label position="stacked">Cuenta</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewCuenta" name="isNewCuenta">
+              <ion-item style="font-size: 12px;" *ngIf="ingreso.TipoCuentaID === 2 || ingreso.TipoCuentaID === 1">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false" (ionSelect)="onCuentaSelection(false)"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;" *ngIf="ingreso.TipoCuentaID === 1 || ingreso.TipoCuentaID === 2">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true" (ionSelect)="onCuentaSelection(true)"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+          </ion-item>
+          
+          <ion-item *ngIf="!isNewCuenta && ingreso.TipoCuentaID === 2">
+            <ion-label position="stacked">RFC</ion-label>
+            <ion-input placeholder="RFC" style="width: 13rem;" [(ngModel)]="ingreso.RFC" name="rfc" [readonly]="true"></ion-input>
+          </ion-item>
+
+          <ion-item *ngIf="isNewCuenta && ingreso.TipoCuentaID === 2">
+            <ion-label position="stacked">RFC</ion-label>
+            <ion-input style="width: 13rem;" [(ngModel)]="newRFC" name="newRFC" placeholder="Nuevo RFC" required></ion-input>
           </ion-item>
 
           <ion-item>
-            <ion-label position="stacked">Saldo</ion-label>
-            <ion-input [(ngModel)]="ingreso.Saldo" name="saldo" type="number" required></ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Recibo</ion-label>
-            <ion-input [(ngModel)]="ingreso.Comprobante" name="comprobante" required></ion-input>
+            <ion-label position="stacked">Monto</ion-label>
+            <ion-input placeholder="Monto" style="width: 13rem;" [(ngModel)]="ingreso.Monto" name="monto" type="number" required></ion-input>
           </ion-item>
 
           <ion-item>
             <ion-label position="stacked">Estado</ion-label>
-            <ion-select [(ngModel)]="ingreso.EstatusComprobacionID" name="estatus" required interface="alert" searchbar="true">
+            <ion-select placeholder="Estado" style="width: 13rem;" [(ngModel)]="ingreso.EstatusComprobacionID" name="estatus" required interface="alert" searchbar="true">
               <ion-select-option *ngFor="let item of estatus" [value]="item.EstatusID">{{ item.Descripcion }}</ion-select-option>
             </ion-select>
           </ion-item>
 
           <ion-item>
-            <ion-label position="stacked">Fecha de Autorización</ion-label>
-            <ion-datetime display-format="MM/DD/YYYY" [(ngModel)]="ingreso.FechaAutorizacion" name="fechaAutorizacion" required></ion-datetime>
-          </ion-item>
-
-          <ion-item>
             <ion-label position="stacked">Usuario que Autorizó</ion-label>
-            <ion-select [(ngModel)]="ingreso.UsuarioAutorizaID" name="usuarioAutorizaId" required interface="alert" searchbar="true">
+            <ion-select placeholder="Usuario Autoriza" style="width: 13rem;" [(ngModel)]="ingreso.UsuarioAutorizaID" name="usuarioAutorizaId" required interface="alert" searchbar="true">
               <ion-select-option *ngFor="let item of usuario" [value]="item.userId">{{ item.fullName }}</ion-select-option>
             </ion-select>
           </ion-item>
 
           <ion-item>
             <ion-label position="stacked">Recibido por</ion-label>
-            <ion-select [(ngModel)]="ingreso.UsuarioRecibeID" name="usuarioRecibeId" required interface="alert" searchbar="true">
+            <ion-select placeholder="Usuario Recibe" style="width: 13rem;" [(ngModel)]="ingreso.UsuarioRecibeID" name="usuarioRecibeId" required interface="alert" searchbar="true">
               <ion-select-option *ngFor="let item of usuario" [value]="item.userId">{{ item.fullName }}</ion-select-option>
             </ion-select>
           </ion-item>
 
-          <ion-item>
-            <ion-label position="stacked">Notas</ion-label>
-            <ion-textarea rows="4" [(ngModel)]="ingreso.ObservacionesDifConciliacion" name="observacionesDifConciliacion" required></ion-textarea>
-          </ion-item>
         </ion-col>
+
+        <ion-item style="width: 34rem;">
+          <ion-label position="stacked">Observaciones</ion-label>
+          <ion-textarea rows="4" [(ngModel)]="ingreso.ObservacionesDifConciliacion" name="observacionesDifConciliacion" required></ion-textarea>
+        </ion-item>
+
       </ion-row>
     </ion-grid>
 
     <ion-footer>
-      <ion-button expand="full" type="submit">{{ isEditMode ? 'Modificar' : 'Añadir' }}</ion-button>
+      <ion-button style="margin-bottom: 1rem;" expand="full" type="submit">{{ isEditMode ? 'Modificar' : 'Añadir' }}</ion-button>
     </ion-footer>
   </form>
 </ion-content>

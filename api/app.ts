@@ -43,7 +43,7 @@ export class App {
         this.app.use(this.allowCrossDomain);
         this.app.use(express.json({ limit: '1mb' }));
         this.app.use(express.urlencoded({ extended: true }));
-        this.app.use(express.static(dir));
+        this.app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
     }
 
 

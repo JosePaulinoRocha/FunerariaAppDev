@@ -1,18 +1,18 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController, IonicModule, AlertController  } from '@ionic/angular';
+import { ModalController, IonicModule, AlertController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
 
 interface Ingreso {
+  IngresoID: number;
   Fecha: string;
   ConceptoID: number;
   NombreConcepto: string;
   Descripcion: string;
   Proveedor: string;
   Piezas: number;
-  CajaChica: boolean;
   Monto: number;
   Saldo: number;
   Comprobante: string;
@@ -29,6 +29,10 @@ interface Ingreso {
   UsuarioRecibeID: number;
   FechaConciliacion: string;
   ObservacionesDifConciliacion: string;
+  TipoIngreso: number;
+  TipoCuentaID: number;
+  CuentaID: number;
+  RFC: string;
 }
 
 interface Concepto {
@@ -73,6 +77,13 @@ interface Estatus {
   Descripcion: string;
 }
 
+interface Cuenta {
+  CuentaID: number;
+  TipoCuentaID: number;
+  NombreCuenta: string;
+  RFC: string;
+}
+
 @Component({
   selector: 'app-income-modal',
   templateUrl: './income-modal.component.html',
@@ -82,13 +93,13 @@ interface Estatus {
 })
 export class IncomeModalComponent implements OnInit {
   @Input() ingreso: Ingreso = {
+    IngresoID: 0,
     Fecha: '',
     ConceptoID: 0,
     NombreConcepto: '',
     Descripcion: '',
     Proveedor: '',
     Piezas: 0,
-    CajaChica: false,
     Monto: 0,
     Saldo: 0,
     Comprobante: '',
@@ -105,7 +116,13 @@ export class IncomeModalComponent implements OnInit {
     UsuarioRecibeID: 0,
     FechaConciliacion: '',
     ObservacionesDifConciliacion: '',
+    TipoIngreso: 0,
+    TipoCuentaID: 1,
+    CuentaID: 0,
+    RFC: '',
   };
+
+  selectedFile: File | null = null;
 
   concepto: Concepto[] = [];
   segmento: Segmento[] = [];
@@ -114,28 +131,52 @@ export class IncomeModalComponent implements OnInit {
   usuario: Usuario[] = [];
   combinacion: Combinacion[] = [];
   estatus: Estatus[] = [];
-  
-  @Input() isEditMode: boolean = false;
+  cuenta: Cuenta[] = [];
 
-  constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private alertController: AlertController) {}
+  isNewConcepto = false;
+  isNewSegmento = false;
+  isNewCategoria = false;
+  isNewSubcategoria = false;
+
+  newConcepto = '';
+  newSegmento = '';
+  newCategoria = '';
+  newSubcategoria = '';
+
+  filteredCuentas: Cuenta[] = [];
+  isCuentaEnabled = false;
+  showRFC = false;
+
+  isNewCuenta = false;
+  newNombreCuenta = '';
+  newRFC = '';
+
+  @Input() isEditMode = false;
+
+  constructor(
+    private modalController: ModalController,
+    private _ingresoServ: IngresosServices,
+    private alertController: AlertController
+  ) {}
 
   updateCombinations() {
     // Filtrar combinaciones que incluyan el ConceptoID seleccionado
-    const filteredCombinations = this.combinacion.filter(c => c.ConceptoID === this.ingreso.ConceptoID);
-    
+    const filteredCombinations = this.combinacion.filter(
+      (c) => c.ConceptoID === this.ingreso.ConceptoID
+    );
+
     if (filteredCombinations.length > 0) {
       // Encontrar la combinación con el mayor CombinacionID
-      const latestCombination = filteredCombinations.reduce((prev, current) => {
-        return (prev.CombinacionID > current.CombinacionID) ? prev : current;
-      });
-  
+      const latestCombination = filteredCombinations.reduce((prev, current) =>
+        prev.CombinacionID > current.CombinacionID ? prev : current
+      );
+
       // Actualizar los campos correspondientes
       this.ingreso.SegmentoID = latestCombination.SegmentoID;
       this.ingreso.CategoriaID = latestCombination.CategoriaID;
       this.ingreso.SubcategoriaID = latestCombination.SubcategoriaID;
     }
   }
-  
 
   ngOnInit() {
     this.loadConceptos();
@@ -145,63 +186,128 @@ export class IncomeModalComponent implements OnInit {
     this.loadUsuarios();
     this.loadCombinaciones();
     this.loadEstatus();
+    this.loadCuentas();
+
+    this.onTipoCuentaChange();
+  }
+
+  onTipoCuentaChange() {
+    this.filteredCuentas = this.cuenta.filter(
+      (c) => c.TipoCuentaID === this.ingreso.TipoCuentaID
+    );
+
+    this.isNewCuenta = false;
+    this.ingreso.CuentaID = 0;
+    this.ingreso.RFC = '';
+    this.newNombreCuenta = '';
+    this.newRFC = '';
+  }
+
+  onCuentaChange(event: any) {
+    const cuentaID = event.detail.value;
+    const selectedCuenta = this.cuenta.find((c) => c.CuentaID === cuentaID);
+
+    if (selectedCuenta && this.ingreso.TipoCuentaID === 2) {
+      this.ingreso.RFC = selectedCuenta.RFC;
+    }
+  }
+
+  onCuentaSelection(isNew: boolean) {
+    this.isNewCuenta = isNew;
+
+    if (!isNew) {
+      this.ingreso.CuentaID = 0;
+    }
   }
 
   loadConceptos() {
-    this._ingresoServ.getConceptos().subscribe((data: Concepto[]) => {
-      this.concepto = data;
-    }, (error) => {
-      this.presentAlert('Error fetching concepts');
-    });
+    this._ingresoServ.getConceptos().subscribe(
+      (data: Concepto[]) => {
+        this.concepto = data;
+      },
+      (error) => {
+        this.presentAlert('Error fetching concepts');
+      }
+    );
   }
 
   loadSegmentos() {
-    this._ingresoServ.getSegmentos().subscribe((data: Segmento[]) => {
-      this.segmento = data;
-    }, (error) => {
-      this.presentAlert('Error fetching segments');
-    });
+    this._ingresoServ.getSegmentos().subscribe(
+      (data: Segmento[]) => {
+        this.segmento = data;
+      },
+      (error) => {
+        this.presentAlert('Error fetching segments');
+      }
+    );
   }
 
   loadCategorias() {
-    this._ingresoServ.getCategorias().subscribe((data: Categoria[]) => {
-      this.categoria = data;
-    }, (error) => {
-      this.presentAlert('Error fetching categories');
-    });
+    this._ingresoServ.getCategorias().subscribe(
+      (data: Categoria[]) => {
+        this.categoria = data;
+      },
+      (error) => {
+        this.presentAlert('Error fetching categories');
+      }
+    );
   }
 
   loadSubcategorias() {
-    this._ingresoServ.getSubcategorias().subscribe((data: Subcategoria[]) => {
-      this.subcategoria = data;
-    }, (error) => {
-      this.presentAlert('Error fetching subcategories');
-    });
+    this._ingresoServ.getSubcategorias().subscribe(
+      (data: Subcategoria[]) => {
+        this.subcategoria = data;
+      },
+      (error) => {
+        this.presentAlert('Error fetching subcategories');
+      }
+    );
   }
 
   loadUsuarios() {
-    this._ingresoServ.getUsuarios().subscribe((data: Usuario[]) => {
-      this.usuario = data;
-    }, (error) => {
-      this.presentAlert('Error fetching users');
-    });
+    this._ingresoServ.getUsuarios().subscribe(
+      (data: Usuario[]) => {
+        this.usuario = data;
+      },
+      (error) => {
+        this.presentAlert('Error fetching users');
+      }
+    );
   }
 
   loadCombinaciones() {
-    this._ingresoServ.getCombinaciones().subscribe((data: Combinacion[]) => {
-      console.log("esta es mi data en combinaciones: ", data)
-      this.combinacion = data;
-    }, (error) => {
-      this.presentAlert('Error fetching combinations');
-    });
+    this._ingresoServ.getCombinaciones().subscribe(
+      (data: Combinacion[]) => {
+        console.log('Esta es mi data en combinaciones: ', data);
+        this.combinacion = data;
+      },
+      (error) => {
+        this.presentAlert('Error fetching combinations');
+      }
+    );
   }
 
   loadEstatus() {
-    this._ingresoServ.getEstatus().subscribe((data: Estatus[]) => {
-      this.estatus = data;
-    }, (error) => {
-      this.presentAlert('Error fetching statuses');
-    });
+    this._ingresoServ.getEstatus().subscribe(
+      (data: Estatus[]) => {
+        this.estatus = data;
+      },
+      (error) => {
+        this.presentAlert('Error fetching statuses');
+      }
+    );
+  }
+
+  loadCuentas() {
+    this._ingresoServ.getCuentas().subscribe(
+      (data: Cuenta[]) => {
+        console.log('Esta es mi data en cuentas: ', data);
+        this.cuenta = data;
+      },
+      (error) => {
+        this.presentAlert('Error fetching combinations');
+      }
+    );
   }
 
   async presentAlert(message: string) {
@@ -214,33 +320,62 @@ export class IncomeModalComponent implements OnInit {
     await alert.present();
   }
 
-  saveIncome() {
-    if (this.isEditMode) {
-      this._ingresoServ.UpdateIngresos(this.ingreso).subscribe(
-        (response) => {
-          console.log("esta es la data: ", this.ingreso)
-          console.log("esta es la respuesta: ", response)
-          this.modalController.dismiss(this.ingreso, 'edit');
-        },
-        (error) => {
-          this.presentAlert('Failed to update income.');
-          console.log("este es el error: ", error)
-        }
-      );
-    } else {
-      this._ingresoServ.addIngreso(this.ingreso).subscribe(
-        (response) => {
-          console.log("esta es la data: ", this.ingreso)
-          console.log("esta es la respuesta: ", response)
-          this.modalController.dismiss(this.ingreso, 'add');
-        },
-        (error) => {
-          this.presentAlert('Failed to add income.');
-          console.log("este es el error: ", error)
-        }
-      );
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
     }
   }
+  
+
+  saveIncome() {
+    const formData = new FormData();
+
+    // Agregar los datos del ingreso al FormData con validaciones para evitar undefined
+    formData.append('IngresoID', this.ingreso.IngresoID != null ? this.ingreso.IngresoID.toString() : '');
+    formData.append('TipoIngreso', this.ingreso.TipoIngreso != null ? this.ingreso.TipoIngreso.toString() : '');
+    formData.append('ConceptoID', this.isNewConcepto ? this.newConcepto : (this.ingreso.ConceptoID != null ? this.ingreso.ConceptoID.toString() : ''));
+    formData.append('SegmentoID', this.isNewSegmento ? this.newSegmento : (this.ingreso.SegmentoID != null ? this.ingreso.SegmentoID.toString() : ''));
+    formData.append('CategoriaID', this.isNewCategoria ? this.newCategoria : (this.ingreso.CategoriaID != null ? this.ingreso.CategoriaID.toString() : ''));
+    formData.append('SubcategoriaID', this.isNewSubcategoria ? this.newSubcategoria : (this.ingreso.SubcategoriaID != null ? this.ingreso.SubcategoriaID.toString() : ''));
+    formData.append('Proveedor', this.ingreso.Proveedor != null ? this.ingreso.Proveedor : '');
+    formData.append('TipoCuentaID', this.ingreso.TipoCuentaID != null ? this.ingreso.TipoCuentaID.toString() : '');
+    formData.append('CuentaID', this.isNewCuenta ? this.newNombreCuenta : (this.ingreso.CuentaID != null ? this.ingreso.CuentaID.toString() : ''));
+    formData.append('RFC', this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '');
+
+    // Agregar el archivo seleccionado al FormData si existe, en el campo 'Comprobante'
+    if (this.selectedFile) {
+        formData.append('Comprobante', this.selectedFile);
+    } else {
+        formData.append('Comprobante', this.ingreso.Comprobante != null ? this.ingreso.Comprobante : '');
+    }
+
+    formData.append('Fecha', this.ingreso.Fecha != null ? this.ingreso.Fecha : '');
+    formData.append('FechaAutorizacion', this.ingreso.FechaAutorizacion != null ? this.ingreso.FechaAutorizacion : '');
+    formData.append('FechaConciliacion', this.ingreso.FechaConciliacion != null ? this.ingreso.FechaConciliacion : '');
+    formData.append('Descripcion', this.ingreso.Descripcion != null ? this.ingreso.Descripcion : '');
+    formData.append('Piezas', this.ingreso.Piezas != null ? this.ingreso.Piezas.toString() : '0');
+    formData.append('Monto', this.ingreso.Monto != null ? this.ingreso.Monto.toString() : '0');
+    formData.append('EstatusComprobacionID', this.ingreso.EstatusComprobacionID != null ? this.ingreso.EstatusComprobacionID.toString() : '');
+    formData.append('UsuarioAutorizaID', this.ingreso.UsuarioAutorizaID != null ? this.ingreso.UsuarioAutorizaID.toString() : '');
+    formData.append('UsuarioRecibeID', this.ingreso.UsuarioRecibeID != null ? this.ingreso.UsuarioRecibeID.toString() : '');
+    formData.append('ObservacionesDifConciliacion', this.ingreso.ObservacionesDifConciliacion != null ? this.ingreso.ObservacionesDifConciliacion : '');
+
+    // Mostrar los datos que se están enviando
+    console.log("Datos para guardar:");
+    formData.forEach((value, key) => {
+        console.log(key, value);
+    });
+
+     this._ingresoServ.addIngreso(formData).subscribe(
+       response => {
+         console.log('Ingreso guardado correctamente:', response);
+       },
+       error => {
+         console.error('Error al guardar el ingreso:', error);
+       }
+     );
+}
 
   closeModal() {
     this.modalController.dismiss(null, 'close');

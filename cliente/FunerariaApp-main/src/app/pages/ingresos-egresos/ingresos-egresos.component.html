@@ -100,7 +100,9 @@
           <td>{{ income.RFC }}</td>
           <td>{{ income.Monto }}</td>
           <td>{{ income.SaldoReconciliacion }}</td>
-          <td>{{ income.Comprobante }}</td>
+          <td>
+            <ion-button (click)="viewFile(income.Comprobante)">Ver</ion-button>
+          </td>
           <td>{{ income.NombreEstatus }}</td>
           <td>{{ income.FechaAutorizacion }}</td>
           <td>{{ income.NombreUsuarioAutoriza }}</td>

@@ -1,4 +1,4 @@
-import { Ingreso, Concepto, Segmento, Categoria, Subcategoria, Usuario, Combinacion, Estatus } from '../Modelos/Ingresos';
+import { Ingreso, Concepto, Segmento, Categoria, Subcategoria, Usuario, Combinacion, Estatus, Cuenta } from '../Modelos/Ingresos';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -28,6 +28,8 @@ export class IngresosServices {
 
   private MyApiUrlEstatus: string;
 
+  private MyApiUrlCuentas: string;
+
 
   constructor(private http: HttpClient) {
     this.myAppUrl = environment.endpoint;
@@ -50,14 +52,17 @@ export class IngresosServices {
 
     this.MyApiUrlEstatus = 'GetEstatus/';
 
+    this.MyApiUrlCuentas = 'GetCuentas/';
+
+
   }
 
   getIngresos(): Observable<Ingreso[]> {
     return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngreso}`);
   }
 
-  addIngreso(ingreso: any): Observable<any> {
-    return this.http.post<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPost}`, ingreso);
+  addIngreso(ingreso: FormData): Observable<any> {
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPost}`, ingreso);
   }
 
   UpdateIngresos(ingreso: any): Observable<any> {
@@ -90,6 +95,10 @@ export class IngresosServices {
 
   getEstatus(): Observable<Estatus[]> {
     return this.http.get<Estatus[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlEstatus}`);
+  }
+
+  getCuentas(): Observable<Cuenta[]> {
+    return this.http.get<Cuenta[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlCuentas}`);
   }
 
   updateCombination(updatedData: { IngresoID: number ,ConceptoID: number | string, SegmentoID: number | string, CategoriaID: number | string, SubcategoriaID: number | string }): Observable<any> {

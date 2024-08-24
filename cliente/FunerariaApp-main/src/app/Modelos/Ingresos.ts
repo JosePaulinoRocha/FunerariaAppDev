@@ -78,3 +78,10 @@ export interface Estatus {
   EstatusID: number;
   Descripcion: string;
 }
+
+export interface Cuenta {
+  CuentaID: number;
+  TipoCuentaID: number;
+  NombreCuenta: string;
+  RFC: string;
+}

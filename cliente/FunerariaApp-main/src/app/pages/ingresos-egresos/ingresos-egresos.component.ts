@@ -254,4 +254,16 @@ export class IngresosEgresosComponent implements OnInit {
     return this.searchFields.find(f => f.value === field)?.label || field;
   }
 
+  viewFile(fileUrl: string) {
+    const baseUrl = 'http://localhost:3080/uploads/'; // URL base de tu servidor API
+    const fullUrl = `${baseUrl}${fileUrl}`;
+    
+    if (fileUrl) {
+        window.open(fullUrl, '_blank');
+    } else {
+        console.error('URL del archivo no proporcionada');
+    }
+}
+
+
 }

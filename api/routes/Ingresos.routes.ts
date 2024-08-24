@@ -1,24 +1,57 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { authenticateJWT } from '../middlewares/authMiddleware';
-import { ObtenerIngresos, PostIngresos , UpdateIngresos , ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination } from '../controllers/Ingresos.controllers';
+import multer, { FileFilterCallback } from 'multer';
+import fs from 'fs'; // Importa el módulo fs
+import path from 'path'; // Importa el módulo path
+import { ObtenerIngresos, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas } from '../controllers/Ingresos.controllers';
 
 const router = Router();
 
-//modulo ingresos
+// Configuración de multer para manejar la carga de archivos
+const storage = multer.diskStorage({
+    destination: function (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
+        const uploadPath = 'uploads/';
+
+        // Verifica si el directorio existe y lo crea si no
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+
+        cb(null, uploadPath);
+    },
+    filename: function (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + '-' + file.originalname);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf']; // Tipos permitidos
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Tipo de archivo no permitido'));
+        }
+    }
+});
+
+// Rutas
 router.get('/GetIngresos', authenticateJWT, ObtenerIngresos);
-router.post('/PostIngresos', authenticateJWT, PostIngresos);
+router.post('/PostIngresos', authenticateJWT, upload.single('Comprobante'), PostIngresos);
 router.put('/UpdateIngresos', authenticateJWT, UpdateIngresos);
 
-//Conceptos
+// Conceptos
 router.get('/GetConceptos', authenticateJWT, ObtenerConceptos);
 
 // Segmentos
 router.get('/GetSegmentos', authenticateJWT, ObtenerSegmentos);
 
-// Categorias
+// Categorías
 router.get('/GetCategorias', authenticateJWT, ObtenerCategorias);
 
-// Subcategorias
+// Subcategorías
 router.get('/GetSubcategorias', authenticateJWT, ObtenerSubcategorias);
 
 // Usuarios
@@ -30,7 +63,10 @@ router.get('/GetCombinaciones', authenticateJWT, ObtenerCombinaciones);
 // Estatus
 router.get('/GetEstatus', authenticateJWT, ObtenerEstatus);
 
-// actualizar combinacion
+// Cuentas
+router.get('/GetCuentas', authenticateJWT, ObtenerCuentas);
+
+// Actualizar combinación
 router.put('/UpdateCombination', authenticateJWT, updateCombination);
 
 export default router;

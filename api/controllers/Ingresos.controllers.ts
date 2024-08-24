@@ -21,18 +21,71 @@ export const ObtenerIngresos = async (req: Request, res: Response) => {
 };
 
 export const PostIngresos = async (req: Request, res: Response) => {
-    let con;
-    let result;
+    let con: any;
+    let result: any;
     const {
-        Fecha, SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, Descripcion,
-        Proveedor, Piezas, CajaChica, Monto, Saldo, Comprobante, EstatusComprobacionID,
-        FechaAutorizacion, UsuarioAutorizaID, UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion
+        IngresoID, TipoIngreso, ConceptoID, SegmentoID, CategoriaID, SubcategoriaID, 
+        Proveedor, TipoCuentaID, CuentaID, RFC, Fecha, 
+        FechaAutorizacion, FechaConciliacion, Descripcion, Piezas, Monto, 
+        EstatusComprobacionID, UsuarioAutorizaID, UsuarioRecibeID, 
+        ObservacionesDifConciliacion
     } = req.body;
 
+    // El archivo se encuentra en req.file después de la carga
+    const Comprobante = req.file ? req.file.path : '';
+
     console.log("Estos datos recibo en PostIngresos:", req.body);
+    console.log("Archivo recibido:", req.file);
 
     try {
         con = await connect();
+
+        // Función para obtener o crear un ID
+        const getOrCreateId = async (table: string, value: number | string, additionalFields: { [key: string]: any } = {}) => {
+            if (typeof value === 'string') {
+                // Verificar si la cadena es un número
+                const parsedValue = Number(value);
+                if (!isNaN(parsedValue)) {
+                    return parsedValue; // Si es un número válido, retornar como número
+                }
+
+                // Si no es un número, asumir que es un nuevo valor y crear
+                let columnName = table === 'cuentas' ? 'NombreCuenta' : 'Nombre';
+                let insertQuery = `INSERT INTO ${table} (${columnName}`;
+                let queryValues = [value];
+
+                // Añadir campos adicionales al query
+                for (const [field, fieldValue] of Object.entries(additionalFields)) {
+                    insertQuery += `, ${field}`;
+                    queryValues.push(fieldValue);
+                }
+
+                insertQuery += `) VALUES (${queryValues.map(() => '?').join(', ')})`;
+                const [insertResult]: any = await con.query(insertQuery, queryValues);
+                return insertResult.insertId;
+            }
+            return value;
+        };
+
+        // Obtener o crear los IDs correspondientes
+        const newConceptoID = await getOrCreateId('conceptos', ConceptoID);
+        const newSegmentoID = await getOrCreateId('segmentos', SegmentoID);
+        const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
+        const newSubcategoriaID = await getOrCreateId('subcategorias', SubcategoriaID);
+
+        // Manejar la creación de nuevas cuentas
+        let newCuentaID: number | string = 0;  // Valor por defecto
+
+        const TipoCuentaIDNum = Number(TipoCuentaID);
+        if (TipoCuentaIDNum === 1) {
+            // Si es Caja Chica, solo se requiere NombreCuenta
+            newCuentaID = await getOrCreateId('cuentas', CuentaID, { TipoCuentaID: String(TipoCuentaIDNum) });
+        } else if (TipoCuentaIDNum === 2) {
+            // Si es Cuenta Bancaria, se requieren NombreCuenta, RFC y TipoCuentaID
+            newCuentaID = await getOrCreateId('cuentas', CuentaID, { RFC, TipoCuentaID: String(TipoCuentaIDNum) });
+        } else {
+            throw new Error(`TipoCuentaID no válido: ${TipoCuentaIDNum}`);
+        }
 
         // Verificar la última combinación
         const checkCombinationQuery = `
@@ -42,37 +95,37 @@ export const PostIngresos = async (req: Request, res: Response) => {
             ORDER BY CombinacionID DESC 
             LIMIT 1
         `;
-        const [combinationResult] = await con.query<RowDataPacket[]>(checkCombinationQuery, [ConceptoID]);
+        const [combinationResult] = await con.query(checkCombinationQuery, [newConceptoID]) as any[];
 
         if (combinationResult.length === 0 || 
-            combinationResult[0].SegmentoID !== SegmentoID ||
-            combinationResult[0].CategoriaID !== CategoriaID ||
-            combinationResult[0].SubcategoriaID !== SubcategoriaID) {
+            combinationResult[0].SegmentoID !== newSegmentoID ||
+            combinationResult[0].CategoriaID !== newCategoriaID ||
+            combinationResult[0].SubcategoriaID !== newSubcategoriaID) {
 
             // Insertar nueva combinación si no es igual a la última
             const insertCombinationQuery = `
                 INSERT INTO combinaciones (ConceptoID, SegmentoID, CategoriaID, SubcategoriaID, FechaModificacion)
                 VALUES (?, ?, ?, ?, NOW())
             `;
-            const combinationValues = [ConceptoID, SegmentoID, CategoriaID, SubcategoriaID];
+            const combinationValues = [newConceptoID, newSegmentoID, newCategoriaID, newSubcategoriaID];
             await con.query(insertCombinationQuery, combinationValues);
             console.log('Nueva combinación insertada.');
         } else {
             console.log('La combinación ya existe.');
         }
 
-        // Insertar siempre en la tabla ingresos
+        // Insertar en la tabla ingresos
         const insertIngresoQuery = `
             INSERT INTO ingresos (
                 Fecha, SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, Descripcion,
-                Proveedor, Piezas, CajaChica, Monto, Saldo, Comprobante, EstatusComprobacionID,
-                FechaAutorizacion, UsuarioAutorizaID, UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                Proveedor, Piezas, TipoCuentaID, CuentaID, Monto, Comprobante, EstatusComprobacionID,
+                FechaAutorizacion, UsuarioAutorizaID, UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion, TipoIngreso
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const ingresoValues = [
-            Fecha, SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, Descripcion,
-            Proveedor, Piezas, CajaChica, Monto, Saldo, Comprobante, EstatusComprobacionID,
-            FechaAutorizacion, UsuarioAutorizaID, UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion
+            Fecha, Number(SegmentoID), Number(CategoriaID), Number(SubcategoriaID), Number(newConceptoID), Descripcion,
+            Proveedor, Number(Piezas), Number(TipoCuentaIDNum), Number(newCuentaID), Number(Monto), Comprobante, Number(EstatusComprobacionID),
+            FechaAutorizacion, Number(UsuarioAutorizaID), Number(UsuarioRecibeID), FechaConciliacion, ObservacionesDifConciliacion, Number(TipoIngreso)
         ];
 
         console.log('Ejecutando query de ingreso:', insertIngresoQuery);
@@ -82,15 +135,22 @@ export const PostIngresos = async (req: Request, res: Response) => {
         console.log('Ingreso insertado exitosamente.');
         result = { message: 'Ingreso creado exitosamente' };
     } catch (error) {
-        console.log('Error en PostIngresos');
-        console.log(error);
-        result = { message: 'Error al crear el ingreso' };
+        if (error instanceof Error) {
+            console.error('Error en PostIngresos:', error.message);
+            result = { message: `Error al crear el ingreso: ${error.message}` };
+        } else {
+            console.error('Error en PostIngresos:', error);
+            result = { message: 'Error desconocido al crear el ingreso' };
+        }
     } finally {
-        await con?.end();
-        console.log('Conexión a la base de datos cerrada.');
-        return res.json(result); // Asegúrate de que siempre estás enviando una respuesta
+        if (con) {
+            await con.end();
+            console.log('Conexión a la base de datos cerrada.');
+        }
+        return res.json(result);
     }
 };
+
 
 export const UpdateIngresos = async (req: Request, res: Response) => {
     let con;
@@ -211,6 +271,24 @@ export const ObtenerUsuarios = async (req: Request, res: Response) => {
         result = usuarios;
     } catch (error) {
         console.log('Error en Usuarios');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+export const ObtenerCuentas = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM Cuentas';
+        const usuarios = (await con.query(query))[0] as any[];
+        result = usuarios;
+    } catch (error) {
+        console.log('Error en Cuentas');
         console.log(error);
         result = null;
     } finally {
