@@ -12,6 +12,7 @@ export class IngresosServices {
   private MyApiUrl: string;
   private MyApiUrlIngreso: string;
   private MyApiUrlIngresoPost: string;
+  private MyApiUrlIngresoPostComprobante: string;
   private MyApiUrlIngresoUpdate: string;
 
   private MyApiUrlConcepto: string;
@@ -26,6 +27,8 @@ export class IngresosServices {
 
   private MyApiUrlCombinacion: string;
 
+  private MyApiUrlCombinacionSegmento: string;
+
   private MyApiUrlEstatus: string;
 
   private MyApiUrlCuentas: string;
@@ -36,6 +39,8 @@ export class IngresosServices {
     this.MyApiUrl = 'api/ingresos/';
     this.MyApiUrlIngreso = 'GetIngresos/';
     this.MyApiUrlIngresoPost = 'PostIngresos/';
+    this.MyApiUrlIngresoPostComprobante = 'PostIngresosComprobante/';
+
     this.MyApiUrlIngresoUpdate = 'UpdateIngresos/';
 
     this.MyApiUrlConcepto = 'GetConceptos/';
@@ -50,6 +55,8 @@ export class IngresosServices {
 
     this.MyApiUrlCombinacion = 'GetCombinaciones/';
 
+    this.MyApiUrlCombinacionSegmento = 'GetCombinacionesSegmento/';
+
     this.MyApiUrlEstatus = 'GetEstatus/';
 
     this.MyApiUrlCuentas = 'GetCuentas/';
@@ -61,8 +68,12 @@ export class IngresosServices {
     return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngreso}`);
   }
 
-  addIngreso(ingreso: FormData): Observable<any> {
-    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPost}`, ingreso);
+  addIngreso(incomeData: any): Observable<any> {
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPost}`, incomeData);
+  }
+
+  uploadComprobante(ingresoID: number, formData: FormData) {
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPostComprobante}${ingresoID}`, formData);
   }
 
   UpdateIngresos(ingreso: any): Observable<any> {
@@ -91,6 +102,10 @@ export class IngresosServices {
 
   getCombinaciones(): Observable<Combinacion[]> {
     return this.http.get<Combinacion[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlCombinacion}`);
+  }
+
+  getCombinacionesSegmento(segmentoId: number): Observable<Combinacion[]> {
+    return this.http.get<Combinacion[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlCombinacionSegmento}${segmentoId}`);
   }
 
   getEstatus(): Observable<Estatus[]> {

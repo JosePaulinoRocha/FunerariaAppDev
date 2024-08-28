@@ -48,6 +48,7 @@
         <tr class="color_header_tabla">
           <th>ID</th>
           <th *ngIf="isAdmin">Validar</th>
+          <th *ngIf="isAdmin">Eliminar</th>
           <th>Concepto</th>
           <th>Segmento</th>
           <th>Categoria</th>
@@ -62,10 +63,18 @@
           <td *ngIf="isAdmin">
             <ion-icon 
               [name]="combinacion.validado ? 'close-circle-sharp' : 'checkbox'" 
-              (click)="deleteReconciliacion(combinacion.CombinacionID, combinacion.validado)"
+              (click)="validarCombinacion(combinacion.CombinacionID, combinacion.validado)"
               [style.color]="combinacion.validado ? 'red' : 'green'" 
               style="cursor: pointer;"
               aria-label="Validar">
+            </ion-icon>
+          </td>
+          <td *ngIf="isAdmin">
+            <ion-icon 
+              name="trash" 
+              (click)="eliminarCombinacion(combinacion.CombinacionID)"
+              style="cursor: pointer; color: red;"
+              aria-label="Eliminar">
             </ion-icon>
           </td>
           <td>{{ combinacion.NombreConcepto }}</td>

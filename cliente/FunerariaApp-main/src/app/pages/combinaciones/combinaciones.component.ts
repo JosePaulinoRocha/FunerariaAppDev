@@ -190,7 +190,7 @@ export class CombinacionesComponent  implements OnInit {
     return this.searchFields.find(f => f.value === field)?.label || field;
   }
 
-  deleteReconciliacion(combinacionID: number, validado: boolean) {
+  validarCombinacion(combinacionID: number, validado: boolean) {
     const mensaje = validado 
       ? '¿Desea anular esta combinación?' 
       : '¿Desea validar esta combinación?';
@@ -207,6 +207,25 @@ export class CombinacionesComponent  implements OnInit {
         },
         error: (err) => {
           console.error(`Error al ${!validado ? 'validar' : 'anular'} la combinación:`, err);
+        }
+      });
+    }
+  }
+
+  eliminarCombinacion(combinacionID: number) {
+    const mensaje = "Desea eliminar esta combinacion?";
+  
+    if (confirm(mensaje)) {
+      this._combinacionServ.deleteCombinaciones(combinacionID).subscribe({
+        next: () => {
+          this.loadCombinaciones();
+          this.updatePaginatedCombinaciones();
+          alert('Se realizó la eliminacion exitosamente');
+          console.log(`Combinación eliminada exitosamente.`);
+        },
+        error: (err: any) => {
+          console.error(`Error al eliminar la combinación:`, err);
+          alert('Error: Algo salio mal');
         }
       });
     }

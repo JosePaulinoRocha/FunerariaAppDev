@@ -1,9 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController, IonicModule, AlertController } from '@ionic/angular';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
+import { CombinacionesModalComponent } from './modal-combinaciones/combinaciones-modal.component';
 
 interface Ingreso {
   IngresoID: number;
@@ -67,9 +68,13 @@ interface Usuario {
 interface Combinacion {
   CombinacionID: number;
   ConceptoID: number;
+  NombreConcepto: string;
   SegmentoID: number;
+  NombreSegmento: string;
   CategoriaID: number;
+  NombreCategoria: string;
   SubcategoriaID: number;
+  NombreSubcategoria: string;
 }
 
 interface Estatus {
@@ -89,9 +94,12 @@ interface Cuenta {
   templateUrl: './income-modal.component.html',
   styleUrls: ['./income-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule],
+  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule, ReactiveFormsModule],
 })
 export class IncomeModalComponent implements OnInit {
+
+  form: FormGroup = this.fb.group({});
+
   @Input() ingreso: Ingreso = {
     IngresoID: 0,
     Fecha: '',
@@ -156,29 +164,18 @@ export class IncomeModalComponent implements OnInit {
   constructor(
     private modalController: ModalController,
     private _ingresoServ: IngresosServices,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private fb: FormBuilder
   ) {}
 
-  updateCombinations() {
-    // Filtrar combinaciones que incluyan el ConceptoID seleccionado
-    const filteredCombinations = this.combinacion.filter(
-      (c) => c.ConceptoID === this.ingreso.ConceptoID
-    );
-
-    if (filteredCombinations.length > 0) {
-      // Encontrar la combinación con el mayor CombinacionID
-      const latestCombination = filteredCombinations.reduce((prev, current) =>
-        prev.CombinacionID > current.CombinacionID ? prev : current
-      );
-
-      // Actualizar los campos correspondientes
-      this.ingreso.SegmentoID = latestCombination.SegmentoID;
-      this.ingreso.CategoriaID = latestCombination.CategoriaID;
-      this.ingreso.SubcategoriaID = latestCombination.SubcategoriaID;
-    }
-  }
-
   ngOnInit() {
+
+    this.form = this.fb.group({
+      CategoriaID: [null, Validators.required],
+      SubcategoriaID: [null, Validators.required],
+      ConceptoID: [null, Validators.required],
+    });
+
     this.loadConceptos();
     this.loadSegmentos();
     this.loadCategorias();
@@ -189,6 +186,67 @@ export class IncomeModalComponent implements OnInit {
     this.loadCuentas();
 
     this.onTipoCuentaChange();
+  }
+
+  onSegmentSelected(event: any) {
+    const segmentoId = event.detail.value;
+    if (segmentoId) {
+      this.openCombinacionesModal(segmentoId);
+    }
+  }
+  
+  
+  async openCombinacionesModal(segmentoId: number) {
+    console.log("este es el segmento ID que estoy enviando a las combinaciones: " ,segmentoId)
+    const modal = await this.modalController.create({
+      component: CombinacionesModalComponent,
+      componentProps: {
+        segmentoId: segmentoId
+      }
+    });
+  
+    modal.onDidDismiss().then((data) => {
+      if (data.data) {
+        console.log("esta es la data en el componente principal con la combinacion: ", data.data)
+        this.fillFormWithCombination(data.data);
+      }
+    });
+  
+    return await modal.present();
+  }
+
+
+  fillFormWithCombination(combinacion: Combinacion) {
+    if (combinacion) {
+      
+      this.form.patchValue({
+        SegmentoID: combinacion.SegmentoID,
+        ConceptoID: combinacion.ConceptoID,
+        CategoriaID: combinacion.CategoriaID,
+        SubcategoriaID: combinacion.SubcategoriaID
+      });
+  
+      this.ingreso.SegmentoID = combinacion.SegmentoID;
+      this.ingreso.ConceptoID = combinacion.ConceptoID;
+      this.ingreso.CategoriaID = combinacion.CategoriaID;
+      this.ingreso.SubcategoriaID = combinacion.SubcategoriaID;
+  
+      console.log("Datos del formulario actualizados con la combinación:", this.form.value);
+    }
+  }
+  
+
+  
+  onCategoriaChange(event: any) {
+    const categoriaId = event.detail.value;
+  }
+  
+  onSubcategoriaChange(event: any) {
+    const subcategoriaId = event.detail.value;
+  }
+  
+  onConceptoChange(event: any) {
+    const conceptoId = event.detail.value;
   }
 
   onTipoCuentaChange() {
@@ -329,53 +387,58 @@ export class IncomeModalComponent implements OnInit {
   
 
   saveIncome() {
-    const formData = new FormData();
 
-    // Agregar los datos del ingreso al FormData con validaciones para evitar undefined
-    formData.append('IngresoID', this.ingreso.IngresoID != null ? this.ingreso.IngresoID.toString() : '');
-    formData.append('TipoIngreso', this.ingreso.TipoIngreso != null ? this.ingreso.TipoIngreso.toString() : '');
-    formData.append('ConceptoID', this.isNewConcepto ? this.newConcepto : (this.ingreso.ConceptoID != null ? this.ingreso.ConceptoID.toString() : ''));
-    formData.append('SegmentoID', this.isNewSegmento ? this.newSegmento : (this.ingreso.SegmentoID != null ? this.ingreso.SegmentoID.toString() : ''));
-    formData.append('CategoriaID', this.isNewCategoria ? this.newCategoria : (this.ingreso.CategoriaID != null ? this.ingreso.CategoriaID.toString() : ''));
-    formData.append('SubcategoriaID', this.isNewSubcategoria ? this.newSubcategoria : (this.ingreso.SubcategoriaID != null ? this.ingreso.SubcategoriaID.toString() : ''));
-    formData.append('Proveedor', this.ingreso.Proveedor != null ? this.ingreso.Proveedor : '');
-    formData.append('TipoCuentaID', this.ingreso.TipoCuentaID != null ? this.ingreso.TipoCuentaID.toString() : '');
-    formData.append('CuentaID', this.isNewCuenta ? this.newNombreCuenta : (this.ingreso.CuentaID != null ? this.ingreso.CuentaID.toString() : ''));
-    formData.append('RFC', this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '');
+    const incomeData = {
+      IngresoID: this.ingreso.IngresoID,
+      TipoIngreso: this.ingreso.TipoIngreso,
+      ConceptoID: this.isNewConcepto ? this.newConcepto : this.ingreso.ConceptoID,
+      SegmentoID: this.isNewSegmento ? this.newSegmento : this.ingreso.SegmentoID,
+      CategoriaID: this.isNewCategoria ? this.newCategoria : this.ingreso.CategoriaID,
+      SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
+      Proveedor: this.ingreso.Proveedor,
+      TipoCuentaID: this.ingreso.TipoCuentaID,
+      CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
+      RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
+      Fecha: this.ingreso.Fecha,
+      FechaAutorizacion: this.ingreso.FechaAutorizacion,
+      FechaConciliacion: this.ingreso.FechaConciliacion,
+      Descripcion: this.ingreso.Descripcion,
+      Piezas: this.ingreso.Piezas,
+      Monto: this.ingreso.Monto,
+      EstatusComprobacionID: this.ingreso.EstatusComprobacionID,
+      UsuarioAutorizaID: this.ingreso.UsuarioAutorizaID,
+      UsuarioRecibeID: this.ingreso.UsuarioRecibeID,
+      ObservacionesDifConciliacion: this.ingreso.ObservacionesDifConciliacion
+    };
 
-    // Agregar el archivo seleccionado al FormData si existe, en el campo 'Comprobante'
-    if (this.selectedFile) {
-        formData.append('Comprobante', this.selectedFile);
-    } else {
-        formData.append('Comprobante', this.ingreso.Comprobante != null ? this.ingreso.Comprobante : '');
-    }
-
-    formData.append('Fecha', this.ingreso.Fecha != null ? this.ingreso.Fecha : '');
-    formData.append('FechaAutorizacion', this.ingreso.FechaAutorizacion != null ? this.ingreso.FechaAutorizacion : '');
-    formData.append('FechaConciliacion', this.ingreso.FechaConciliacion != null ? this.ingreso.FechaConciliacion : '');
-    formData.append('Descripcion', this.ingreso.Descripcion != null ? this.ingreso.Descripcion : '');
-    formData.append('Piezas', this.ingreso.Piezas != null ? this.ingreso.Piezas.toString() : '0');
-    formData.append('Monto', this.ingreso.Monto != null ? this.ingreso.Monto.toString() : '0');
-    formData.append('EstatusComprobacionID', this.ingreso.EstatusComprobacionID != null ? this.ingreso.EstatusComprobacionID.toString() : '');
-    formData.append('UsuarioAutorizaID', this.ingreso.UsuarioAutorizaID != null ? this.ingreso.UsuarioAutorizaID.toString() : '');
-    formData.append('UsuarioRecibeID', this.ingreso.UsuarioRecibeID != null ? this.ingreso.UsuarioRecibeID.toString() : '');
-    formData.append('ObservacionesDifConciliacion', this.ingreso.ObservacionesDifConciliacion != null ? this.ingreso.ObservacionesDifConciliacion : '');
-
-    // Mostrar los datos que se están enviando
-    console.log("Datos para guardar:");
-    formData.forEach((value, key) => {
-        console.log(key, value);
-    });
-
-     this._ingresoServ.addIngreso(formData).subscribe(
-       response => {
-         console.log('Ingreso guardado correctamente:', response);
-       },
-       error => {
-         console.error('Error al guardar el ingreso:', error);
-       }
-     );
-}
+    console.log("Estos son los datos que estoy mandando del nuevo Ingreso / Egreso: ", incomeData)
+  
+    // Enviar los datos del ingreso al backend
+    this._ingresoServ.addIngreso(incomeData).subscribe(
+      response => {
+        console.log('Ingreso guardado correctamente:', response);
+  
+        // Si hay un archivo seleccionado, enviarlo en otra solicitud
+        // if (this.selectedFile) {
+        //   const formData = new FormData();
+        //   formData.append('Comprobante', this.selectedFile);
+  
+        //   this._ingresoServ.uploadComprobante(response.IngresoID, formData).subscribe(
+        //     fileResponse => {
+        //       console.log('Archivo guardado correctamente:', fileResponse);
+        //     },
+        //     fileError => {
+        //       console.error('Error al guardar el archivo:', fileError);
+        //     }
+        //   );
+        // }
+      },
+      error => {
+        console.error('Error al guardar el ingreso:', error);
+      }
+    );
+  }
+  
 
   closeModal() {
     this.modalController.dismiss(null, 'close');

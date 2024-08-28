@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Seleccionar Combinación</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="modalController.dismiss()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="filterCombinaciones()"></ion-searchbar>
+
+  <ion-list *ngIf="filteredCombinaciones.length > 0">
+    <ion-item *ngFor="let combinacion of filteredCombinaciones" (click)="selectCombination(combinacion)">
+      <ion-label>
+        <h2>Categoria: {{ combinacion.NombreCategoria }}</h2>
+        <p>Subcategoria: {{ combinacion.NombreSubcategoria }}</p>
+        <p>Concepto: {{ combinacion.NombreConcepto }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="filteredCombinaciones.length === 0" class="no-results">
+    <p>No hay combinaciones disponibles.</p>
+  </div>
+
+</ion-content>

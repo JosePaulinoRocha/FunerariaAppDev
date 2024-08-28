@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>{{ isEditMode ? 'Modificar Ingreso' : 'Añadir Ingreso' }}</ion-title>
+    <ion-title>{{ isEditMode ? 'Modificar Registro' : 'Añadir Registro' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="closeModal()">
         <ion-icon name="close"></ion-icon>
@@ -13,14 +13,109 @@
   <form (ngSubmit)="saveIncome()" class="ion-padding">
     <ion-grid>
       <ion-row>
-        <ion-col size-md="6">
+
+        <ion-col size-md="12">
 
           <ion-item>
             <ion-label position="stacked">Ingreso / Egreso</ion-label>
-            <ion-select placeholder="Ingreso / Egreso" style="width: 13rem;" [(ngModel)]="ingreso.TipoIngreso" name="tipoIngreso" required interface="alert" searchbar="true">
+            <ion-select placeholder="Ingreso / Egreso" [(ngModel)]="ingreso.TipoIngreso" name="tipoIngreso" required interface="alert" searchbar="true">
               <ion-select-option [value]="0">Ingreso</ion-select-option>
               <ion-select-option [value]="1">Egreso</ion-select-option>
             </ion-select>
+          </ion-item>
+
+        </ion-col>
+
+
+        <ion-col size-md="6">
+
+          <ion-item>
+            <ion-label position="stacked">Segmento</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewSegmento" name="isNewSegmento">
+              <ion-item style="font-size: 12px;">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewSegmento">
+              <ion-select 
+                  placeholder="Segmento" 
+                  style="width: 13rem;" 
+                  [(ngModel)]="ingreso.SegmentoID" 
+                  name="segmento" 
+                  required 
+                  interface="alert" 
+                  searchbar="true"
+                  (ionChange)="onSegmentSelected($event)">
+                <ion-select-option *ngFor="let item of segmento" [value]="item.SegmentoID">{{ item.Nombre }}</ion-select-option>
+              </ion-select>
+            </div>
+            <div *ngIf="isNewSegmento">
+              <ion-input style="width: 13rem;" [(ngModel)]="newSegmento" name="newSegmento" placeholder="Nuevo Segmento" required></ion-input>
+            </div>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Subcategoría</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewSubcategoria" name="isNewSubcategoria">
+              <ion-item style="font-size: 12px;">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewSubcategoria">
+              <ion-select placeholder="Subcategoria" style="width: 13rem;" [(ngModel)]="ingreso.SubcategoriaID" name="subcategoria" required interface="alert" searchbar="true">
+                <ion-select-option *ngFor="let item of subcategoria" [value]="item.SubcategoriaID">{{ item.Nombre }}</ion-select-option>
+              </ion-select>
+            </div>
+            <div *ngIf="isNewSubcategoria">
+              <ion-input style="width: 13rem;" [(ngModel)]="newSubcategoria" name="newSubcategoria" placeholder="Nueva Subcategoría" required></ion-input>
+            </div>
+          </ion-item>
+
+        </ion-col>
+
+        <ion-col size-md="6">
+
+          <ion-item>
+            <ion-label position="stacked">Categoría</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewCategoria" name="isNewCategoria">
+              <ion-item style="font-size: 12px;">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewCategoria">
+              <ion-select
+                placeholder="Categoría"
+                style="width: 13rem;"
+                [(ngModel)]="ingreso.CategoriaID"
+                name="categoria"
+                required
+                interface="alert"
+                searchbar="true"
+                (ionChange)="onCategoriaChange($event)"
+              >
+              <ion-select-option *ngFor="let item of categoria" [value]="item.CategoriaID">
+                {{ item.Nombre }}
+              </ion-select-option>
+            </ion-select>
+            </div>
+            <div *ngIf="isNewCategoria">
+              <ion-input style="width: 13rem;" [(ngModel)]="newCategoria" name="newCategoria" placeholder="Nueva Categoría" required></ion-input>
+            </div>
           </ion-item>
 
           <ion-item>
@@ -36,7 +131,7 @@
               </ion-item>
             </ion-radio-group>
             <div *ngIf="!isNewConcepto">
-              <ion-select placeholder="Concepto" style="width: 13rem;" [(ngModel)]="ingreso.ConceptoID" name="concepto" required interface="alert" searchbar="true" (ionChange)="updateCombinations()">
+              <ion-select placeholder="Concepto" style="width: 13rem;" [(ngModel)]="ingreso.ConceptoID" name="concepto" required interface="alert" searchbar="true">
                 <ion-select-option *ngFor="let item of concepto" [value]="item.ConceptoID">{{ item.Nombre }}</ion-select-option>
               </ion-select>
             </div>
@@ -45,27 +140,18 @@
             </div>
           </ion-item>
 
+        </ion-col>
+
+        <ion-col size-md="12">
+
           <ion-item>
-            <ion-label position="stacked">Categoría</ion-label>
-            <ion-radio-group style="display: flex;" [(ngModel)]="isNewCategoria" name="isNewCategoria">
-              <ion-item style="font-size: 12px;">
-                <ion-label>Usar existente</ion-label>
-                <ion-radio slot="start" [value]="false"></ion-radio>
-              </ion-item>
-              <ion-item style="font-size: 12px;">
-                <ion-label>Crear nuevo</ion-label>
-                <ion-radio slot="start" [value]="true"></ion-radio>
-              </ion-item>
-            </ion-radio-group>
-            <div *ngIf="!isNewCategoria">
-              <ion-select placeholder="Categoria" style="width: 13rem;" [(ngModel)]="ingreso.CategoriaID" name="categoria" required interface="alert" searchbar="true">
-                <ion-select-option *ngFor="let item of categoria" [value]="item.CategoriaID">{{ item.Nombre }}</ion-select-option>
-              </ion-select>
-            </div>
-            <div *ngIf="isNewCategoria">
-              <ion-input style="width: 13rem;" [(ngModel)]="newCategoria" name="newCategoria" placeholder="Nueva Categoría" required></ion-input>
-            </div>
+            <ion-label position="stacked">Descripción</ion-label>
+            <ion-input placeholder="Descripcion" [(ngModel)]="ingreso.Descripcion" name="descripcion" required></ion-input>
           </ion-item>
+
+        </ion-col>
+
+        <ion-col size-md="6">
 
           <ion-item>
             <ion-label position="stacked">Proveedor</ion-label>
@@ -138,55 +224,6 @@
         <ion-col size-md="6">
 
           <ion-item>
-            <ion-label position="stacked">Descripción</ion-label>
-            <ion-input placeholder="Descripcion" style="width: 13rem;" [(ngModel)]="ingreso.Descripcion" name="descripcion" required></ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Segmento</ion-label>
-            <ion-radio-group style="display: flex;" [(ngModel)]="isNewSegmento" name="isNewSegmento">
-              <ion-item style="font-size: 12px;">
-                <ion-label>Usar existente</ion-label>
-                <ion-radio slot="start" [value]="false"></ion-radio>
-              </ion-item>
-              <ion-item style="font-size: 12px;">
-                <ion-label>Crear nuevo</ion-label>
-                <ion-radio slot="start" [value]="true"></ion-radio>
-              </ion-item>
-            </ion-radio-group>
-            <div *ngIf="!isNewSegmento">
-              <ion-select placeholder="Segmento" style="width: 13rem;" [(ngModel)]="ingreso.SegmentoID" name="segmento" required interface="alert" searchbar="true">
-                <ion-select-option *ngFor="let item of segmento" [value]="item.SegmentoID">{{ item.Nombre }}</ion-select-option>
-              </ion-select>
-            </div>
-            <div *ngIf="isNewSegmento">
-              <ion-input style="width: 13rem;" [(ngModel)]="newSegmento" name="newSegmento" placeholder="Nuevo Segmento" required></ion-input>
-            </div>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Subcategoría</ion-label>
-            <ion-radio-group style="display: flex;" [(ngModel)]="isNewSubcategoria" name="isNewSubcategoria">
-              <ion-item style="font-size: 12px;">
-                <ion-label>Usar existente</ion-label>
-                <ion-radio slot="start" [value]="false"></ion-radio>
-              </ion-item>
-              <ion-item style="font-size: 12px;">
-                <ion-label>Crear nuevo</ion-label>
-                <ion-radio slot="start" [value]="true"></ion-radio>
-              </ion-item>
-            </ion-radio-group>
-            <div *ngIf="!isNewSubcategoria">
-              <ion-select placeholder="Subcategoria" style="width: 13rem;" [(ngModel)]="ingreso.SubcategoriaID" name="subcategoria" required interface="alert" searchbar="true">
-                <ion-select-option *ngFor="let item of subcategoria" [value]="item.SubcategoriaID">{{ item.Nombre }}</ion-select-option>
-              </ion-select>
-            </div>
-            <div *ngIf="isNewSubcategoria">
-              <ion-input style="width: 13rem;" [(ngModel)]="newSubcategoria" name="newSubcategoria" placeholder="Nueva Subcategoría" required></ion-input>
-            </div>
-          </ion-item>
-
-          <ion-item>
             <ion-label position="stacked">Piezas</ion-label>
             <ion-input placeholder="Piezas" style="width: 13rem;" [(ngModel)]="ingreso.Piezas" name="piezas" type="number"></ion-input>
           </ion-item>
@@ -243,10 +280,14 @@
 
         </ion-col>
 
-        <ion-item style="width: 34rem;">
-          <ion-label position="stacked">Observaciones</ion-label>
-          <ion-textarea rows="4" [(ngModel)]="ingreso.ObservacionesDifConciliacion" name="observacionesDifConciliacion" required></ion-textarea>
-        </ion-item>
+        <ion-col size-md="12">
+
+          <ion-item>
+            <ion-label position="stacked">Observaciones</ion-label>
+            <ion-textarea rows="4" [(ngModel)]="ingreso.ObservacionesDifConciliacion" name="observacionesDifConciliacion" required></ion-textarea>
+          </ion-item>
+
+        </ion-col>
 
       </ion-row>
     </ion-grid>

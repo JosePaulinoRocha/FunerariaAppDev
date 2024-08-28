@@ -3,7 +3,7 @@ import { authenticateJWT } from '../middlewares/authMiddleware';
 import multer, { FileFilterCallback } from 'multer';
 import fs from 'fs'; // Importa el módulo fs
 import path from 'path'; // Importa el módulo path
-import { ObtenerIngresos, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas } from '../controllers/Ingresos.controllers';
+import { ObtenerIngresos, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, ObtenerCombinacionesSegmento } from '../controllers/Ingresos.controllers';
 
 const router = Router();
 
@@ -39,7 +39,7 @@ const upload = multer({
 
 // Rutas
 router.get('/GetIngresos', authenticateJWT, ObtenerIngresos);
-router.post('/PostIngresos', authenticateJWT, upload.single('Comprobante'), PostIngresos);
+router.post('/PostIngresos', authenticateJWT, PostIngresos);
 router.put('/UpdateIngresos', authenticateJWT, UpdateIngresos);
 
 // Conceptos
@@ -59,6 +59,8 @@ router.get('/GetUsuarios', authenticateJWT, ObtenerUsuarios);
 
 // Combinaciones
 router.get('/GetCombinaciones', authenticateJWT, ObtenerCombinaciones);
+
+router.get('/GetCombinacionesSegmento/:segmentoId', authenticateJWT, ObtenerCombinacionesSegmento);
 
 // Estatus
 router.get('/GetEstatus', authenticateJWT, ObtenerEstatus);

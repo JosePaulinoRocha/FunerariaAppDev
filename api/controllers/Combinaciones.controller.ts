@@ -40,3 +40,40 @@ export async function updateValidado(req: Request, res: Response): Promise<void>
         res.status(500).json({ message: "Error al actualizar la combinación", error });
     }
 }
+
+
+export const EliminarCombinacion = async (req: Request, res: Response) => {
+    const { combinacionID } = req.params;
+    console.log('ID de Combinacion a eliminar:', combinacionID);
+
+    let con;
+    try {
+        con = await connect();
+        console.log('Conexión a la base de datos establecida'); 
+
+        await con.beginTransaction();
+        console.log('Transacción iniciada');
+
+        // Eliminar la combinacion
+        const deleteQuery = 'DELETE FROM Combinaciones WHERE CombinacionID = ?';
+        const [deleteResult] = await con.query<ResultSetHeader>(deleteQuery, [combinacionID]);
+        console.log('Resultado de eliminar combinacion:', deleteResult); 
+
+        await con.commit();
+        console.log('Transacción confirmada'); 
+
+        res.json({ message: 'Combinacion eliminada exitosamente' });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error('Error en EliminarCombinacion:', error.message);
+            res.status(500).json({ message: error.message });
+
+            if (con) await con.rollback();
+        } else {
+            res.status(500).json({ message: 'Unknown error occurred' });
+        }
+    } finally {
+        if (con) await con.end();
+        console.log('Conexión a la base de datos cerrada');
+    }
+};

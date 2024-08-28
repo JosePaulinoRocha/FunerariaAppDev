@@ -94,24 +94,22 @@ export class IngresosEgresosComponent implements OnInit {
     this.dateSearchValues[field].endDate = endDate;
   }
 
-  // Search variables
   searchFields = [
     { value: 'IngresoID', label: 'ID' },
     { value: 'Fecha', label: 'Fecha' },
+    { value: 'NombreSegmento', label: 'Segmento' },
+    { value: 'NombreCategoria', label: 'Categoria' },
+    { value: 'NombreSubcategoria', label: 'Subcategoria' },
     { value: 'NombreConcepto', label: 'Concepto' },
     { value: 'Descripcion', label: 'Descripcion' },
     { value: 'Proveedor', label: 'Proveedor' },
     { value: 'Piezas', label: 'Piezas' },
     { value: 'TipoCuenta', label: 'Tipo de ingreso' },
-    { value: 'NombreCajaChica', label: 'Nombre Caja Chica' },
+    { value: 'NombreCuenta', label: 'Nombre Cuenta' },
     { value: 'RFC', label: 'RFC' },
-    { value: 'NombreDuenoCuenta', label: 'Nombre Dueño Cuenta' },
     { value: 'Monto', label: 'Monto' },
     { value: 'SaldoReconciliacion', label: 'Saldo' },
     { value: 'Comprobante', label: 'Comprobante' },
-    { value: 'NombreSegmento', label: 'Segmento' },
-    { value: 'NombreCategoria', label: 'Categoria' },
-    { value: 'NombreSubcategoria', label: 'Subcategoria' },
     { value: 'NombreEstatus', label: 'Estatus' },
     { value: 'FechaAutorizacion', label: 'Fecha Autorizacion' },
     { value: 'NombreUsuarioAutoriza', label: 'Usuario Autoriza' },
