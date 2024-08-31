@@ -188,6 +188,11 @@ export class IncomeModalComponent implements OnInit {
     this.onTipoCuentaChange();
   }
 
+  onTipoIngresoChange() {
+
+  }
+  
+
   onSegmentSelected(event: any) {
     const segmentoId = event.detail.value;
     if (segmentoId) {
@@ -387,60 +392,62 @@ export class IncomeModalComponent implements OnInit {
   
 
   saveIncome() {
-
     const incomeData = {
-      IngresoID: this.ingreso.IngresoID,
-      TipoIngreso: this.ingreso.TipoIngreso,
-      ConceptoID: this.isNewConcepto ? this.newConcepto : this.ingreso.ConceptoID,
-      SegmentoID: this.isNewSegmento ? this.newSegmento : this.ingreso.SegmentoID,
-      CategoriaID: this.isNewCategoria ? this.newCategoria : this.ingreso.CategoriaID,
-      SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
-      Proveedor: this.ingreso.Proveedor,
-      TipoCuentaID: this.ingreso.TipoCuentaID,
-      CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
-      RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
-      Fecha: this.ingreso.Fecha,
-      FechaAutorizacion: this.ingreso.FechaAutorizacion,
-      FechaConciliacion: this.ingreso.FechaConciliacion,
-      Descripcion: this.ingreso.Descripcion,
-      Piezas: this.ingreso.Piezas,
-      Monto: this.ingreso.Monto,
-      EstatusComprobacionID: this.ingreso.EstatusComprobacionID,
-      UsuarioAutorizaID: this.ingreso.UsuarioAutorizaID,
-      UsuarioRecibeID: this.ingreso.UsuarioRecibeID,
-      ObservacionesDifConciliacion: this.ingreso.ObservacionesDifConciliacion
+        IngresoID: this.ingreso.IngresoID,
+        TipoIngreso: this.ingreso.TipoIngreso,
+        ConceptoID: this.isNewConcepto ? this.newConcepto : this.ingreso.ConceptoID,
+        SegmentoID: this.isNewSegmento ? this.newSegmento : this.ingreso.SegmentoID,
+        CategoriaID: this.isNewCategoria ? this.newCategoria : this.ingreso.CategoriaID,
+        SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
+        Proveedor: this.ingreso.Proveedor,
+        TipoCuentaID: this.ingreso.TipoCuentaID,
+        CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
+        RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
+        Fecha: this.ingreso.Fecha,
+        FechaAutorizacion: this.ingreso.FechaAutorizacion,
+        FechaConciliacion: this.ingreso.FechaConciliacion,
+        Descripcion: this.ingreso.Descripcion,
+        Piezas: this.ingreso.Piezas,
+        Monto: this.ingreso.Monto,
+        EstatusComprobacionID: this.ingreso.EstatusComprobacionID,
+        UsuarioAutorizaID: this.ingreso.UsuarioAutorizaID,
+        UsuarioRecibeID: this.ingreso.UsuarioRecibeID,
+        ObservacionesDifConciliacion: this.ingreso.ObservacionesDifConciliacion
     };
 
-    console.log("Estos son los datos que estoy mandando del nuevo Ingreso / Egreso: ", incomeData)
+    console.log("Estos son los datos que estoy mandando del nuevo Ingreso / Egreso: ", incomeData);
   
-    // Enviar los datos del ingreso al backend
     this._ingresoServ.addIngreso(incomeData).subscribe(
       response => {
-        console.log('Ingreso guardado correctamente:', response);
-  
-        // Si hay un archivo seleccionado, enviarlo en otra solicitud
-        // if (this.selectedFile) {
-        //   const formData = new FormData();
-        //   formData.append('Comprobante', this.selectedFile);
-  
-        //   this._ingresoServ.uploadComprobante(response.IngresoID, formData).subscribe(
-        //     fileResponse => {
-        //       console.log('Archivo guardado correctamente:', fileResponse);
-        //     },
-        //     fileError => {
-        //       console.error('Error al guardar el archivo:', fileError);
-        //     }
-        //   );
-        // }
+          console.log('Ingreso guardado correctamente:', response);
+
+          if (this.selectedFile) {
+              const formData = new FormData();
+              formData.append('Comprobante', this.selectedFile);
+
+              this._ingresoServ.uploadComprobante(response.IngresoID, formData).subscribe(
+                  fileResponse => {
+                      console.log('Archivo guardado correctamente:', fileResponse);
+                      this.closeModal(true);  
+                  },
+                  fileError => {
+                      console.error('Error al guardar el archivo:', fileError);
+                      this.closeModal(false); 
+                  }
+              );
+          } else {
+              this.closeModal(true); 
+          }
       },
       error => {
-        console.error('Error al guardar el ingreso:', error);
+          console.error('Error al guardar el ingreso:', error);
+          this.closeModal(false); 
       }
     );
   }
-  
 
-  closeModal() {
-    this.modalController.dismiss(null, 'close');
+  closeModal(success: boolean) {
+    this.modalController.dismiss({ success }, success ? 'success' : 'error');
   }
+
 }

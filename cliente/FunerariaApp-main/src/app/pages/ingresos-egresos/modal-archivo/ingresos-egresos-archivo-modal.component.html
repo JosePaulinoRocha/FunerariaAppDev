@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Subir Comprobante</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-item>
+    <ion-label position="stacked">Seleccionar archivo</ion-label>
+    <input type="file" (change)="onFileSelected($event)" />
+  </ion-item>
+  
+  <ion-footer>
+    <ion-toolbar>
+      <ion-buttons slot="end">
+        <ion-button (click)="onSave()">Guardar</ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-footer>
+  
+</ion-content>

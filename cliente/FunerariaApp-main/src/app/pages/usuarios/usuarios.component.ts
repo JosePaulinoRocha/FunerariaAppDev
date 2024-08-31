@@ -27,6 +27,8 @@ export class UsuariosComponent implements OnInit {
   
   searchTerm: string = '';
   users: User[] = [];
+  currentPage: number = 1;
+  usersPerPage: number = 8;
 
   constructor(private modalController: ModalController, private _userServ: UsuariosServices ) { }
 
@@ -44,7 +46,7 @@ export class UsuariosComponent implements OnInit {
   }
 
   filteredUsers(): User[] {
-    return this.users.filter(user => {
+    const filtered = this.users.filter(user => {
       const searchTermLower = this.searchTerm.toLowerCase();
       const isAdminMatch = user.isAdmin && 'administrador'.includes(searchTermLower);
       const userIdMatch = user.userId.toString().includes(searchTermLower);
@@ -57,6 +59,24 @@ export class UsuariosComponent implements OnInit {
         userIdMatch
       );
     });
+
+    return filtered.slice((this.currentPage - 1) * this.usersPerPage, this.currentPage * this.usersPerPage);
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.users.length / this.usersPerPage);
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages()) {
+      this.currentPage++;
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
   }
 
   async openModal(user?: User) {

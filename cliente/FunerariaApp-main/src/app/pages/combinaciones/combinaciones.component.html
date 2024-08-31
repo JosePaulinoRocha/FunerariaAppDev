@@ -49,10 +49,10 @@
           <th>ID</th>
           <th *ngIf="isAdmin">Validar</th>
           <th *ngIf="isAdmin">Eliminar</th>
-          <th>Concepto</th>
           <th>Segmento</th>
           <th>Categoria</th>
           <th>Subcategoria</th>
+          <th>Concepto</th>
           <th>Fecha Modificacion</th>
           <th>Validado</th>
         </tr>
@@ -77,10 +77,10 @@
               aria-label="Eliminar">
             </ion-icon>
           </td>
-          <td>{{ combinacion.NombreConcepto }}</td>
           <td>{{ combinacion.NombreSegmento }}</td>
           <td>{{ combinacion.NombreCategoria }}</td>
           <td>{{ combinacion.NombreSubcategoria }}</td>
+          <td>{{ combinacion.NombreConcepto }}</td>
           <td>{{ combinacion.FechaModificacion }}</td>
           <td [ngClass]="{'green-text': combinacion.validado, 'red-text': !combinacion.validado}">
             {{ combinacion.validado ? 'VALIDADO' : 'NO VALIDADO' }}

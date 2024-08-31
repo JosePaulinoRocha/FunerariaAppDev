@@ -3,7 +3,8 @@ import { authenticateJWT } from '../middlewares/authMiddleware';
 import multer, { FileFilterCallback } from 'multer';
 import fs from 'fs'; // Importa el módulo fs
 import path from 'path'; // Importa el módulo path
-import { ObtenerIngresos, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, ObtenerCombinacionesSegmento } from '../controllers/Ingresos.controllers';
+import zlib from 'zlib';
+import { ObtenerIngresos, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, ObtenerCombinacionesSegmento, PostIngresosComprobante } from '../controllers/Ingresos.controllers';
 
 const router = Router();
 
@@ -12,7 +13,6 @@ const storage = multer.diskStorage({
     destination: function (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
         const uploadPath = 'uploads/';
 
-        // Verifica si el directorio existe y lo crea si no
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
@@ -28,7 +28,7 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage: storage,
     fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf']; // Tipos permitidos
+        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
@@ -37,10 +37,13 @@ const upload = multer({
     }
 });
 
+
 // Rutas
 router.get('/GetIngresos', authenticateJWT, ObtenerIngresos);
 router.post('/PostIngresos', authenticateJWT, PostIngresos);
 router.put('/UpdateIngresos', authenticateJWT, UpdateIngresos);
+
+router.post('/PostIngresosComprobante/:id', authenticateJWT, upload.single('Comprobante'), PostIngresosComprobante);
 
 // Conceptos
 router.get('/GetConceptos', authenticateJWT, ObtenerConceptos);

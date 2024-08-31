@@ -72,9 +72,11 @@ export class IngresosServices {
     return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPost}`, incomeData);
   }
 
-  uploadComprobante(ingresoID: number, formData: FormData) {
+
+  uploadComprobante(ingresoID: number, formData: FormData): Observable<any> {
     return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPostComprobante}${ingresoID}`, formData);
-  }
+  } 
+
 
   UpdateIngresos(ingreso: any): Observable<any> {
     return this.http.put<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoUpdate}`, ingreso);

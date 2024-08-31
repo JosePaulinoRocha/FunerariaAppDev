@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
 import { IngresosEgresosModalComponent } from './modal/ingresos-egresos-modal.component';
+import { IngresosEgresosArchivoModalComponent } from './modal-archivo/ingresos-egresos-archivo-modal.component';
+
 
 interface Income {
   IngresoID: number;
@@ -252,16 +254,32 @@ export class IngresosEgresosComponent implements OnInit {
     return this.searchFields.find(f => f.value === field)?.label || field;
   }
 
-  viewFile(fileUrl: string) {
-    const baseUrl = 'http://localhost:3080/uploads/'; // URL base de tu servidor API
-    const fullUrl = `${baseUrl}${fileUrl}`;
-    
-    if (fileUrl) {
-        window.open(fullUrl, '_blank');
+  async handleButtonClick(filePath: string, ingresoID: number) {
+    if (filePath) {
+      this.downloadFile(filePath);
     } else {
-        console.error('URL del archivo no proporcionada');
+      const modal = await this.modalController.create({
+        component: IngresosEgresosArchivoModalComponent,
+        componentProps: { ingreso: { IngresoID: ingresoID } },
+      });
+  
+      modal.onDidDismiss().then((data) => {
+        if (data.data?.success) {
+          this.loadIngresos(); 
+        }
+      });
+  
+      await modal.present();
     }
-}
+  }
+  
+  
+  
+  downloadFile(fileUrl: string) {
+    const baseUrl = 'http://localhost:3080/'; 
+    const fullUrl = `${baseUrl}${fileUrl}`;
+    window.open(fullUrl, '_blank');
+  }
 
 
 }

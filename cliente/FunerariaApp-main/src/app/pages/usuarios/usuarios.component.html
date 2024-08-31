@@ -14,6 +14,12 @@
 
 <ion-content>
   <ion-searchbar [(ngModel)]="searchTerm" placeholder="Buscar usuario"></ion-searchbar>
+
+  <ion-button expand="block" (click)="openModal()" style="margin: 10px;">
+    <ion-icon name="add-circle-outline"></ion-icon>
+    Añadir Usuario
+  </ion-button>
+  
   <div class="user-list">
     <div class="user-card" *ngFor="let user of filteredUsers()" (click)="openModal(user)">
       <ion-item>
@@ -31,4 +37,22 @@
       </ion-item>
     </div>
   </div>
+
+  <ion-footer>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="previousPage()" [disabled]="currentPage === 1">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+          Anterior
+        </ion-button>
+      </ion-buttons>
+      <ion-title>Página {{currentPage}} de {{totalPages()}}</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages()">
+          Siguiente
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-footer>
 </ion-content>

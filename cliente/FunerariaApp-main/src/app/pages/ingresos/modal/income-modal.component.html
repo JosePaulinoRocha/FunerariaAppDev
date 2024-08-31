@@ -2,7 +2,7 @@
   <ion-toolbar color="primary">
     <ion-title>{{ isEditMode ? 'Modificar Registro' : 'Añadir Registro' }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="closeModal()">
+      <ion-button (click)="closeModal(false)">
         <ion-icon name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -14,16 +14,15 @@
     <ion-grid>
       <ion-row>
 
-        <ion-col size-md="12">
 
+        <ion-col size-md="12">
           <ion-item>
             <ion-label position="stacked">Ingreso / Egreso</ion-label>
-            <ion-select placeholder="Ingreso / Egreso" [(ngModel)]="ingreso.TipoIngreso" name="tipoIngreso" required interface="alert" searchbar="true">
+            <ion-select placeholder="Ingreso / Egreso" [(ngModel)]="ingreso.TipoIngreso" name="tipoIngreso" required interface="alert" searchbar="true" (ionChange)="onTipoIngresoChange()">
               <ion-select-option [value]="0">Ingreso</ion-select-option>
               <ion-select-option [value]="1">Egreso</ion-select-option>
             </ion-select>
           </ion-item>
-
         </ion-col>
 
 
@@ -199,7 +198,7 @@
             <ion-input style="width: 13rem;" [(ngModel)]="newNombreCuenta" name="newNombreCuenta" placeholder="Nueva Cuenta Bancaria" required></ion-input>
           </ion-item>
 
-          <ion-item>
+          <ion-item *ngIf="ingreso.TipoIngreso === 1">
             <ion-label position="stacked">Comprobante</ion-label>
             <input style="margin-bottom: 2rem;" type="file" (change)="onFileSelected($event)" accept="application/pdf, image/*" />
           </ion-item>
@@ -257,7 +256,7 @@
             <ion-input placeholder="Monto" style="width: 13rem;" [(ngModel)]="ingreso.Monto" name="monto" type="number" required></ion-input>
           </ion-item>
 
-          <ion-item>
+          <ion-item *ngIf="ingreso.TipoIngreso === 1">
             <ion-label position="stacked">Estado</ion-label>
             <ion-select placeholder="Estado" style="width: 13rem;" [(ngModel)]="ingreso.EstatusComprobacionID" name="estatus" required interface="alert" searchbar="true">
               <ion-select-option *ngFor="let item of estatus" [value]="item.EstatusID">{{ item.Descripcion }}</ion-select-option>

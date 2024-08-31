@@ -57,7 +57,7 @@
           <th><span style="margin-left: 3rem;"></span>Proveedor<span style="margin-left: 3rem;"></span></th>
           <th>Piezas</th>
           <th><span style="margin-left: 2rem;"></span>Tipo de ingreso<span style="margin-left: 2rem;"></span></th>
-          <th>Cuenta</th>
+          <th><span style="margin-left: 2rem;"></span>Cuenta<span style="margin-left: 2rem;"></span></th>
           <th>RFC</th>
           <th>Monto</th>
           <th>Saldo</th>
@@ -101,7 +101,12 @@
           <td>{{ income.Monto }}</td>
           <td>{{ income.SaldoReconciliacion }}</td>
           <td>
-            <ion-button (click)="viewFile(income.Comprobante)">Ver</ion-button>
+            <ion-button 
+              *ngIf="!income.TipoIngreso.data.includes(0)" 
+              [color]="income.Comprobante ? 'warning' : 'primary'" 
+              (click)="handleButtonClick(income.Comprobante, income.IngresoID)">
+              {{ income.Comprobante ? 'Descargar' : 'Subir' }}
+            </ion-button>
           </td>
           <td>{{ income.NombreEstatus }}</td>
           <td>{{ income.FechaAutorizacion }}</td>
@@ -110,11 +115,9 @@
           <td [ngClass]="{ 'text-red': income.Reconciliado === 0, 'text-green': income.Reconciliado === 1 }">
             {{ income.FechaConciliacion }}
           </td>
-          <!-- Mostrar Reconciliado con texto y color condicionales -->
           <td [ngClass]="{ 'text-red': income.Reconciliado === 0, 'text-green': income.Reconciliado === 1 }">
             {{ income.Reconciliado === 0 ? 'No reconciliado' : 'Reconciliado' }}
           </td>
-          <!-- Mostrar TipoIngreso.data con texto condicional -->
           <td>
             {{ income.TipoIngreso.data.includes(0) ? 'Ingreso' : 'Egreso' }}
           </td>

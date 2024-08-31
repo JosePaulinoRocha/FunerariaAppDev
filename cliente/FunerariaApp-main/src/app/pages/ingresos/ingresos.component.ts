@@ -102,23 +102,17 @@ export class IngresosComponent implements OnInit {
         ingreso: income ? { ...income } : this.getEmptyIncome(),
         isEditMode: !!income
       }
-  });
+    });
   
     modal.onDidDismiss().then((result) => {
-      if (result.data) {
-        if (result.role === 'add') {
-          this.incomes.push(result.data);
-        } else if (result.role === 'edit') {
-          const index = this.incomes.findIndex(i => i.IngresoID === result.data.IngresoID);
-          if (index !== -1) {
-            this.incomes[index] = result.data;
-          }
-        }
+      if (result.data && result.role === 'success') {
+        this.loadIngresos();
       }
     });
   
     return await modal.present();
   }
+  
   
   getEmptyIncome(): Income {
     return {
