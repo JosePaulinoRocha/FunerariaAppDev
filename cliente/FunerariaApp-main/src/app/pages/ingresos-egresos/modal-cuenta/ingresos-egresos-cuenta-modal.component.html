@@ -18,7 +18,7 @@
           <ion-item>
             <ion-label position="stacked">Tipo de Cuenta</ion-label>
             <ion-select 
-              style="width: 13rem;" 
+              style="width: 32rem;" 
               [(ngModel)]="ingreso.TipoCuentaID" 
               name="tipoCuentaID" 
               required 
@@ -47,37 +47,37 @@
 
           <ion-item *ngIf="!isNewCuenta && ingreso.TipoCuentaID === 1">
             <ion-label position="stacked">Caja Chica</ion-label>
-            <ion-select placeholder="Caja Chica" style="width: 13rem;" [(ngModel)]="ingreso.CuentaID" name="cuenta" required interface="alert" searchbar="true">
+            <ion-select placeholder="Caja Chica" style="width: 32rem;" [(ngModel)]="ingreso.CuentaID" name="cuenta" required interface="alert" searchbar="true">
               <ion-select-option *ngFor="let item of filteredCuentas" [value]="item.CuentaID" placeholder="Seleccione Caja Chica">{{ item.NombreCuenta }}</ion-select-option>
             </ion-select>
           </ion-item>
 
           <ion-item *ngIf="isNewCuenta && ingreso.TipoCuentaID === 1">
             <ion-label position="stacked">Nueva Caja Chica</ion-label>
-            <ion-input style="width: 13rem;" [(ngModel)]="newNombreCuenta" name="newNombreCuenta" placeholder="Nuevo Caja Chica" required></ion-input>
+            <ion-input style="width: 32rem;" [(ngModel)]="newNombreCuenta" name="newNombreCuenta" placeholder="Nuevo Caja Chica" required></ion-input>
           </ion-item>
 
           <ion-item *ngIf="!isNewCuenta && ingreso.TipoCuentaID === 2">
             <ion-label position="stacked">Cuenta Bancaria</ion-label>
-            <ion-select placeholder="Cuenta Bancaria" style="width: 13rem;" [(ngModel)]="ingreso.CuentaID" name="cuenta" required interface="alert" searchbar="true" (ionChange)="onCuentaChange($event)">
+            <ion-select placeholder="Cuenta Bancaria" style="width: 32rem;" [(ngModel)]="ingreso.CuentaID" name="cuenta" required interface="alert" searchbar="true" (ionChange)="onCuentaChange($event)">
               <ion-label position="stacked">Cuenta Cuenta Bancaria</ion-label>
-              <ion-select-option style="width: 13rem;" *ngFor="let item of filteredCuentas" [value]="item.CuentaID" placeholder="Seleccione Cuenta Bancaria">{{ item.NombreCuenta }}</ion-select-option>
+              <ion-select-option style="width: 32rem;" *ngFor="let item of filteredCuentas" [value]="item.CuentaID" placeholder="Seleccione Cuenta Bancaria">{{ item.NombreCuenta }}</ion-select-option>
             </ion-select>
           </ion-item>
 
           <ion-item *ngIf="isNewCuenta && ingreso.TipoCuentaID === 2">
             <ion-label position="stacked">Nueva Cuenta Bancaria</ion-label>
-            <ion-input style="width: 13rem;" [(ngModel)]="newNombreCuenta" name="newNombreCuenta" placeholder="Nueva Cuenta Bancaria" required></ion-input>
+            <ion-input style="width: 32rem;" [(ngModel)]="newNombreCuenta" name="newNombreCuenta" placeholder="Nueva Cuenta Bancaria" required></ion-input>
           </ion-item>
           
           <ion-item *ngIf="!isNewCuenta && ingreso.TipoCuentaID === 2">
             <ion-label position="stacked">RFC</ion-label>
-            <ion-input placeholder="RFC" style="width: 13rem;" [(ngModel)]="ingreso.RFC" name="rfc" [readonly]="true"></ion-input>
+            <ion-input placeholder="RFC" style="width: 32rem;" [(ngModel)]="ingreso.RFC" name="rfc" [readonly]="true"></ion-input>
           </ion-item>
 
           <ion-item *ngIf="isNewCuenta && ingreso.TipoCuentaID === 2">
             <ion-label position="stacked">RFC</ion-label>
-            <ion-input style="width: 13rem;" [(ngModel)]="newRFC" name="newRFC" placeholder="Nuevo RFC" required></ion-input>
+            <ion-input style="width: 32rem;" [(ngModel)]="newRFC" name="newRFC" placeholder="Nuevo RFC" required></ion-input>
           </ion-item>
 
         </ion-col>

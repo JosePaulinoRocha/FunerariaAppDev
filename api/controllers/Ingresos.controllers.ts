@@ -520,3 +520,82 @@ export const asignarCuenta = async (req: Request, res: Response) => {
         return res.json(result);
     }
 };
+
+export const asignarCuentasMasivas = async (req: Request, res: Response) => {
+    let con: any;
+    let result: any;
+    const { ids, cuenta } = req.body;
+    const { TipoCuentaID, CuentaID, RFC } = cuenta;
+  
+    console.log('IDs recibidos:', ids); // Añadido para depuración
+    console.log('Datos de cuenta:', cuenta); // Añadido para depuración
+  
+    if (!ids || ids.length === 0) {
+      return res.status(400).json({ message: 'No se recibieron IDs para actualizar' });
+    }
+  
+    try {
+      con = await connect();
+      await con.beginTransaction();
+      console.log('Transacción iniciada');
+  
+      // Función para obtener o crear una CuentaID
+      const getOrCreateCuentaId = async (cuentaId: number | string | null, additionalFields: { [key: string]: any } = {}) => {
+        if (typeof cuentaId === 'string' || cuentaId === 0 || cuentaId === null) {
+          const columnName = 'NombreCuenta';
+  
+          if (!additionalFields[columnName]) {
+            additionalFields[columnName] = cuentaId;
+          }
+  
+          let insertQuery = `INSERT INTO cuentas (${Object.keys(additionalFields).join(', ')})`;
+          let queryValues = Object.values(additionalFields);
+  
+          insertQuery += ` VALUES (${queryValues.map(() => '?').join(', ')})`;
+          const [insertResult]: any = await con.query(insertQuery, queryValues);
+          return insertResult.insertId;
+        }
+        return cuentaId;
+      };
+  
+      // Verifica o crea la CuentaID dependiendo del TipoCuentaID
+      let newCuentaID: number | string = 0;
+      const TipoCuentaIDNum = Number(TipoCuentaID);
+  
+      if (TipoCuentaIDNum === 1) {
+        newCuentaID = await getOrCreateCuentaId(CuentaID, { TipoCuentaID: TipoCuentaIDNum });
+      } else if (TipoCuentaIDNum === 2) {
+        newCuentaID = await getOrCreateCuentaId(CuentaID, { RFC, TipoCuentaID: TipoCuentaIDNum });
+      } else {
+        throw new Error(`TipoCuentaID no válido: ${TipoCuentaIDNum}`);
+      }
+  
+      // Actualiza la cuenta en los ingresos seleccionados
+      const updateIngresoQuery = `
+        UPDATE ingresos 
+        SET CuentaID = ?, TipoCuentaID = ?
+        WHERE IngresoID IN (${ids.map(() => '?').join(', ')})
+      `;
+      console.log('Update query:', updateIngresoQuery); // Añadido para depuración
+      console.log('Update values:', [newCuentaID, TipoCuentaIDNum, ...ids]); // Añadido para depuración
+      await con.query(updateIngresoQuery, [newCuentaID, TipoCuentaIDNum, ...ids]);
+  
+      await con.commit();
+      console.log('Transacción confirmada.');
+      result = { message: 'Cuentas asignadas exitosamente a los registros seleccionados' };
+    } catch (error) {
+      console.error('Error en asignarCuentasMasivas:', error instanceof Error ? error.message : error);
+      await con.rollback();
+      console.log('Transacción revertida.');
+      result = { message: `Error al asignar las cuentas: ${error instanceof Error ? error.message : 'desconocido'}` };
+    } finally {
+      if (con) {
+        await con.end();
+        console.log('Conexión a la base de datos cerrada.');
+      }
+      return res.json(result);
+    }
+  };
+  
+
+

@@ -29,10 +29,16 @@ interface Cuenta {
 export class IngresosEgresosCuentaModalComponent implements OnInit {
   @Input() ingreso: Ingreso = {
     IngresoID: 0,
-    TipoCuentaID: 1,
+    TipoCuentaID: 0,
     CuentaID: 0,
     RFC: '',
   };
+
+  @Input() isMassiveAssignMode: boolean = false;
+  @Input() selectedRecords: number[] = [];
+
+  @Input() incomeIDs: number[] = [];
+  @Input() bulkAssignment: boolean = false;
 
   cuenta: Cuenta[] = [];
 
@@ -43,7 +49,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
   isNewCuenta = false;
   newNombreCuenta = '';
   newRFC = '';
-  
+
   @Input() isEditMode: boolean = false;
 
   constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private alertController: AlertController) {}
@@ -51,8 +57,27 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
   ngOnInit() {
     console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
   
+    if (this.bulkAssignment) {
+      this.isMassiveAssignMode = true;
+      this.updateModalMode();
+    } else {
+      this.isMassiveAssignMode = false;
+      this.updateModalMode();
+    }
+  
     this.loadCuentas();
-    this.onTipoCuentaChange();
+  }
+  
+
+  updateModalMode() {
+    if (this.isMassiveAssignMode) {
+      this.ingreso.CuentaID = 0; // No aplicable en modo masivo
+    }
+  }
+
+  toggleMassiveAssignMode() {
+    this.isMassiveAssignMode = !this.isMassiveAssignMode;
+    this.updateModalMode();
   }
 
   loadCuentas() {
@@ -107,28 +132,52 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
   }
 
   async asignarCuenta() {
-    const incomeData = {
-      IngresoID: this.ingreso.IngresoID,
-      TipoCuentaID: this.ingreso.TipoCuentaID,
-      CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
-      RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
-    };
+    if (this.isMassiveAssignMode) {
+      console.log("entro en asignacion masiva");
+      const cuentaData = {
+        TipoCuentaID: this.ingreso.TipoCuentaID,
+        CuentaID: this.isNewCuenta ? parseInt(this.newNombreCuenta, 10) : this.ingreso.CuentaID,
+        RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
+      };
+    
+      console.log("Income IDs en el modal: ", this.incomeIDs);
+      
+      this._ingresoServ.actualizarCuentasIngresoMasivas({
+        ids: this.incomeIDs,  // Aquí usamos `this.incomeIDs`
+        cuenta: cuentaData
+      }).subscribe(
+        () => {
+          this.presentAlert('Cuentas asignadas correctamente a los registros seleccionados.');
+          this.closeModal(true);
+        },
+        (error) => {
+          console.error('Error al asignar cuentas: ', error);
+          this.presentAlert('Error al asignar cuentas. Inténtalo de nuevo.');
+          this.closeModal(false);
+        }
+      );
+    } else {
+      console.log("entro en asignacion individual");
+      const incomeData = {
+        IngresoID: this.ingreso.IngresoID,
+        TipoCuentaID: this.ingreso.TipoCuentaID,
+        CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
+        RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
+      };
   
-    console.log("Estos son los datos que estoy mandando para asignar la nueva cuenta: ", incomeData);
-  
-    this._ingresoServ.actualizarCuentaIngreso(incomeData).subscribe(
-      (response: any) => {
-        console.log('Actualización exitosa:', response);
-        this.presentAlert('Cuenta asignada correctamente.');
-        this.closeModal(true);
-      },
-      (error: any) => {
-        console.error('Error al asignar cuenta:', error);
-        this.presentAlert('Error al asignar cuenta. Inténtalo de nuevo.');
-        this.closeModal(false); 
-      }
-    );
+      this._ingresoServ.actualizarCuentaIngreso(incomeData).subscribe(
+        () => {
+          this.presentAlert('Cuenta asignada correctamente.');
+          this.closeModal(true);
+        },
+        () => {
+          this.presentAlert('Error al asignar cuenta. Inténtalo de nuevo.');
+          this.closeModal(false);
+        }
+      );
+    }
   }
+  
   
 
   closeModal(success: boolean = false) {
