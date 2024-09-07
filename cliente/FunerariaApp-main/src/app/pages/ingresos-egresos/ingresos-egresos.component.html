@@ -48,6 +48,7 @@
         <tr class="color_header_tabla">
           <th>ID</th>
           <th *ngIf="isAdmin">Editar</th>
+          <th *ngIf="isAdmin">Cuenta</th>
           <th><span style="margin-left: 2rem;"></span> Fecha <span style="margin-left: 2rem;"></span></th>
           <th><span style="margin-left: 2rem;"></span>Segmento<span style="margin-left: 2rem;"></span></th>
           <th><span style="margin-left: 3rem;"></span>Categoria<span style="margin-left: 3rem;"></span></th>
@@ -74,7 +75,9 @@
         </tr>
       </thead>
       <tbody style="font-size: 12px;">
-        <tr *ngFor="let income of paginatedIncomes" class="data-row">
+        <tr *ngFor="let income of paginatedIncomes"     [ngClass]="{
+          'yellow-background': !income.NombreCuenta && income.Reconciliado === 0,
+          'aquamarine-background': income.NombreCuenta && income.Reconciliado === 0}" class="data-row">
           <td>{{ income.IngresoID }}</td>
           <td *ngIf="isAdmin">
             <ion-icon 
@@ -83,6 +86,14 @@
               [style.cursor]="income.Reconciliado === 1 ? 'pointer' : 'default'"
               [style.color]="income.Reconciliado === 1 ? 'green' : 'grey'"
               aria-label="Editar">
+            </ion-icon>
+          </td>
+          <td *ngIf="isAdmin">
+            <ion-icon 
+              style="color: green; cursor: pointer;"
+              name="key-sharp" 
+              (click)="asignarCuenta(income.IngresoID)"
+              aria-label="Asignar Cuenta">
             </ion-icon>
           </td>
           <td>{{ income.Fecha }}</td>

@@ -8,6 +8,7 @@ import Ingresos from "./routes/Ingresos.routes"
 import Reconciliaciones from "./routes/Reconciliaciones.routes"
 import Combinaciones from "./routes/Combinaciones.routes"
 import Notificaciones from "./routes/Notificaciones.routes"
+import ImportarIngresos from "./routes/Importar-Ingresos.routes"
 
 
 
@@ -54,6 +55,7 @@ export class App {
         this.app.use('/api/reconciliaciones', Reconciliaciones);
         this.app.use('/api/combinaciones', Combinaciones);
         this.app.use('/api/notificaciones', Notificaciones);
+        this.app.use('/api/importar-ingresos', ImportarIngresos);
 
 
         this.app.get('*',function (req,res){

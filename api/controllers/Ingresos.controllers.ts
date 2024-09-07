@@ -454,3 +454,69 @@ export const updateCombination = async (req: Request, res: Response) => {
     }
 };
 
+export const asignarCuenta = async (req: Request, res: Response) => {
+    let con: any;
+    let result: any;
+    const { IngresoID, TipoCuentaID, CuentaID, RFC } = req.body;
+
+    try {
+        con = await connect();
+        await con.beginTransaction();
+        console.log('Transacción iniciada');
+
+        // Función para obtener o crear una CuentaID
+        const getOrCreateCuentaId = async (cuentaId: number | string | null, additionalFields: { [key: string]: any } = {}) => {
+            if (typeof cuentaId === 'string' || cuentaId === 0 || cuentaId === null) {
+                const columnName = 'NombreCuenta';
+
+                if (!additionalFields[columnName]) {
+                    additionalFields[columnName] = cuentaId;
+                }
+
+                let insertQuery = `INSERT INTO cuentas (${Object.keys(additionalFields).join(', ')})`;
+                let queryValues = Object.values(additionalFields);
+
+                insertQuery += ` VALUES (${queryValues.map(() => '?').join(', ')})`;
+                const [insertResult]: any = await con.query(insertQuery, queryValues);
+                return insertResult.insertId;
+            }
+            return cuentaId;
+        };
+
+        // Verifica o crea la CuentaID dependiendo del TipoCuentaID
+        let newCuentaID: number | string = 0;
+        const TipoCuentaIDNum = Number(TipoCuentaID);
+
+        if (TipoCuentaIDNum === 1) {
+            newCuentaID = await getOrCreateCuentaId(CuentaID, { TipoCuentaID: TipoCuentaIDNum });
+        } else if (TipoCuentaIDNum === 2) {
+            newCuentaID = await getOrCreateCuentaId(CuentaID, { RFC, TipoCuentaID: TipoCuentaIDNum });
+        } else {
+            throw new Error(`TipoCuentaID no válido: ${TipoCuentaIDNum}`);
+        }
+
+        // Actualiza la cuenta en el ingreso
+        const updateIngresoQuery = `
+            UPDATE ingresos 
+            SET CuentaID = ?, TipoCuentaID = ?
+            WHERE IngresoID = ?
+        `;
+        const updateValues = [newCuentaID, TipoCuentaIDNum, IngresoID];
+        await con.query(updateIngresoQuery, updateValues);
+
+        await con.commit();
+        console.log('Transacción confirmada.');
+        result = { message: 'Cuenta asignada exitosamente', IngresoID };
+    } catch (error) {
+        console.error('Error en asignarCuenta:', error instanceof Error ? error.message : error);
+        await con.rollback();
+        console.log('Transacción revertida.');
+        result = { message: `Error al asignar la cuenta: ${error instanceof Error ? error.message : 'desconocido'}` };
+    } finally {
+        if (con) {
+            await con.end();
+            console.log('Conexión a la base de datos cerrada.');
+        }
+        return res.json(result);
+    }
+};

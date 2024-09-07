@@ -1,14 +1,14 @@
 .table-container {
     width: 100%;
     overflow-x: auto;
-    padding: 1rem;
-
+    padding: 1.5rem;
   }
   
   .table {
     width: 100%;
     border-collapse: collapse;
-    padding: 1rem;
+    padding: 1.5rem;
+
   }
   
   .header-row {
@@ -59,26 +59,16 @@
 }
 
 .color_header_tabla {
-  background-color: #0054E9;
-  color: #FFFFFF;
- }
-
- .text-red {
-  color: red;
+ background-color: #0054E9;
+ color: #FFFFFF;
 }
 
-.text-green {
+.green-text {
   color: green;
+  font-weight: bold;
 }
 
-.no-account {
-  background-color: yellow;
-}
-
-.yellow-background {
-  background-color: yellow;
-}
-
-.aquamarine-background {
-  background-color: darkseagreen;
+.red-text {
+  color: red;
+  font-weight: bold;
 }

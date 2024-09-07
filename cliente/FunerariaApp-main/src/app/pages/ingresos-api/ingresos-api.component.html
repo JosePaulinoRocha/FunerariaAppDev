@@ -1,0 +1,105 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Ingresos Api</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="container">
+    <div>
+      <ion-item>
+        <ion-label>Tipo de ingreso:</ion-label>
+        <ion-select [(ngModel)]="tipoIngreso" (ngModelChange)="checkDates()">
+          <ion-select-option value="afectaciones">Afectaciones</ion-select-option>
+          <ion-select-option value="funeraria">Funeraria</ion-select-option>
+          <ion-select-option value="pagos-iniciales">Pagos Iniciales</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Fecha inicial:</ion-label>
+        <input type="date" [(ngModel)]="fechaInicio" (ngModelChange)="checkDates()">
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Fecha final:</ion-label>
+        <input type="date" [(ngModel)]="fechaFin" (ngModelChange)="checkDates()">
+      </ion-item>
+
+      <ion-item *ngIf="tipoIngreso === 'afectaciones'" style="display: flex;">
+        <ion-label style="margin-right: 1rem;">Collection (opcional):</ion-label>
+        <ion-input type="text" [(ngModel)]="collection"></ion-input>
+      </ion-item>
+
+      <ion-item *ngIf="tipoIngreso === 'funeraria'" style="display: flex;">
+        <ion-label style="margin-right: 1rem;">Business:</ion-label>
+        <ion-input type="text" [(ngModel)]="business" (ngModelChange)="checkDates()"></ion-input>
+      </ion-item>
+
+      <div style="display: flex;">
+
+        <ion-button 
+          style="margin: 1rem 0 0 1rem;" 
+          (click)="mostrarIngresos()"
+          [disabled]="!canSubmit">
+          Consultar Ingresos
+        </ion-button>
+
+        <ion-button 
+          style="margin: 1rem 0 0 1rem;" 
+          *ngIf="mostrarTabla"
+          (click)="confirmarImportacion()">
+          Importar Ingresos
+        </ion-button>
+
+      </div>
+
+      
+    </div>
+  </div>
+
+  <div *ngIf="mostrarTabla">
+    <div class="table-container">
+      <table class="table">
+        <thead class="header-row">
+          <tr class="color_header_tabla">
+            <th *ngIf="tipoIngreso === 'afectaciones'">Colecta</th>
+            <th *ngIf="tipoIngreso === 'funeraria'">Service Ref</th>
+            <th *ngIf="tipoIngreso === 'pagos-iniciales'">Agent</th>
+            <th>Transacciones</th>
+            <th>Fecha</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ingreso of paginatedIngresos" class="data-row">
+            <td *ngIf="tipoIngreso === 'afectaciones'">{{ ingreso.collection }}</td>
+            <td *ngIf="tipoIngreso === 'funeraria'">{{ ingreso.service_ref }}</td>
+            <td *ngIf="tipoIngreso === 'pagos-iniciales'">{{ ingreso.agent }}</td>
+            <td>{{ ingreso.transactions }}</td>
+            <td>
+              {{ tipoIngreso === 'afectaciones' ? (ingreso.date_affect | date:'yyyy-MM-dd') : (ingreso.date_ref | date:'yyyy-MM-dd') }}
+            </td>
+            <td>{{ ingreso.total_amount | currency }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <ion-footer class="margin_footer">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+          <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
+        </ion-buttons>
+        <div class="page-info">
+          Página {{ currentPage }} de {{ totalPages }}
+        </div>
+      </ion-toolbar>
+    </ion-footer>
+  </div>
+
+</ion-content>

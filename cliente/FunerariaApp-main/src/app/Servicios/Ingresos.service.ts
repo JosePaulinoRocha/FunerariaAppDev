@@ -123,4 +123,9 @@ export class IngresosServices {
     return this.http.put(url, updatedData);
   }
 
+  actualizarCuentaIngreso(incomeData: any): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}AsignarCuenta/`;
+    return this.http.put(url, incomeData);
+  }
+
 }

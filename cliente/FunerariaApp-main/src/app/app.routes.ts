@@ -52,4 +52,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/combinaciones/combinaciones.component').then((m) => m.CombinacionesComponent),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'ingresos-api',
+    loadComponent: () => import('./pages/ingresos-api/ingresos-api.component').then((m) => m.IngresosApiComponent),
+    canActivate: [AuthGuard],
+  },
 ];

@@ -33,6 +33,16 @@
       </ion-card-content>
     </ion-card>
 
+    <ion-card (click)="navigateTo('ingresos-api')">
+      <ion-card-content>
+        <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
+        <ion-card-title>Importar Ingresos</ion-card-title>
+      </ion-card-content>  
+      <ion-card-content>
+        <p>Modulo diseñado para la importacion de ingresos externos.</p>
+      </ion-card-content>
+    </ion-card>
+
     <ion-card *ngIf="isAdmin" (click)="navigateTo('usuarios')">
       <ion-card-content>
         <ion-icon color="primary" name="people-outline" slot="start"></ion-icon>

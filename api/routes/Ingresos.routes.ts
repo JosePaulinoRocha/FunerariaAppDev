@@ -4,7 +4,7 @@ import multer, { FileFilterCallback } from 'multer';
 import fs from 'fs'; // Importa el módulo fs
 import path from 'path'; // Importa el módulo path
 import zlib from 'zlib';
-import { ObtenerIngresos, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, ObtenerCombinacionesSegmento, PostIngresosComprobante } from '../controllers/Ingresos.controllers';
+import { ObtenerIngresos, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, ObtenerCombinacionesSegmento, PostIngresosComprobante, asignarCuenta } from '../controllers/Ingresos.controllers';
 
 const router = Router();
 
@@ -73,5 +73,7 @@ router.get('/GetCuentas', authenticateJWT, ObtenerCuentas);
 
 // Actualizar combinación
 router.put('/UpdateCombination', authenticateJWT, updateCombination);
+
+router.put('/AsignarCuenta', authenticateJWT, asignarCuenta);
 
 export default router;

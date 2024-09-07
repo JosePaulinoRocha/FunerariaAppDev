@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { IonicModule, MenuController } from "@ionic/angular";
 import { RouterModule, Router } from '@angular/router';
-import { folder, folderOutline , barChart ,calendar, layers, pricetag, pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, chatboxEllipses, business, home, analytics, images, personCircle, person, mail, call, shieldCheckmark, addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, time, alertCircle, warning, trash, create, cashOutline, peopleOutline, trashSharp, searchSharp, personCircleSharp, checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline } from "ionicons/icons";
+import { folder, folderOutline , barChart ,calendar, layers, pricetag, pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, chatboxEllipses, business, home, analytics, images, personCircle, person, mail, call, shieldCheckmark, addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, time, alertCircle, warning, trash, create, cashOutline, peopleOutline, trashSharp, searchSharp, personCircleSharp, checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline, keySharp } from "ionicons/icons";
 import { addIcons } from 'ionicons';
 import { AuthService } from 'src/app/Servicios/AuthService';
 import { CommonModule } from '@angular/common';
@@ -68,7 +68,8 @@ export class AppComponent {
       time, alertCircle, warning, trash, create, calendar, business, layers, pricetag, 
       pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, 
       chatboxEllipses, cashOutline, peopleOutline, folderOutline, folder, trashSharp, searchSharp, personCircleSharp,
-      checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline
+      checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline,
+      keySharp
     });
   }
 
@@ -173,10 +174,10 @@ export class AppComponent {
   }
 
   logout() {
-    sessionStorage.removeItem('user'); // Eliminar usuario de sessionStorage
+    sessionStorage.removeItem('user'); 
     sessionStorage.removeItem('token');
-    this.menu.close(); // Cerrar el menú lateral si está abierto
-    this.isLoggedIn = false;  // Ocultar el ícono de notificaciones al desloguear
-    this.router.navigate(['/login']); // Redirigir a la pantalla de login
+    this.menu.close(); 
+    this.isLoggedIn = false;  
+    this.router.navigate(['/login']); 
   }
 }

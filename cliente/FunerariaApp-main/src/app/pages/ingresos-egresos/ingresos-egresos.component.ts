@@ -6,6 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
 import { IngresosEgresosModalComponent } from './modal/ingresos-egresos-modal.component';
 import { IngresosEgresosArchivoModalComponent } from './modal-archivo/ingresos-egresos-archivo-modal.component';
+import { IngresosEgresosCuentaModalComponent } from './modal-cuenta/ingresos-egresos-cuenta-modal.component';
 
 
 interface Income {
@@ -60,7 +61,7 @@ interface Income {
   templateUrl: './ingresos-egresos.component.html',
   styleUrls: ['./ingresos-egresos.component.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule, IngresosEgresosModalComponent],
+  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule, IngresosEgresosModalComponent, IngresosEgresosCuentaModalComponent],
 })
 export class IngresosEgresosComponent implements OnInit {
   incomes: Income[] = [];
@@ -125,12 +126,30 @@ export class IngresosEgresosComponent implements OnInit {
 
   constructor(private modalController: ModalController, private _ingresoServ: IngresosServices) { }
 
+  async asignarCuenta(ingresoID: number) {
+    const ingreso = this.incomes.find(i => i.IngresoID === ingresoID); 
+    const modal = await this.modalController.create({
+      component: IngresosEgresosCuentaModalComponent,
+      componentProps: {
+        ingreso: ingreso 
+      }
+    });
+    
+    modal.onDidDismiss().then((data) => {
+      if (data.data?.success) {
+        this.loadIngresos(); 
+      }
+    });
+
+    await modal.present();
+  }
+
   async editarCombinacion(ingresoID: number) {
-    const ingreso = this.incomes.find(i => i.IngresoID === ingresoID); // Buscar el ingreso por ID
+    const ingreso = this.incomes.find(i => i.IngresoID === ingresoID); 
     const modal = await this.modalController.create({
       component: IngresosEgresosModalComponent,
       componentProps: {
-        ingreso: ingreso // Pasar los datos del ingreso al modal
+        ingreso: ingreso 
       }
     });
     return await modal.present();
@@ -148,14 +167,13 @@ export class IngresosEgresosComponent implements OnInit {
   
   loadIngresos() {
     this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
-      // Ordenar los datos por IngresoID en orden descendente
       data.sort((a, b) => b.IngresoID - a.IngresoID);
   
       this.incomes = data.map(income => ({
         ...income,
-        Fecha: new Date(income.Fecha).toISOString().split('T')[0], // Formatear la fecha
-        FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0], // Formatear la fecha
-        FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0] // Formatear la fecha
+        Fecha: new Date(income.Fecha).toISOString().split('T')[0],
+        FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0], 
+        FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0] 
       }));
       
       console.log("esta es la data de ingresos/egresos: ", this.incomes);
@@ -187,7 +205,6 @@ export class IngresosEgresosComponent implements OnInit {
   }
 
   applySearch() {
-    // Asegurarse de que dateSearchValues tenga valores predeterminados para campos de fecha
     for (let field of this.selectedFields) {
       if (this.isDateField(field) && !this.dateSearchValues[field]) {
         this.dateSearchValues[field] = { startDate: '', endDate: '' };
@@ -197,13 +214,14 @@ export class IngresosEgresosComponent implements OnInit {
     this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
       this.incomes = data
         .filter(income => this.matchesSearch(income))
-        .sort((a, b) => b.IngresoID - a.IngresoID) // Ordenar los datos por IngresoID en orden descendente
+        .sort((a, b) => b.IngresoID - a.IngresoID) 
         .map(income => ({
           ...income,
-          Fecha: new Date(income.Fecha).toISOString().split('T')[0], // Formatear la fecha
-          FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0], // Formatear la fecha
-          FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0] // Formatear la fecha
+          Fecha: new Date(income.Fecha).toISOString().split('T')[0],
+          FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
+          FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0] 
         }));
+      console.log("esta es la data de ingresos/egresos despues del filtro: ", this.incomes);  
       this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
       this.updatePaginatedIncomes();
     });
