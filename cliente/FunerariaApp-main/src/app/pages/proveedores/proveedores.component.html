@@ -1,0 +1,101 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Proveedores</ion-title>
+    <ion-buttons slot="end">
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content>
+
+  <ion-button expand="block" (click)="openModal()" style="margin: 16px;">
+    <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+    Nuevo Proveedor
+  </ion-button>
+
+  <div class="search-container">
+    <ion-item>
+      <ion-label>Buscar por:</ion-label>
+      <ion-select [(ngModel)]="selectedFields" multiple="true" placeholder="Seleccionar campo">
+        <ion-select-option *ngFor="let field of searchFields" [value]="field.value">{{ field.label }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <div *ngFor="let field of selectedFields">
+      <ion-item *ngIf="!isDateField(field)">
+        <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
+        <ion-input [(ngModel)]="searchValues[field]"></ion-input>
+      </ion-item>
+    
+      <div *ngIf="isDateField(field)">
+        <ion-item>
+          <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
+          <input type="date" [value]="getStartDate(field)" (change)="onStartDateChange($event, field)">
+        </ion-item>
+        <ion-item>
+          <ion-label>{{ getFieldLabel(field) }} Hasta:</ion-label>
+          <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
+        </ion-item>
+      </div>
+      
+    </div>
+
+    <ion-button (click)="applySearch()">Buscar</ion-button>
+    <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
+  </div>
+
+  
+  <div class="table-container">
+    <table class="table">
+      <thead class="header-row">
+        <tr class="color_header_tabla">
+          <th>ID</th>
+          <th>Activar</th>
+          <th>Proveedor</th>
+          <th>CostoPorPieza</th>
+          <th>Categoria</th>
+          <th>Subcategoria</th>
+          <th>Estatus</th>
+          <th>FechaRegistro</th>
+          <th>Rentabilidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let proveedor of paginatedProveedores" [ngClass]="{'active-row': proveedor.Estatus.data[0] === 1, 'inactive-row': proveedor.Estatus.data[0] === 0}" class="data-row">
+          <td>{{ proveedor.ProveedorID }}</td>
+          <td>
+            <ion-icon 
+              [name]="proveedor.Estatus.data[0] === 1 ? 'close-circle-outline' : 'checkmark-circle-outline'"
+              [color]="proveedor.Estatus.data[0] === 1 ? 'danger' : 'success'"
+              (click)="confirmarAccion(proveedor.ProveedorID, proveedor.Estatus.data[0])"
+              style="cursor: pointer;">
+            </ion-icon>
+          </td>
+          <td>{{ proveedor.Proveedor }}</td>
+          <td>{{ proveedor.CostoPorPieza }}</td>
+          <td>{{ proveedor.NombreCategoria }}</td>
+          <td>{{ proveedor.NombreSubcategoria }}</td>
+          <td>{{ proveedor.Estatus.data[0] === 1 ? 'ACTIVO' : 'NO ACTIVO' }}</td>
+          <td>{{ proveedor.FechaRegistro }}</td>
+          <td>{{ proveedor.Rentabilidad }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ion-footer class="margin_footer">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+        <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
+      </ion-buttons>
+      <div class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </div>
+    </ion-toolbar>
+  </ion-footer>
+
+</ion-content>

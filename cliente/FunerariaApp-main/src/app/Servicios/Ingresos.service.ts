@@ -1,4 +1,4 @@
-import { Ingreso, Concepto, Segmento, Categoria, Subcategoria, Usuario, Combinacion, Estatus, Cuenta } from '../Modelos/Ingresos';
+import { Ingreso, Concepto, Segmento, Categoria, Subcategoria, Usuario, Combinacion, Estatus, Cuenta, Proveedor } from '../Modelos/Ingresos';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -22,6 +22,8 @@ export class IngresosServices {
   private MyApiUrlCategoria: string;
 
   private MyApiUrlSubcategoria: string;
+
+  private MyApiUrlProveedor: string;
 
   private MyApiUrlUsuario: string;
 
@@ -50,6 +52,8 @@ export class IngresosServices {
     this.MyApiUrlCategoria = 'GetCategorias/';
 
     this.MyApiUrlSubcategoria = 'GetSubcategorias/';
+
+    this.MyApiUrlProveedor = 'GetProveedores/';
 
     this.MyApiUrlUsuario = 'GetUsuarios/';
 
@@ -96,6 +100,10 @@ export class IngresosServices {
 
   getSubcategorias(): Observable<Subcategoria[]> {
     return this.http.get<Subcategoria[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlSubcategoria}`);
+  }
+
+  getProveedores(): Observable<Proveedor[]> {
+    return this.http.get<Proveedor[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlProveedor}`);
   }
 
   getUsuarios(): Observable<Usuario[]> {

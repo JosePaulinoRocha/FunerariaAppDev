@@ -29,7 +29,7 @@ export const PostIngresos = async (req: Request, res: Response) => {
     let result: any;
     const {
         IngresoID, TipoIngreso, ConceptoID, SegmentoID, CategoriaID, SubcategoriaID, 
-        Proveedor, TipoCuentaID, CuentaID, RFC, Fecha, 
+        ProveedorID, TipoCuentaID, CuentaID, RFC, Fecha, 
         FechaAutorizacion, FechaConciliacion, Descripcion, Piezas, Monto, 
         EstatusComprobacionID, UsuarioAutorizaID, UsuarioRecibeID, 
         ObservacionesDifConciliacion
@@ -108,19 +108,29 @@ export const PostIngresos = async (req: Request, res: Response) => {
         const insertIngresoQuery = `
             INSERT INTO ingresos (
                 Fecha, SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, Descripcion,
-                Proveedor, Piezas, TipoCuentaID, CuentaID, Monto, EstatusComprobacionID,
+                ProveedorID, Piezas, TipoCuentaID, CuentaID, Monto, EstatusComprobacionID,
                 FechaAutorizacion, UsuarioAutorizaID, UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion, TipoIngreso
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const ingresoValues = [
             Fecha, newSegmentoID, newCategoriaID, newSubcategoriaID, newConceptoID, Descripcion,
-            Proveedor, Piezas, TipoCuentaIDNum, newCuentaID, Monto, EstatusComprobacionIDFinal,
+            ProveedorID, Piezas, TipoCuentaIDNum, newCuentaID, Monto, EstatusComprobacionIDFinal,
             FechaAutorizacion, UsuarioAutorizaID, UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion, TipoIngreso
         ];
 
         const [insertResult]: any = await con.query(insertIngresoQuery, ingresoValues);
         const ingresoID = insertResult.insertId;
         console.log('Ingreso insertado exitosamente con ID:', ingresoID);
+
+        // Inserción en HistorialEgresosProveedores
+        const insertHistorialQuery = `
+            INSERT INTO HistorialEgresosProveedores (
+                ProveedorID, CategoriaID, SubcategoriaID, NumeroPiezas, MontoTotal, FechaEgreso
+            ) VALUES (?, ?, ?, ?, ?, NOW())
+        `;
+        const historialValues = [ProveedorID, newCategoriaID, newSubcategoriaID, Piezas, Monto];
+        await con.query(insertHistorialQuery, historialValues);
+        console.log('Historial de egresos del proveedor insertado.');
 
         await con.commit();
         console.log('Transacción confirmada.');
@@ -285,6 +295,25 @@ export const ObtenerSubcategorias = async (req: Request, res: Response) => {
         result = subcategorias;
     } catch (error) {
         console.log('Error en Subcategorias');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+export const ObtenerProveedores = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM proveedores_vw';
+        const proveedores = (await con.query(query))[0] as any[];
+        result = proveedores;
+    } catch (error) {
+        console.log('Error en Proveedores');
         console.log(error);
         result = null;
     } finally {

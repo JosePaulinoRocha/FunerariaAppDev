@@ -27,6 +27,7 @@ export interface Combinacion {
     ConceptoID: number;
     NombreConcepto: string;
     Descripcion: string;
+    ProveedorID: number;
     Proveedor: string;
     Piezas: number;
     CajaChica: boolean;

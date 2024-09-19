@@ -71,7 +71,7 @@
               </ion-item>
             </ion-radio-group>
             <div *ngIf="!isNewSubcategoria">
-              <ion-select placeholder="Subcategoria" style="width: 13rem;" [(ngModel)]="ingreso.SubcategoriaID" name="subcategoria" required interface="alert" searchbar="true">
+              <ion-select (ionChange)="onSubcategoriaChange($event)" placeholder="Subcategoria" style="width: 13rem;" [(ngModel)]="ingreso.SubcategoriaID" name="subcategoria" required interface="alert" searchbar="true">
                 <ion-select-option *ngFor="let item of subcategoria" [value]="item.SubcategoriaID">{{ item.Nombre }}</ion-select-option>
               </ion-select>
             </div>
@@ -153,9 +153,19 @@
         <ion-col size-md="6">
 
           <ion-item>
-            <ion-label position="stacked">Proveedor</ion-label>
-            <ion-input placeholder="Proveedor" style="width: 13rem;" [(ngModel)]="ingreso.Proveedor" name="proveedor" required></ion-input>
+            <ion-label position="stacked">Proveedores</ion-label>
+            <ion-select placeholder="Proveedores" style="width: 13rem;" [(ngModel)]="ingreso.ProveedorID" name="proveedorID" required interface="alert" searchbar="true">
+              <ion-select-option *ngFor="let item of proveedor" 
+                                 [value]="item.ProveedorID">
+                                 {{ item.Proveedor }} - {{ item.NombreSubcategoria }} - {{
+                                  item.Rentabilidad === 'Mejor'
+                                    ? (item.Estatus.data[0] === 1 ? 'Activo - Mejor' : 'Inactivo - Mejor')
+                                    : (item.Estatus.data[0] === 1 ? 'Activo' : 'Inactivo')
+                                }}
+              </ion-select-option>
+            </ion-select>
           </ion-item>
+          
 
           <ion-item>
             <ion-label position="stacked">Tipo de Cuenta</ion-label>

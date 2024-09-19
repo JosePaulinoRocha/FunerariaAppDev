@@ -13,6 +13,7 @@ interface Ingreso {
   NombreConcepto: string;
   Descripcion: string;
   Proveedor: string;
+  ProveedorID: number;
   Piezas: number;
   Monto: number;
   Saldo: number;
@@ -89,6 +90,17 @@ interface Cuenta {
   RFC: string;
 }
 
+interface Proveedor {
+  ProveedorID: number;
+  Proveedor: string;
+  CategoriaID: number;
+  NombreCategoria: string;
+  SubcategoriaID: number;
+  NombreSubcategoria: string;
+  Rentabilidad: string;
+  Estatus: { data: number[]; type: string; };
+}
+
 @Component({
   selector: 'app-income-modal',
   templateUrl: './income-modal.component.html',
@@ -107,6 +119,7 @@ export class IncomeModalComponent implements OnInit {
     NombreConcepto: '',
     Descripcion: '',
     Proveedor: '',
+    ProveedorID: 0,
     Piezas: 0,
     Monto: 0,
     Saldo: 0,
@@ -140,6 +153,8 @@ export class IncomeModalComponent implements OnInit {
   combinacion: Combinacion[] = [];
   estatus: Estatus[] = [];
   cuenta: Cuenta[] = [];
+  proveedor: Proveedor[] = [];
+
 
   isNewConcepto = false;
   isNewSegmento = false;
@@ -158,6 +173,8 @@ export class IncomeModalComponent implements OnInit {
   isNewCuenta = false;
   newNombreCuenta = '';
   newRFC = '';
+
+  allProveedores: Proveedor[] = [];
 
   @Input() isEditMode = false;
 
@@ -180,6 +197,7 @@ export class IncomeModalComponent implements OnInit {
     this.loadSegmentos();
     this.loadCategorias();
     this.loadSubcategorias();
+    this.loadProveedores();
     this.loadUsuarios();
     this.loadCombinaciones();
     this.loadEstatus();
@@ -214,6 +232,7 @@ export class IncomeModalComponent implements OnInit {
       if (data.data) {
         console.log("esta es la data en el componente principal con la combinacion: ", data.data)
         this.fillFormWithCombination(data.data);
+        this.filterProveedoresByCombinacion();
       }
     });
   
@@ -244,10 +263,12 @@ export class IncomeModalComponent implements OnInit {
   
   onCategoriaChange(event: any) {
     const categoriaId = event.detail.value;
+    this.filterProveedoresByCombinacion();
   }
   
   onSubcategoriaChange(event: any) {
     const subcategoriaId = event.detail.value;
+    this.filterProveedoresByCombinacion();
   }
   
   onConceptoChange(event: any) {
@@ -327,6 +348,19 @@ export class IncomeModalComponent implements OnInit {
     );
   }
 
+  loadProveedores() {
+    this._ingresoServ.getProveedores().subscribe(
+      (data: Proveedor[]) => {
+        console.log('Esta es mi data en proveedores: ', data);
+        this.allProveedores = data; 
+        this.proveedor = [...this.allProveedores]; 
+      },
+      (error) => {
+        this.presentAlert('Error fetching providers');
+      }
+    );
+  }
+
   loadUsuarios() {
     this._ingresoServ.getUsuarios().subscribe(
       (data: Usuario[]) => {
@@ -399,7 +433,7 @@ export class IncomeModalComponent implements OnInit {
         SegmentoID: this.isNewSegmento ? this.newSegmento : this.ingreso.SegmentoID,
         CategoriaID: this.isNewCategoria ? this.newCategoria : this.ingreso.CategoriaID,
         SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
-        Proveedor: this.ingreso.Proveedor,
+        ProveedorID: this.ingreso.ProveedorID,
         TipoCuentaID: this.ingreso.TipoCuentaID,
         CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
         RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
@@ -449,5 +483,35 @@ export class IncomeModalComponent implements OnInit {
   closeModal(success: boolean) {
     this.modalController.dismiss({ success }, success ? 'success' : 'error');
   }
+
+
+  filterProveedoresByCombinacion() {
+    const categoriaId = this.ingreso.CategoriaID;
+    const subcategoriaId = this.ingreso.SubcategoriaID;
+  
+    console.log('CategoriaID:', categoriaId);
+    console.log('SubcategoriaID:', subcategoriaId);
+  
+    // Verifica si CategoriaID y SubcategoriaID son mayores que 0
+    if (categoriaId > 0 && subcategoriaId > 0) {
+      // Filtra proveedores que coincidan con CategoriaID y SubcategoriaID
+      const filteredProveedores = this.allProveedores.filter(p =>
+        p.CategoriaID === categoriaId &&
+        p.SubcategoriaID === subcategoriaId
+      );
+  
+      console.log('Filtered Proveedores:', filteredProveedores);
+  
+      // Actualiza la lista de proveedores
+      this.proveedor = filteredProveedores;
+    } else {
+      // Si CategoriaID o SubcategoriaID no son mayores que 0, carga todos los proveedores
+      console.log("Se fue al else de proveedores");
+      this.proveedor = [...this.allProveedores];
+    }
+  }
+  
+  
+
 
 }

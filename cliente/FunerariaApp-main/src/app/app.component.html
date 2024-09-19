@@ -45,6 +45,11 @@
             <ion-label>Combinaciones</ion-label>
           </ion-item>
 
+          <ion-item *ngIf="isAdmin" button (click)="navigateTo('proveedores')">
+            <ion-icon slot="start" [name]="'people-outline'"></ion-icon>
+            <ion-label>Proveedores</ion-label>
+          </ion-item>
+
           <ion-item *ngIf="isAdmin" button (click)="navigateTo('usuarios')">
             <ion-icon slot="start" [name]="'people-outline'"></ion-icon>
             <ion-label>Usuarios</ion-label>
@@ -66,7 +71,7 @@
       <ion-buttons slot="start">
         <ion-menu-button></ion-menu-button>
       </ion-buttons>
-      <ion-title>Home</ion-title>
+      <ion-title style="cursor: pointer; width: fit-content;" (click)="navigateTo('home')">Home</ion-title>
       <ion-buttons slot="end">
         <ion-button (click)="toggleNotifications()" class="notification-button">
           <div class="notification-icon">

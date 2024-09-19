@@ -4,7 +4,7 @@ import multer, { FileFilterCallback } from 'multer';
 import fs from 'fs'; // Importa el módulo fs
 import path from 'path'; // Importa el módulo path
 import zlib from 'zlib';
-import { ObtenerIngresos, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, ObtenerCombinacionesSegmento, PostIngresosComprobante, asignarCuenta, asignarCuentasMasivas } from '../controllers/Ingresos.controllers';
+import { ObtenerIngresos, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, ObtenerCombinacionesSegmento, PostIngresosComprobante, asignarCuenta, asignarCuentasMasivas, ObtenerProveedores } from '../controllers/Ingresos.controllers';
 
 const router = Router();
 
@@ -56,6 +56,9 @@ router.get('/GetCategorias', authenticateJWT, ObtenerCategorias);
 
 // Subcategorías
 router.get('/GetSubcategorias', authenticateJWT, ObtenerSubcategorias);
+
+// Proveedores
+router.get('/GetProveedores', authenticateJWT, ObtenerProveedores);
 
 // Usuarios
 router.get('/GetUsuarios', authenticateJWT, ObtenerUsuarios);

@@ -1,0 +1,134 @@
+import { Component, Input, OnInit } from '@angular/core';
+import { ModalController, IonicModule, AlertController  } from '@ionic/angular';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
+import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
+import { ProveedoresServices } from 'src/app/Servicios/Proveedores.service';
+
+
+interface Proveedor {
+  ProveedorID: number;
+  Proveedor: string;
+  Estatus: number;
+  CostoPorPieza: number;
+  CategoriaID: number;
+  NombreCategoria: string;
+  SubcategoriaID: number;
+  NombreSubcategoria: string;
+  FechaRegistro: string;
+  [key: string]: any;
+}
+
+interface Categoria {
+  CategoriaID: number;
+  Nombre: string;
+}
+
+interface Subcategoria {
+  SubcategoriaID: number;
+  Nombre: string;
+}
+
+
+@Component({
+  selector: 'app-proveedores-modal',
+  templateUrl: './proveedores-modal.component.html',
+  styleUrls: ['./proveedores-modal.component.scss'],
+  standalone: true,
+  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule],
+})
+export class ProveedoresModalComponent implements OnInit {
+  @Input() proveedor: Proveedor = {
+    ProveedorID: 0,
+    Proveedor: '',
+    Estatus: 0,
+    CostoPorPieza: 0,
+    CategoriaID: 0,
+    NombreCategoria: '',
+    SubcategoriaID: 0,
+    NombreSubcategoria: '',
+    FechaRegistro: '',
+  };
+
+  categoria: Categoria[] = [];
+  subcategoria: Subcategoria[] = [];
+
+  isNewCategoria = false;
+  isNewSubcategoria = false;
+
+  newCategoria = '';
+  newSubcategoria = '';
+
+  @Input() isEditMode: boolean = false;
+
+  constructor(private modalController: ModalController, private _proveedorServ: ProveedoresServices, private _ingresoServ: IngresosServices, private alertController: AlertController) {}
+
+
+  ngOnInit() {
+    this.loadCategorias();
+    this.loadSubcategorias();
+  }
+
+  loadCategorias() {
+    this._ingresoServ.getCategorias().subscribe((data: Categoria[]) => {
+      this.categoria = data;
+    }, (error) => {
+      this.presentAlert('Error fetching categories');
+    });
+  }
+
+  loadSubcategorias() {
+    this._ingresoServ.getSubcategorias().subscribe((data: Subcategoria[]) => {
+      this.subcategoria = data;
+    }, (error) => {
+      this.presentAlert('Error fetching subcategories');
+    });
+  }
+
+  async presentAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Error',
+      message: message,
+      buttons: ['OK'],
+    });
+
+    await alert.present();
+  }
+
+  async agregarProveedor() {
+    const nuevoProveedor = {
+      Proveedor: this.proveedor.Proveedor,
+      CategoriaID: this.isNewCategoria ? this.newCategoria : this.proveedor.CategoriaID,
+      SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.proveedor.SubcategoriaID,
+    };
+  
+    console.log("Datos del nuevo proveedor:", nuevoProveedor);
+  
+    this._proveedorServ.addProveedor(nuevoProveedor).subscribe(async response => {
+      console.log('Proveedor agregado exitosamente:', response);
+  
+      const alert = await this.alertController.create({
+        header: 'Éxito',
+        message: 'El proveedor ha sido agregado correctamente.',
+        buttons: ['OK']
+      });
+      await alert.present();
+  
+      this.closeModal(true);
+    }, error => {
+      console.error('Error al agregar el proveedor:', error);
+      const alert = this.alertController.create({
+        header: 'Error',
+        message: 'Algo salio mal.',
+        buttons: ['OK']
+      });
+    });
+  }
+  
+
+  closeModal(success: boolean) {
+    this.modalController.dismiss({ success }, success ? 'success' : 'error');
+  }
+
+}

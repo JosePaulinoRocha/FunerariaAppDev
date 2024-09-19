@@ -83,5 +83,15 @@
       </ion-card-content>
     </ion-card>
 
+    <ion-card *ngIf="isAdmin" (click)="navigateTo('proveedores')">
+      <ion-card-content>
+        <ion-icon color="primary" name="people-outline" slot="start"></ion-icon>
+        <ion-card-title>Proveedores</ion-card-title>
+      </ion-card-content>
+      <ion-card-content>
+        <p>Esta sección permite registrar y pre-seleccionar proveedores.</p>
+      </ion-card-content>
+    </ion-card>
+
   </div>
 </ion-content>

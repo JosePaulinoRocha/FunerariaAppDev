@@ -1,0 +1,77 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Agregar Proveedor</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal(false)">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form (ngSubmit)="agregarProveedor()" class="ion-padding">
+    <ion-grid>
+      <ion-row>
+        <ion-col size-md="12">
+
+          <ion-item>
+            <ion-label position="stacked">Proveedor</ion-label>
+            <ion-input placeholder="Proveedor" style="width: 30rem;" [(ngModel)]="proveedor.Proveedor" name="proveedor" required></ion-input>
+          </ion-item>
+
+          <!-- Categoría -->
+          <ion-item>
+            <ion-label position="stacked">Categoría</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewCategoria" name="isNewCategoria">
+              <ion-item>
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item>
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewCategoria">
+              <ion-select placeholder="Categoria"  style="width: 30rem;" [(ngModel)]="proveedor.CategoriaID" name="categoria" required interface="alert" searchbar="true">
+                <ion-select-option *ngFor="let item of categoria" [value]="item.CategoriaID">{{ item.Nombre }}</ion-select-option>
+              </ion-select>
+            </div>
+            <div *ngIf="isNewCategoria">
+              <ion-input placeholder="Nueva Categoria"  style="width: 30rem;" [(ngModel)]="newCategoria" name="newCategoria" placeholder="Nueva Categoría" required></ion-input>
+            </div>
+          </ion-item>
+
+          <!-- Subcategoría -->
+          <ion-item>
+            <ion-label position="stacked">Subcategoría</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewSubcategoria" name="isNewSubcategoria">
+              <ion-item>
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item>
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewSubcategoria">
+              <ion-select placeholder="Subcategoria"  style="width: 30rem;" [(ngModel)]="proveedor.SubcategoriaID" name="subcategoria" required interface="alert" searchbar="true">
+                <ion-select-option *ngFor="let item of subcategoria" [value]="item.SubcategoriaID">{{ item.Nombre }}</ion-select-option>
+              </ion-select>
+            </div>
+            <div *ngIf="isNewSubcategoria">
+              <ion-input placeholder="Nueva Subcategoria"  style="width: 30rem;" [(ngModel)]="newSubcategoria" name="newSubcategoria" placeholder="Nueva Subcategoría" required></ion-input>
+            </div>
+          </ion-item>
+
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <ion-footer>
+      <ion-button style="margin-bottom: 1rem;" expand="full" type="submit">Guardar</ion-button>
+    </ion-footer>
+  </form>
+</ion-content>
