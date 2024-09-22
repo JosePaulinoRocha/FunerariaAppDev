@@ -10,13 +10,14 @@ import { ProveedoresServices } from 'src/app/Servicios/Proveedores.service';
 interface Proveedor {
   ProveedorID: number;
   Proveedor: string;
-  Estatus: number;
+  Estatus: { data: number[]; type: string; };
   CostoPorPieza: number;
   CategoriaID: number;
   NombreCategoria: string;
   SubcategoriaID: number;
   NombreSubcategoria: string;
   FechaRegistro: string;
+  Rentabilidad: string;
   [key: string]: any;
 }
 
@@ -42,21 +43,25 @@ export class ProveedoresModalComponent implements OnInit {
   @Input() proveedor: Proveedor = {
     ProveedorID: 0,
     Proveedor: '',
-    Estatus: 0,
+    Estatus: { data: [], type: '' },
     CostoPorPieza: 0,
     CategoriaID: 0,
     NombreCategoria: '',
     SubcategoriaID: 0,
     NombreSubcategoria: '',
     FechaRegistro: '',
+    Rentabilidad: '',
   };
 
+  proveedorCatalogo: Proveedor[] = [];
   categoria: Categoria[] = [];
   subcategoria: Subcategoria[] = [];
 
+  isNewProveedor = false;
   isNewCategoria = false;
   isNewSubcategoria = false;
 
+  newProveedor = '';
   newCategoria = '';
   newSubcategoria = '';
 
@@ -66,9 +71,26 @@ export class ProveedoresModalComponent implements OnInit {
 
 
   ngOnInit() {
+    this.loadProveedores();
     this.loadCategorias();
     this.loadSubcategorias();
   }
+
+  loadProveedores() {
+    this._proveedorServ.getProveedores().subscribe((data: Proveedor[]) => {
+      // Filtrar los proveedores únicos basados en el campo 'Proveedor'
+      const uniqueProveedores = data.filter((value, index, self) =>
+        index === self.findIndex((t) => (
+          t.Proveedor === value.Proveedor
+        ))
+      );
+      
+      this.proveedorCatalogo = uniqueProveedores;
+    }, (error) => {
+      this.presentAlert('Error fetching proveedores');
+    });
+  }
+  
 
   loadCategorias() {
     this._ingresoServ.getCategorias().subscribe((data: Categoria[]) => {
@@ -98,9 +120,10 @@ export class ProveedoresModalComponent implements OnInit {
 
   async agregarProveedor() {
     const nuevoProveedor = {
-      Proveedor: this.proveedor.Proveedor,
+      Proveedor: this.isNewProveedor ? this.newProveedor : this.proveedor.Proveedor,
       CategoriaID: this.isNewCategoria ? this.newCategoria : this.proveedor.CategoriaID,
       SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.proveedor.SubcategoriaID,
+      CostoPorPieza: this.proveedor.CostoPorPieza,
     };
   
     console.log("Datos del nuevo proveedor:", nuevoProveedor);

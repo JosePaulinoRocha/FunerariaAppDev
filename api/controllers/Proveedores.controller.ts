@@ -23,7 +23,7 @@ export const ObtenerProveedores = async (req: Request, res: Response) => {
 
 export const addProveedor = async (req: Request, res: Response) => {
     let con: any;
-    const { Proveedor, CategoriaID, SubcategoriaID } = req.body;
+    const { Proveedor, CategoriaID, SubcategoriaID, CostoPorPieza } = req.body;
 
     try {
         con = await connect();
@@ -72,10 +72,10 @@ export const addProveedor = async (req: Request, res: Response) => {
 
             // Insertar el nuevo proveedor
             const insertProveedorQuery = `
-                INSERT INTO proveedores (Proveedor, CategoriaID, SubcategoriaID, Estatus, FechaRegistro)
-                VALUES (?, ?, ?, ?, NOW())
+                INSERT INTO proveedores (Proveedor, CategoriaID, SubcategoriaID, Estatus, FechaRegistro, CostoPorPieza)
+                VALUES (?, ?, ?, ?, NOW(), ?)
             `;
-            const insertValues = [Proveedor, newCategoriaID, newSubcategoriaID, estatus];
+            const insertValues = [Proveedor, newCategoriaID, newSubcategoriaID, estatus, CostoPorPieza];
             await con.query(insertProveedorQuery, insertValues);
 
             await con.commit();

@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  // endpoint: 'https://systemabmxli.com/api_funeraria_app/',
   endpoint: 'http://localhost:3080/',
 };
 

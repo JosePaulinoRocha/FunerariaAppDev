@@ -51,7 +51,7 @@ export const ObtenerUltimaReconciliacion = async (req: Request, res: Response) =
     try {
         con = await connect();
         let query = `
-            SELECT * FROM Reconciliaciones
+            SELECT * FROM reconciliaciones
             WHERE CuentaID = ?
             ORDER BY Fecha DESC
             LIMIT 1
@@ -94,7 +94,7 @@ export const ActualizarIngresos = async (req: Request, res: Response) => {
         con = await connect();
         for (const update of reconciliacionUpdates) {
             const { IngresoID, ReconciliacionID, Saldo } = update;
-            await con.query('UPDATE Ingresos SET ReconciliacionID = ?, Reconciliado = 1, Saldo = ? WHERE IngresoID = ?', [ReconciliacionID, Saldo, IngresoID]);
+            await con.query('UPDATE ingresos SET ReconciliacionID = ?, Reconciliado = 1, Saldo = ? WHERE IngresoID = ?', [ReconciliacionID, Saldo, IngresoID]);
         }
         res.json({ message: 'Ingresos actualizados exitosamente' });
     } catch (error: unknown) {
@@ -141,12 +141,12 @@ export const EliminarReconciliacion = async (req: Request, res: Response) => {
         console.log('Transacción iniciada'); // Log adicional
 
         // Actualizar los ingresos relacionados
-        const updateQuery = 'UPDATE Ingresos SET ReconciliacionID = NULL, Reconciliado = 0 WHERE ReconciliacionID = ?';
+        const updateQuery = 'UPDATE ingresos SET ReconciliacionID = NULL, Reconciliado = 0 WHERE ReconciliacionID = ?';
         const [updateResult] = await con.query<ResultSetHeader>(updateQuery, [reconciliacionID]);
         console.log('Resultado de actualizar ingresos:', updateResult); // Log adicional
 
         // Eliminar la reconciliación
-        const deleteQuery = 'DELETE FROM Reconciliaciones WHERE ReconciliacionID = ?';
+        const deleteQuery = 'DELETE FROM reconciliaciones WHERE ReconciliacionID = ?';
         const [deleteResult] = await con.query<ResultSetHeader>(deleteQuery, [reconciliacionID]);
         console.log('Resultado de eliminar reconciliación:', deleteResult); // Log adicional
 
@@ -177,7 +177,7 @@ export const ActualizarObservacion = async (req: Request, res: Response) => {
     let con;
     try {
         con = await connect();
-        const query = 'UPDATE Ingresos SET ObservacionesDifConciliacion = ? WHERE IngresoID = ?';
+        const query = 'UPDATE ingresos SET ObservacionesDifConciliacion = ? WHERE IngresoID = ?';
         const [result] = await con.query<ResultSetHeader>(query, [observacion, ingresoID]);
         res.json({ message: 'Observación actualizada exitosamente', affectedRows: result.affectedRows });
     } catch (error: unknown) {
@@ -232,7 +232,7 @@ export const ReintegrarMontoReconciliacion = async (req: Request, res: Response)
         await con.beginTransaction();
 
         // Obtener el monto actual del ingreso
-        const [ingresoRows] = await con.query<RowDataPacket[]>('SELECT Monto FROM Ingresos WHERE IngresoID = ?', [IngresoID]);
+        const [ingresoRows] = await con.query<RowDataPacket[]>('SELECT Monto FROM ingresos WHERE IngresoID = ?', [IngresoID]);
         const ingreso = ingresoRows[0];
         if (!ingreso) {
             await con.rollback();
@@ -243,10 +243,10 @@ export const ReintegrarMontoReconciliacion = async (req: Request, res: Response)
         const diferencia = montoAnterior - Monto;
 
         // Actualizar el monto del ingreso
-        await con.query<ResultSetHeader>('UPDATE Ingresos SET Monto = ? WHERE IngresoID = ?', [Monto, IngresoID]);
+        await con.query<ResultSetHeader>('UPDATE ingresos SET Monto = ? WHERE IngresoID = ?', [Monto, IngresoID]);
 
         // Obtener el saldo actual de la reconciliación
-        const [reconciliacionRows] = await con.query<RowDataPacket[]>('SELECT Saldo FROM Reconciliaciones WHERE ReconciliacionID = ?', [ReconciliacionID]);
+        const [reconciliacionRows] = await con.query<RowDataPacket[]>('SELECT Saldo FROM reconciliaciones WHERE ReconciliacionID = ?', [ReconciliacionID]);
         const reconciliacion = reconciliacionRows[0];
         if (!reconciliacion) {
             await con.rollback();
@@ -257,7 +257,7 @@ export const ReintegrarMontoReconciliacion = async (req: Request, res: Response)
         const saldoNuevo = saldoActual - diferencia;
 
         // Actualizar el saldo de la reconciliación
-        await con.query<ResultSetHeader>('UPDATE Reconciliaciones SET Saldo = ? WHERE ReconciliacionID = ?', [saldoNuevo, ReconciliacionID]);
+        await con.query<ResultSetHeader>('UPDATE reconciliaciones SET Saldo = ? WHERE ReconciliacionID = ?', [saldoNuevo, ReconciliacionID]);
 
         // Confirmar la transacción
         await con.commit();

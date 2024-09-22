@@ -27,7 +27,7 @@ export async function updateValidado(req: Request, res: Response): Promise<void>
     try {
         const conn = await connect();
         const [result] = await conn.query<ResultSetHeader>(
-            'UPDATE Combinaciones SET validado = ?, FechaModificacion = NOW() WHERE CombinacionID = ?', 
+            'UPDATE combinaciones SET validado = ?, FechaModificacion = NOW() WHERE CombinacionID = ?', 
             [validado, combinacionID]
         );
   
@@ -55,7 +55,7 @@ export const EliminarCombinacion = async (req: Request, res: Response) => {
         console.log('Transacción iniciada');
 
         // Eliminar la combinacion
-        const deleteQuery = 'DELETE FROM Combinaciones WHERE CombinacionID = ?';
+        const deleteQuery = 'DELETE FROM combinaciones WHERE CombinacionID = ?';
         const [deleteResult] = await con.query<ResultSetHeader>(deleteQuery, [combinacionID]);
         console.log('Resultado de eliminar combinacion:', deleteResult); 
 

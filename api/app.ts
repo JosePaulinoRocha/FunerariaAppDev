@@ -41,7 +41,11 @@ export class App {
 
     middlewares() {
         this.app.use(morgan('dev'));
-        this.app.use(cors());
+        this.app.use(cors({
+            origin: '*', // Asegúrate de cambiar esto al dominio de tu cliente
+            methods: ['GET', 'POST'], // Métodos permitidos
+            credentials: true // Si necesitas enviar cookies
+        }));
         this.app.use(this.allowCrossDomain);
         this.app.use(express.json({ limit: '1mb' }));
         this.app.use(express.urlencoded({ extended: true }));

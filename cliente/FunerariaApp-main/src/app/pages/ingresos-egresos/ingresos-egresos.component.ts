@@ -320,7 +320,7 @@ export class IngresosEgresosComponent implements OnInit {
   
   
   downloadFile(fileUrl: string) {
-    const baseUrl = 'http://localhost:3080/'; 
+    const baseUrl = 'http://localhost/'; 
     const fullUrl = `${baseUrl}${fileUrl}`;
     window.open(fullUrl, '_blank');
   }

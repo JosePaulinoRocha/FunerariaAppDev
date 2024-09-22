@@ -30,10 +30,10 @@ export const ObtenerReconciliacionesNotificaciones = async (req: Request, res: R
         // Consulta para obtener el último registro de cada CuentaID y filtrar los que tienen una diferencia de 2 días o más
         const query = `
             SELECT r.*
-            FROM Reconciliaciones r
+            FROM reconciliaciones r
             INNER JOIN (
                 SELECT CuentaID, MAX(ReconciliacionID) AS UltimaReconciliacionID
-                FROM Reconciliaciones
+                FROM reconciliaciones
                 GROUP BY CuentaID
             ) ultimas
             ON r.ReconciliacionID = ultimas.UltimaReconciliacionID

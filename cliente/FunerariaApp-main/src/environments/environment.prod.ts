@@ -1,4 +1,4 @@
-export const environment = {
+export const environmentProd = {
   production: true,
-  endpoint: 'https://systemabmxli.com/api/'
+  endpoint: 'http://systemabmxli.com'
 };

@@ -116,7 +116,7 @@ export const ObtenerRoles = async (req: Request, res: Response) => {
   let result;
   try {
       con = await connect();
-      let query = 'SELECT * FROM Roles';
+      let query = 'SELECT * FROM roles';
       const roles = (await con.query(query))[0] as any[];
       result = roles;
   } catch (error) {

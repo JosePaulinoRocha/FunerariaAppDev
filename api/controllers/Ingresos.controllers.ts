@@ -236,7 +236,7 @@ export const ObtenerConceptos = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM Conceptos';
+        let query = 'SELECT * FROM conceptos';
         const conceptos = (await con.query(query))[0] as any[];
         result = conceptos;
     } catch (error) {
@@ -254,7 +254,7 @@ export const ObtenerSegmentos = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM Segmentos';
+        let query = 'SELECT * FROM segmentos';
         const segmentos = (await con.query(query))[0] as any[];
         result = segmentos;
     } catch (error) {
@@ -272,7 +272,7 @@ export const ObtenerCategorias = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM Categorias';
+        let query = 'SELECT * FROM categorias';
         const categorias = (await con.query(query))[0] as any[];
         result = categorias;
     } catch (error) {
@@ -290,7 +290,7 @@ export const ObtenerSubcategorias = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM Subcategorias';
+        let query = 'SELECT * FROM subcategorias';
         const subcategorias = (await con.query(query))[0] as any[];
         result = subcategorias;
     } catch (error) {
@@ -327,7 +327,7 @@ export const ObtenerUsuarios = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM Usuarios';
+        let query = 'SELECT * FROM usuarios';
         const usuarios = (await con.query(query))[0] as any[];
         result = usuarios;
     } catch (error) {
@@ -345,7 +345,7 @@ export const ObtenerCuentas = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM Cuentas';
+        let query = 'SELECT * FROM cuentas';
         const usuarios = (await con.query(query))[0] as any[];
         result = usuarios;
     } catch (error) {
@@ -363,7 +363,7 @@ export const ObtenerCombinaciones = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM Combinaciones_vw';
+        let query = 'SELECT * FROM combinaciones_vw';
         const combinaciones = (await con.query(query))[0] as any[];
         result = combinaciones;
     } catch (error) {
@@ -382,7 +382,7 @@ export const ObtenerCombinacionesSegmento = async (req: Request, res: Response) 
     try {
         con = await connect();
         const segmentoId = req.params.segmentoId;
-        let query = 'SELECT * FROM Combinaciones_vw WHERE SegmentoID = ? AND Validado = 1';
+        let query = 'SELECT * FROM combinaciones_vw WHERE SegmentoID = ? AND Validado = 1';
         const combinaciones = (await con.query(query, [segmentoId]))[0] as any[];
         result = combinaciones;
     } catch (error) {
@@ -401,7 +401,7 @@ export const ObtenerEstatus = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM EstatusComprobacion';
+        let query = 'SELECT * FROM estatuscomprobacion';
         const estatus = (await con.query(query))[0] as any[];
         result = estatus;
     } catch (error) {
