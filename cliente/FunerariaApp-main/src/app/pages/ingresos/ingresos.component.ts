@@ -43,8 +43,41 @@ interface Income {
 export class IngresosComponent implements OnInit {
   searchTerm: string = '';
   incomes: Income[] = [];
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalPages: number = 1;
+  itemsPerPageOptions: number[] = [10, 20, 50, 100, 500, 1000];
 
   constructor(private modalController: ModalController, private _ingresoServ: IngresosServices) { }
+
+  updateTotalPages() {
+    this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
+  }
+
+  onItemsPerPageChange() {
+    this.currentPage = 1; // Resetea la paginación al cambiar los registros por página
+    this.updateTotalPages();
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+  
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  getPaginatedIncomes(): Income[] {
+    const filtered = this.filteredIncomes();
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return filtered.slice(start, end);
+  }
+  
 
   ngOnInit() {
     this.loadIngresos();
@@ -55,19 +88,20 @@ export class IngresosComponent implements OnInit {
       this.incomes = data
         .map(income => ({
           ...income,
-          Fecha: new Date(income.Fecha).toISOString().split('T')[0], // Formatear la fecha
-          FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0], // Formatear la fecha
-          FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0] // Formatear la fecha
+          Fecha: new Date(income.Fecha).toISOString().split('T')[0],
+          FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
+          FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
         }))
         .sort((a, b) => b.IngresoID - a.IngresoID); // Ordenar de más reciente a más antiguo
+  
+      // Actualizar las páginas después de cargar los ingresos
+      this.updateTotalPages();
   
       console.log("esta es la data de ingresos: ", this.incomes);
     }, (error) => {
       console.error('Error fetching incomes', error); 
     });
   }
-  
-  
 
   filteredIncomes(): Income[] {
     return this.incomes.filter(income => {

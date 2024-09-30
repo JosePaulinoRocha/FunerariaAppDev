@@ -40,19 +40,14 @@ export const PostIngresos = async (req: Request, res: Response) => {
         await con.beginTransaction();
         console.log('Transacción iniciada');
 
-        const EstatusComprobacionIDFinal = TipoIngreso === 0 ? (EstatusComprobacionID || 1) : EstatusComprobacionID;
-
         const getOrCreateCuentaId = async (cuentaId: number | string | null, additionalFields: { [key: string]: any } = {}) => {
             if (typeof cuentaId === 'string' || cuentaId === 0 || cuentaId === null) {
                 const columnName = 'NombreCuenta';
-
                 if (!additionalFields[columnName]) {
                     additionalFields[columnName] = cuentaId;
                 }
-
                 let insertQuery = `INSERT INTO cuentas (${Object.keys(additionalFields).join(', ')})`;
                 let queryValues = Object.values(additionalFields);
-
                 insertQuery += ` VALUES (${queryValues.map(() => '?').join(', ')})`;
                 const [insertResult]: any = await con.query(insertQuery, queryValues);
                 return insertResult.insertId;
@@ -61,7 +56,10 @@ export const PostIngresos = async (req: Request, res: Response) => {
         };
 
         const getOrCreateId = async (table: string, value: number | string | null) => {
-            if (typeof value === 'string' || value === 0 || value === null) {
+            if (value === null) {
+                return null;
+            }
+            if (typeof value === 'string' || value === 0) {
                 const columnName = 'Nombre';
                 const insertQuery = `INSERT INTO ${table} (${columnName}) VALUES (?)`;
                 const [insertResult]: any = await con.query(insertQuery, [value]);
@@ -70,17 +68,58 @@ export const PostIngresos = async (req: Request, res: Response) => {
             return value;
         };
 
+        // Verificar y obtener el ProveedorID
+        let newProveedorID: number | null = null;
+        if (typeof ProveedorID === 'string') {
+            const [proveedorResult]: any = await con.query(`SELECT ProveedorID FROM proveedores WHERE Proveedor = ?`, [ProveedorID]);
+            if (proveedorResult.length > 0) {
+                newProveedorID = proveedorResult[0].ProveedorID;
+                console.log('Proveedor encontrado:', newProveedorID);
+            } else {
+                const insertProveedorQuery = `
+                    INSERT INTO proveedores (Proveedor, CategoriaID, SubcategoriaID, FechaRegistro) 
+                    VALUES (?, ?, ?, NOW())
+                `;
+                const [insertProveedorResult]: any = await con.query(insertProveedorQuery, [ProveedorID, CategoriaID, SubcategoriaID]);
+                newProveedorID = insertProveedorResult.insertId;
+                console.log('Nuevo proveedor insertado:', newProveedorID);
+            }
+        } else {
+            newProveedorID = ProveedorID;
+        }
+
         const newConceptoID = await getOrCreateId('conceptos', ConceptoID);
         const newSegmentoID = await getOrCreateId('segmentos', SegmentoID);
         const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
-        const newSubcategoriaID = await getOrCreateId('subcategorias', SubcategoriaID);
+
+        let newSubcategoriaID = null;
+        if (SubcategoriaID !== null) {
+            newSubcategoriaID = await getOrCreateId('subcategorias', SubcategoriaID);
+        }
+
+        // Comprobar cuántos registros existen con la misma combinación de categoría y subcategoría
+        const checkCombinationCountQuery = `
+            SELECT COUNT(*) AS count 
+            FROM ingresos 
+            WHERE CategoriaID = ? AND SubcategoriaID = ?
+        `;
+        const countParams = [newCategoriaID, newSubcategoriaID];
+        const [countResult] = await con.query(checkCombinationCountQuery, countParams) as any[];
+
+        // Actualizar el Estatus del proveedor
+        const estatus = countResult[0].count >= 3 ? 0 : 0; // 0 si hay 3 o más registros, 1 si no
+        await con.query(`UPDATE proveedores SET Estatus = ? WHERE ProveedorID = ?`, [estatus, newProveedorID]);
 
         const checkCombinationQuery = `
             SELECT * 
             FROM combinaciones 
-            WHERE ConceptoID = ? AND SegmentoID = ? AND CategoriaID = ? AND SubcategoriaID = ?
+            WHERE ConceptoID = ? AND SegmentoID = ? AND CategoriaID = ? AND SubcategoriaID ${newSubcategoriaID ? '= ?' : 'IS NULL'}
         `;
-        const [combinationResult] = await con.query(checkCombinationQuery, [newConceptoID, newSegmentoID, newCategoriaID, newSubcategoriaID]) as any[];
+        const combinationParams = [newConceptoID, newSegmentoID, newCategoriaID];
+        if (newSubcategoriaID) {
+            combinationParams.push(newSubcategoriaID);
+        }
+        const [combinationResult] = await con.query(checkCombinationQuery, combinationParams) as any[];
 
         if (combinationResult.length === 0) {
             const insertCombinationQuery = `
@@ -96,7 +135,6 @@ export const PostIngresos = async (req: Request, res: Response) => {
 
         let newCuentaID: number | string = 0;
         const TipoCuentaIDNum = Number(TipoCuentaID);
-
         if (TipoCuentaIDNum === 1) {
             newCuentaID = await getOrCreateCuentaId(CuentaID, { TipoCuentaID: TipoCuentaIDNum });
         } else if (TipoCuentaIDNum === 2) {
@@ -105,47 +143,82 @@ export const PostIngresos = async (req: Request, res: Response) => {
             throw new Error(`TipoCuentaID no válido: ${TipoCuentaIDNum}`);
         }
 
-        const insertIngresoQuery = `
-            INSERT INTO ingresos (
-                Fecha, SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, Descripcion,
-                ProveedorID, Piezas, TipoCuentaID, CuentaID, Monto, EstatusComprobacionID,
-                FechaAutorizacion, UsuarioAutorizaID, UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion, TipoIngreso
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-        const ingresoValues = [
-            Fecha, newSegmentoID, newCategoriaID, newSubcategoriaID, newConceptoID, Descripcion,
-            ProveedorID, Piezas, TipoCuentaIDNum, newCuentaID, Monto, EstatusComprobacionIDFinal,
-            FechaAutorizacion, UsuarioAutorizaID, UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion, TipoIngreso
+        // Imprimir valores que se usarán para el insert
+        console.log('Valores a insertar en ingresos:', {
+            Fecha,
+            SegmentoID: newSegmentoID,
+            CategoriaID: newCategoriaID,
+            ConceptoID: newConceptoID,
+            Descripcion,
+            ProveedorID: newProveedorID,
+            Piezas,
+            TipoCuentaID: TipoCuentaIDNum,
+            CuentaID: newCuentaID,
+            Monto,
+            EstatusComprobacionID,
+            FechaAutorizacion,
+            UsuarioAutorizaID,
+            UsuarioRecibeID,
+            FechaConciliacion,
+            ObservacionesDifConciliacion,
+            TipoIngreso,
+            SubcategoriaID: newSubcategoriaID,
+        });
+
+        const columns = [
+            'SegmentoID', 'CategoriaID', 'ConceptoID', 'Descripcion',
+            'ProveedorID', 'Piezas', 'TipoCuentaID', 'CuentaID', 'Monto', 
+            'EstatusComprobacionID', 'FechaAutorizacion', 'UsuarioAutorizaID', 
+            'UsuarioRecibeID', 'FechaConciliacion', 'ObservacionesDifConciliacion', 
+            'TipoIngreso', 'Fecha'  // Fecha ahora al final para insertar con NOW()
+        ];
+        
+        const values = [
+            newSegmentoID, newCategoriaID, newConceptoID, Descripcion,
+            newProveedorID, Piezas, TipoCuentaIDNum, newCuentaID, Monto, 
+            EstatusComprobacionID, FechaAutorizacion, UsuarioAutorizaID, 
+            UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion, 
+            TipoIngreso, Fecha
         ];
 
-        const [insertResult]: any = await con.query(insertIngresoQuery, ingresoValues);
+        // Solo incluye SubcategoriaID si no es null
+        if (newSubcategoriaID !== null) {
+            columns.splice(3, 0, 'SubcategoriaID');
+            values.splice(3, 0, newSubcategoriaID);
+        }
+
+        const insertIngresoQuery = `
+        INSERT INTO ingresos (${columns.join(', ')})
+        VALUES (${values.map(() => '?').join(', ')})
+        `;
+    
+
+        const [insertResult]: any = await con.query(insertIngresoQuery, values);
         const ingresoID = insertResult.insertId;
         console.log('Ingreso insertado exitosamente con ID:', ingresoID);
 
         // Inserción en HistorialEgresosProveedores
         const insertHistorialQuery = `
-            INSERT INTO HistorialEgresosProveedores (
+            INSERT INTO historialegresosproveedores (
                 ProveedorID, CategoriaID, SubcategoriaID, NumeroPiezas, MontoTotal, FechaEgreso
             ) VALUES (?, ?, ?, ?, ?, NOW())
         `;
-        const historialValues = [ProveedorID, newCategoriaID, newSubcategoriaID, Piezas, Monto];
+        const historialValues = [newProveedorID, newCategoriaID, newSubcategoriaID, Piezas, Monto];
         await con.query(insertHistorialQuery, historialValues);
         console.log('Historial de egresos del proveedor insertado.');
 
         await con.commit();
         console.log('Transacción confirmada.');
-        result = { message: 'Ingreso creado exitosamente', IngresoID: ingresoID }; // Incluir `IngresoID` en la respuesta
+        result = { message: 'Ingreso creado exitosamente', IngresoID: ingresoID };
     } catch (error) {
-        console.error('Error en PostIngresos:', error instanceof Error ? error.message : error);
+        console.error('Error en la transacción:', error);
         await con.rollback();
-        console.log('Transacción revertida.');
-        result = { message: `Error al crear el ingreso: ${error instanceof Error ? error.message : 'desconocido'}` };
+        result = { error: 'Error al crear el ingreso: ' + error };
     } finally {
         if (con) {
-            await con.end();
-            console.log('Conexión a la base de datos cerrada.');
+            con.end();
         }
-        return res.json(result);
+        res.json(result);
     }
 };
 

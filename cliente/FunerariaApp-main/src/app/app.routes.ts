@@ -62,4 +62,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/proveedores/proveedores.component').then((m) => m.ProveedoresComponent),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'transferencias',
+    loadComponent: () => import('./pages/transferencias/transferencias.component').then((m) => m.TransferenciasComponent),
+    canActivate: [AuthGuard],
+  },
 ];

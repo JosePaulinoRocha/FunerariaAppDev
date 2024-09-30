@@ -1,0 +1,99 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Transferencias</ion-title>
+    <ion-buttons slot="end">
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-button expand="block" (click)="openModal()" style="margin: 16px;">
+    <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+    Transferencias
+  </ion-button>
+
+  <div class="search-container">
+    <ion-item>
+      <ion-label>Buscar por:</ion-label>
+      <ion-select [(ngModel)]="selectedFields" multiple="true" placeholder="Seleccionar campo">
+        <ion-select-option *ngFor="let field of searchFields" [value]="field.value">{{ field.label }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <div *ngFor="let field of selectedFields">
+      <ion-item *ngIf="!isDateField(field)">
+        <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
+        <ion-input [(ngModel)]="searchValues[field]"></ion-input>
+      </ion-item>
+    
+      <div *ngIf="isDateField(field)">
+        <ion-item>
+          <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
+          <input type="date" [value]="getStartDate(field)" (change)="onStartDateChange($event, field)">
+        </ion-item>
+        <ion-item>
+          <ion-label>{{ getFieldLabel(field) }} Hasta:</ion-label>
+          <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
+        </ion-item>
+      </div>
+      
+    </div>
+
+    <ion-button (click)="applySearch()">Buscar</ion-button>
+    <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
+  </div>
+
+  
+  <div class="table-container">
+    <table class="table">
+      <thead class="header-row">
+        <tr class="color_header_tabla">
+          <th>ID</th>
+          <th>Fecha</th>
+          <th>Cuenta Envia</th>
+          <th>Envia RFC</th>
+          <th>Cuenta Recibe</th>
+          <th>Recibe RFC</th>
+          <th>Descripcion</th>
+          <th>Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let transferencia of paginatedTransferencias" class="data-row">
+          <td>{{ transferencia.TransferenciaID }}</td>
+          <td>{{ transferencia.Fecha }}</td>
+          <td>{{ transferencia.EnviaNombreCuenta }}</td>
+          <td>{{ transferencia.EnviaRFC }}</td>
+          <td>{{ transferencia.RecibeNombreCuenta }}</td>
+          <td>{{ transferencia.RecibeRFC }}</td>
+          <td>{{ transferencia.Descripcion }}</td>
+          <td>{{ transferencia.Monto }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ion-footer class="margin_footer">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+        <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
+      </ion-buttons>
+
+      <div class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </div>
+
+      <ion-select interface="popover" slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
+        <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">
+          {{ option }}
+        </ion-select-option>
+      </ion-select>
+    </ion-toolbar>
+  </ion-footer>
+
+</ion-content>

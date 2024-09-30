@@ -9,24 +9,24 @@
 
 <ion-content class="ion-padding">
   <div class="welcome-container">
-    <h2>Bienvenido a la Funeraria App</h2>
+    <h2>Captura de ingresos y egresos</h2>
   </div>
 
   <div class="card-container">
     <ion-card (click)="navigateTo('ingresos')">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
-        <ion-card-title>Ingresos</ion-card-title>
+        <ion-card-title>Capturas de ingresos y egresos</ion-card-title>
       </ion-card-content>  
       <ion-card-content>
-        <p>Aquí puedes ver y gestionar los ingresos de la aplicación.</p>
+        <p>Aquí puedes ver y gestionar las capturas de ingresos / egresos.</p>
       </ion-card-content>
     </ion-card>
 
     <ion-card (click)="navigateTo('ingresos-egresos')">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
-        <ion-card-title>Ingresos/Egresos</ion-card-title>
+        <ion-card-title>Ingresos / Egresos</ion-card-title>
       </ion-card-content>  
       <ion-card-content>
         <p>Aquí puedes ver la lista de ingresos y egresos en formato de tabla.</p>
@@ -90,6 +90,16 @@
       </ion-card-content>
       <ion-card-content>
         <p>Esta sección permite registrar y pre-seleccionar proveedores.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card (click)="navigateTo('transferencias')">
+      <ion-card-content>
+        <ion-icon color="primary" name="swap-horizontal-outline" slot="start"></ion-icon>
+        <ion-card-title>Transferencias</ion-card-title>
+      </ion-card-content>
+      <ion-card-content>
+        <p>Seccion de transferencias de cuenta a cuenta.</p>
       </ion-card-content>
     </ion-card>
 

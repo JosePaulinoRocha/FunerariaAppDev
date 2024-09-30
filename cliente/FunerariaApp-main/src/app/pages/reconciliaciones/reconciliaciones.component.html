@@ -64,7 +64,7 @@
               <thead class="header-row">
                 <tr>
                   <th>ID</th>
-                  <th>Fecha Conciliación</th>
+                  <th>Fecha</th>
                   <th>Segmento</th>
                   <th>Descripción</th>
                   <th>Monto</th>
@@ -75,7 +75,7 @@
               <tbody>
                 <tr *ngFor="let income of ingresos" class="data-row">
                   <td>{{ income.IngresoID }}</td>
-                  <td>{{ income.FechaConciliacion }}</td>
+                  <td>{{ income.Fecha }}</td>
                   <td>{{ income.NombreSegmento }}</td>
                   <td>{{ income.Descripcion }}</td>
                   <td>{{ income.Monto }}</td>
@@ -99,7 +99,7 @@
               <thead class="header-row">
                 <tr>
                   <th>ID</th>
-                  <th>Fecha Conciliación</th>
+                  <th>Fecha</th>
                   <th>Segmento</th>
                   <th>Concepto</th>
                   <th>Monto</th>
@@ -110,7 +110,7 @@
               <tbody>
                 <tr *ngFor="let egreso of egresos" class="data-row">
                   <td>{{ egreso.IngresoID }}</td>
-                  <td>{{ egreso.FechaConciliacion }}</td>
+                  <td>{{ egreso.Fecha }}</td>
                   <td>{{ egreso.NombreSegmento }}</td>
                   <td>{{ egreso.NombreConcepto }}</td>
                   <td>{{ egreso.Monto }}</td>

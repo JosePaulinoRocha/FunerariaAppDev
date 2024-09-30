@@ -130,7 +130,7 @@ export class IncomeModalComponent implements OnInit {
     NombreCategoria: '',
     SubcategoriaID: 0,
     NombreSubcategoria: '',
-    EstatusComprobacionID: 0,
+    EstatusComprobacionID: 2,
     NombreEstatus: '',
     FechaAutorizacion: '',
     UsuarioAutorizaID: 0,
@@ -160,7 +160,9 @@ export class IncomeModalComponent implements OnInit {
   isNewSegmento = false;
   isNewCategoria = false;
   isNewSubcategoria = false;
+  isNewProveedor = true;
 
+  newProveedor = '';
   newConcepto = '';
   newSegmento = '';
   newCategoria = '';
@@ -175,6 +177,18 @@ export class IncomeModalComponent implements OnInit {
   newRFC = '';
 
   allProveedores: Proveedor[] = [];
+
+  excludedSegmentos: string[] = [
+    'Cobranza',
+    'Cuentas Establecidas',
+    'Sala ventas',
+    'Inversiones Iniciales',
+    'Funeraria Anahuac',
+    'Ingreso Funeraria',
+    'Reembolso',
+    'Prestamo Foraneo'
+  ];
+  
 
   @Input() isEditMode = false;
 
@@ -191,6 +205,8 @@ export class IncomeModalComponent implements OnInit {
       CategoriaID: [null, Validators.required],
       SubcategoriaID: [null, Validators.required],
       ConceptoID: [null, Validators.required],
+      // Fecha: [this.ingreso.Fecha, Validators.required],
+      Monto: [this.ingreso.Monto, [Validators.required, Validators.min(1)]],
     });
 
     this.loadConceptos();
@@ -208,6 +224,13 @@ export class IncomeModalComponent implements OnInit {
 
   onTipoIngresoChange() {
 
+  }
+
+  getFilteredSegmentos(): Segmento[] {
+    if (this.ingreso.TipoIngreso === 1) { // Egreso
+      return this.segmento.filter(segment => !this.excludedSegmentos.includes(segment.Nombre));
+    }
+    return this.segmento; // Devuelve todos los segmentos si es ingreso
   }
   
 
@@ -423,17 +446,49 @@ export class IncomeModalComponent implements OnInit {
       this.selectedFile = file;
     }
   }
+
+  async presentSuccessAlert() {
+    const alert = await this.alertController.create({
+      header: 'Éxito',
+      message: 'El registro se ha guardado correctamente.',
+      buttons: ['OK']
+    });
+    await alert.present();
+  }
+  
+  async presentErrorAlert() {
+    const alert = await this.alertController.create({
+      header: 'Error',
+      message: 'Hubo un problema al guardar el registro. Inténtalo nuevamente.',
+      buttons: ['OK']
+    });
+    await alert.present();
+  }
+  
   
 
   saveIncome() {
+
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+
+    let estatusComprobacionID: number;
+
+    if (this.selectedFile) {
+      estatusComprobacionID = 2; // Si selectedFile está vacío
+  } else if (this.ingreso.TipoIngreso === 0) {
+      estatusComprobacionID = 3; // Si TipoIngreso es 0
+  } else {
+      estatusComprobacionID = 4; // Si hay algo en selectedFile
+  }
+    
     const incomeData = {
         IngresoID: this.ingreso.IngresoID,
         TipoIngreso: this.ingreso.TipoIngreso,
         ConceptoID: this.isNewConcepto ? this.newConcepto : this.ingreso.ConceptoID,
         SegmentoID: this.isNewSegmento ? this.newSegmento : this.ingreso.SegmentoID,
         CategoriaID: this.isNewCategoria ? this.newCategoria : this.ingreso.CategoriaID,
-        SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
-        ProveedorID: this.ingreso.ProveedorID,
+        SubcategoriaID: this.ingreso.TipoIngreso === 0 ? null : (this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID),
+        ProveedorID: this.isNewProveedor ? this.newProveedor : this.ingreso.ProveedorID,
         TipoCuentaID: this.ingreso.TipoCuentaID,
         CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
         RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
@@ -443,8 +498,8 @@ export class IncomeModalComponent implements OnInit {
         Descripcion: this.ingreso.Descripcion,
         Piezas: this.ingreso.Piezas,
         Monto: this.ingreso.Monto,
-        EstatusComprobacionID: this.ingreso.EstatusComprobacionID,
-        UsuarioAutorizaID: this.ingreso.UsuarioAutorizaID,
+        EstatusComprobacionID: estatusComprobacionID,
+        UsuarioAutorizaID: user ? user.userId : null,
         UsuarioRecibeID: this.ingreso.UsuarioRecibeID,
         ObservacionesDifConciliacion: this.ingreso.ObservacionesDifConciliacion
     };
@@ -454,6 +509,7 @@ export class IncomeModalComponent implements OnInit {
     this._ingresoServ.addIngreso(incomeData).subscribe(
       response => {
           console.log('Ingreso guardado correctamente:', response);
+          this.presentSuccessAlert();
 
           if (this.selectedFile) {
               const formData = new FormData();
@@ -466,7 +522,6 @@ export class IncomeModalComponent implements OnInit {
                   },
                   fileError => {
                       console.error('Error al guardar el archivo:', fileError);
-                      this.closeModal(false); 
                   }
               );
           } else {
@@ -475,7 +530,7 @@ export class IncomeModalComponent implements OnInit {
       },
       error => {
           console.error('Error al guardar el ingreso:', error);
-          this.closeModal(false); 
+          this.presentErrorAlert();
       }
     );
   }

@@ -3,11 +3,11 @@ import { connect } from "../BD/Accesos_BD";
 import { RowDataPacket, ResultSetHeader  } from 'mysql2/promise';
 
 export async function ImportarIngresos(req: Request, res: Response): Promise<void> {
-    const registros = req.body;  // Ahora es una lista de registros
+    const registros = req.body;  // Lista de registros a importar
 
     let con: any;
     const idCache: { [key: string]: number } = {};
-    
+
     try {
         con = await connect();
         await con.beginTransaction();
@@ -67,16 +67,28 @@ export async function ImportarIngresos(req: Request, res: Response): Promise<voi
                 throw new Error("Tipo de ingreso no válido");
             }
 
-            // Inserción del nuevo registro en la tabla ingresos
-            const insertIngresoQuery = `
-                INSERT INTO ingresos (Fecha, SegmentoID, CategoriaID, Descripcion, Monto)
-                VALUES (?, ?, ?, ?, ?)
+            // Verificar si ya existe un registro con los mismos datos
+            const checkDuplicateQuery = `
+                SELECT COUNT(*) AS count FROM ingresos 
+                WHERE Fecha = ? AND SegmentoID = ? AND CategoriaID = ? AND Descripcion = ? AND Monto = ?
             `;
-            await con.query(insertIngresoQuery, [Fecha, SegmentoID, CategoriaID, Descripcion, total_amount]);
+            const [duplicateResult]: RowDataPacket[] = await con.query(checkDuplicateQuery, [Fecha, SegmentoID, CategoriaID, Descripcion, total_amount]);
+
+            if (duplicateResult[0].count === 0) {
+                // Si no existe duplicado, insertar el nuevo registro
+                const insertIngresoQuery = `
+                    INSERT INTO ingresos (Fecha, SegmentoID, CategoriaID, Descripcion, Monto)
+                    VALUES (?, ?, ?, ?, ?)
+                `;
+                await con.query(insertIngresoQuery, [Fecha, SegmentoID, CategoriaID, Descripcion, total_amount]);
+                console.log(`Ingreso insertado: ${Descripcion} en la fecha ${Fecha}`);
+            } else {
+                console.log(`Registro duplicado encontrado: ${Descripcion} en la fecha ${Fecha}, no se insertará.`);
+            }
         }
 
         await con.commit();
-        res.status(201).json({ message: 'Ingresos importados exitosamente' });
+        res.status(201).json({ message: 'Ingresos importados exitosamente, sin duplicados' });
     } catch (error) {
         if (con) await con.rollback();
         console.error('Error en ImportarIngresos:', error);

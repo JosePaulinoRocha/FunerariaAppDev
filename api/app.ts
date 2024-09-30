@@ -10,7 +10,7 @@ import Combinaciones from "./routes/Combinaciones.routes"
 import Notificaciones from "./routes/Notificaciones.routes"
 import ImportarIngresos from "./routes/Importar-Ingresos.routes"
 import Proveedores from "./routes/Proveedores.routes"
-
+import Transferencias from "./routes/Transferencias.routes"
 
 
 const dir = '../../cliente/DirectoriCliente/';
@@ -43,13 +43,14 @@ export class App {
         this.app.use(morgan('dev'));
         this.app.use(cors({
             origin: '*', // Asegúrate de cambiar esto al dominio de tu cliente
-            methods: ['GET', 'POST'], // Métodos permitidos
+            methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
             credentials: true // Si necesitas enviar cookies
         }));
         this.app.use(this.allowCrossDomain);
         this.app.use(express.json({ limit: '1mb' }));
         this.app.use(express.urlencoded({ extended: true }));
-        this.app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+        // this.app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
+        this.app.use('/uploads', express.static(path.join(__dirname, '../../uploads/')));
     }
 
 
@@ -62,6 +63,7 @@ export class App {
         this.app.use('/api/notificaciones', Notificaciones);
         this.app.use('/api/importar-ingresos', ImportarIngresos);
         this.app.use('/api/proveedores', Proveedores);
+        this.app.use('/api/transferencias', Transferencias);
 
 
         this.app.get('*',function (req,res){

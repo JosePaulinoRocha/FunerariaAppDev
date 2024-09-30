@@ -5,7 +5,15 @@
   <meta charset="utf-8" />
   <title>Funeraria App</title>
 
-  <base href="/funeraria_app/">
+  <!-- Script para ajustar dinámicamente el base href -->
+  <script>
+    const host = window.location.hostname;
+    if (host.includes('funerariaapp') || host.includes('pabsmxli')) {
+      document.write('<base href="/">');
+    } else {
+      document.write('<base href="/funeraria_app/">');
+    }
+  </script>
 
   <meta name="color-scheme" content="light dark" />
   <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />

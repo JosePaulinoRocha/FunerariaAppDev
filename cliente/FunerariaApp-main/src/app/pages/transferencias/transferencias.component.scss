@@ -1,14 +1,14 @@
 .table-container {
     width: 100%;
     overflow-x: auto;
-    padding: 1rem;
-
+    padding: 1.5rem;
   }
   
   .table {
     width: 100%;
     border-collapse: collapse;
-    padding: 1rem;
+    padding: 1.5rem;
+
   }
   
   .header-row {
@@ -59,39 +59,15 @@
 }
 
 .color_header_tabla {
-  background-color: #0054E9;
-  color: #FFFFFF;
- }
-
- .text-red {
-  color: red;
+ background-color: #0054E9;
+ color: #FFFFFF;
 }
 
-.text-green {
-  color: green;
+
+.active-row {
+  background-color: #d4edda; 
 }
 
-.no-account {
-  background-color: yellow;
-}
-
-.yellow-background {
-  background-color: yellow;
-}
-
-.aquamarine-background {
-  background-color: darkseagreen;
-}
-
-.button-group button[disabled] {
-  background-color: #007bff;
-  color: white;
-}
-
-.button-group button {
-  background-color: #f0f0f0;
-  color: #333;
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-right: 5px;
+.inactive-row {
+  background-color: #f8d7da; 
 }

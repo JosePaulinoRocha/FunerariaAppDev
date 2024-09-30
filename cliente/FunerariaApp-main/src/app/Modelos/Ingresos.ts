@@ -5,6 +5,7 @@ export interface Ingreso {
   NombreConcepto: string;
   Descripcion: string;
   Proveedor: string;
+  ProveedorEstatus: { data: number[]; type: string; };
   Piezas: number;
   CajaChica: boolean;
   Monto: number;

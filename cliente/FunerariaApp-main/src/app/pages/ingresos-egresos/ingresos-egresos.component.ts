@@ -16,6 +16,7 @@ interface Income {
   NombreConcepto: string;
   Descripcion: string;
   Proveedor: string;
+  ProveedorEstatus: { data: number[]; type: string; };
   Piezas: number;
   CajaChica: boolean;
   Monto: number;
@@ -67,9 +68,13 @@ export class IngresosEgresosComponent implements OnInit {
   incomes: Income[] = [];
   paginatedIncomes: Income[] = [];
   currentPage: number = 1;
-  itemsPerPage: number = 8;
+  itemsPerPageOptions: number[] = [10, 20, 50, 100, 200, 500, 1000, 2000];
+  itemsPerPage: number = 10; 
   totalPages: number = 0;
   isAdmin: boolean = false;
+  mostrarIngresos: boolean = true;
+  filtroSeleccionado: 'all' | 'ingresos' | 'egresos' = 'all'; 
+
 
   getStartDate(field: string): string {
     return this.dateSearchValues[field]?.startDate || '';
@@ -193,21 +198,52 @@ export class IngresosEgresosComponent implements OnInit {
   
   loadIngresos() {
     this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
+
+      console.log("esta es la data de mis ingresos y egresos:", data)
+
       data.sort((a, b) => b.IngresoID - a.IngresoID);
   
-      this.incomes = data.map(income => ({
+      // Actualizar la variable de control según el filtro seleccionado
+      if (this.filtroSeleccionado === 'ingresos') {
+        this.mostrarIngresos = true; // Muestra columnas específicas de ingresos
+      } else {
+        this.mostrarIngresos = false; // Oculta las columnas para otros filtros
+      }
+  
+      // Filtrar según el tipo de registro seleccionado
+      this.incomes = data.filter(income => {
+        if (this.filtroSeleccionado === 'all') {
+          return true;  // Muestra todos
+        } else if (this.filtroSeleccionado === 'ingresos') {
+          return income.TipoIngreso.data.includes(0);  // Filtra solo ingresos
+        } else if (this.filtroSeleccionado === 'egresos') {
+          return income.TipoIngreso.data.includes(1);  // Filtra solo egresos
+        }
+        return false;
+      }).map(income => ({
         ...income,
         Fecha: new Date(income.Fecha).toISOString().split('T')[0],
-        FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0], 
-        FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0] 
+        FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
+        FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
       }));
-      
-      console.log("esta es la data de ingresos/egresos: ", this.incomes);
+  
       this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
       this.updatePaginatedIncomes();
     }, (error) => {
       console.error('Error fetching incomes', error); 
     });
+  }
+  
+
+  setFilter(filtro: 'all' | 'ingresos' | 'egresos') {
+    this.filtroSeleccionado = filtro;
+    this.currentPage = 1;  // Reiniciar a la página 1 cuando se cambia el filtro
+    this.loadIngresos();  // Recargar los ingresos según el nuevo filtro
+  }
+  
+  onItemsPerPageChange() {
+    this.currentPage = 1;  // Reiniciar a la página 1 cuando cambie los registros por página
+    this.updatePaginatedIncomes();  // Actualizar la paginación
   }
 
   updatePaginatedIncomes() {
@@ -231,6 +267,7 @@ export class IngresosEgresosComponent implements OnInit {
   }
 
   applySearch() {
+    this.currentPage = 1;
     for (let field of this.selectedFields) {
       if (this.isDateField(field) && !this.dateSearchValues[field]) {
         this.dateSearchValues[field] = { startDate: '', endDate: '' };
@@ -238,22 +275,34 @@ export class IngresosEgresosComponent implements OnInit {
     }
   
     this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
-      this.incomes = data
+      let filteredData = data;
+  
+      // Filtrar según el botón seleccionado
+      if (this.filtroSeleccionado === 'ingresos') {
+        filteredData = data.filter(income => income.TipoIngreso.data.includes(0)); // Solo ingresos
+      } else if (this.filtroSeleccionado === 'egresos') {
+        filteredData = data.filter(income => income.TipoIngreso.data.includes(1)); // Solo egresos
+      } 
+  
+      // Si se selecciona "todos", no se filtra
+      this.incomes = filteredData
         .filter(income => this.matchesSearch(income))
-        .sort((a, b) => b.IngresoID - a.IngresoID) 
+        .sort((a, b) => b.IngresoID - a.IngresoID)
         .map(income => ({
           ...income,
           Fecha: new Date(income.Fecha).toISOString().split('T')[0],
           FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
-          FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0] 
+          FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
         }));
-      console.log("esta es la data de ingresos/egresos despues del filtro: ", this.incomes);  
+        
+      console.log("Esta es la data de ingresos/egresos después del filtro: ", this.incomes);
       this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
       this.updatePaginatedIncomes();
     });
   }
 
   resetSearch() {
+    this.currentPage = 1;
     this.searchValues = {};
     this.dateSearchValues = {};
     this.selectedFields = [];
@@ -318,12 +367,17 @@ export class IngresosEgresosComponent implements OnInit {
   }
   
   
-  
+  // downloadFile(fileUrl: string) {
+  //   const baseUrl = 'http://localhost:8081/api/'; 
+  //   const fullUrl = `${baseUrl}${fileUrl}`;
+  //   window.open(fullUrl, '_blank');
+  // }
+
   downloadFile(fileUrl: string) {
-    const baseUrl = 'http://localhost/'; 
+    const baseUrl = 'https://systemabmxli.com/';
     const fullUrl = `${baseUrl}${fileUrl}`;
     window.open(fullUrl, '_blank');
   }
-
+  
 
 }

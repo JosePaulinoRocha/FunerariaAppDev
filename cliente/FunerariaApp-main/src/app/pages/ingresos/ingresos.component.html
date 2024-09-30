@@ -17,7 +17,7 @@
   </ion-button>
 
   <div class="income-list">
-    <div class="income-card" *ngFor="let income of filteredIncomes()">
+    <div class="income-card" *ngFor="let income of getPaginatedIncomes()">
       <ion-item>
         <ion-avatar slot="start">
           <ion-icon name="cash" size="large" color="primary"></ion-icon>
@@ -51,4 +51,25 @@
       </ion-item>
     </div>
   </div>
+
+  <ion-footer class="margin_footer">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+        <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
+      </ion-buttons>
+
+      <div class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </div>
+
+      <ion-select slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
+        <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">
+          {{ option }}
+        </ion-select-option>
+      </ion-select>
+    </ion-toolbar>
+  </ion-footer>
+
+
 </ion-content>

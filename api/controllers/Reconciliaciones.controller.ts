@@ -20,6 +20,7 @@ export const ObtenerIngresos = async (req: Request, res: Response) => {
     }
 };
 
+
 export const ObtenerIngresosParaConciliacion = async (req: Request, res: Response) => {
     let con;
     let result;
@@ -27,11 +28,16 @@ export const ObtenerIngresosParaConciliacion = async (req: Request, res: Respons
 
     try {
         con = await connect();
+        
+        // Añadir un día a la fecha final
+        const fechaFinalModificada = new Date(fechaFinal);
+        fechaFinalModificada.setDate(fechaFinalModificada.getDate() + 1); // Sumamos un día
+
         let query = `
             SELECT * FROM vistaingresos
             WHERE CuentaID = ? AND Fecha <= ? AND Reconciliado = 0
         `;
-        const [ingresos] = await con.query(query, [cuentaID, fechaFinal]);
+        const [ingresos] = await con.query(query, [cuentaID, fechaFinalModificada]);
         result = ingresos;
     } catch (error) {
         console.log('Error en ObtenerIngresosParaConciliacion');
@@ -42,6 +48,7 @@ export const ObtenerIngresosParaConciliacion = async (req: Request, res: Respons
         return res.json(result);
     }
 };
+
 
 export const ObtenerUltimaReconciliacion = async (req: Request, res: Response) => {
     let con;
@@ -73,7 +80,7 @@ export const CrearReconciliacion = async (req: Request, res: Response) => {
     let con;
     try {
         con = await connect();
-        const [result] = await con.query<ResultSetHeader>('INSERT INTO Reconciliaciones (Fecha, Saldo, CuentaID) VALUES (?, ?, ?)', [Fecha, Saldo, CuentaID]);
+        const [result] = await con.query<ResultSetHeader>('INSERT INTO reconciliaciones (Fecha, Saldo, CuentaID) VALUES (?, ?, ?)', [Fecha, Saldo, CuentaID]);
         const newReconciliationID = result.insertId;
         res.json(newReconciliationID);
     } catch (error: unknown) {
@@ -87,6 +94,7 @@ export const CrearReconciliacion = async (req: Request, res: Response) => {
     }
 };
 
+
 export const ActualizarIngresos = async (req: Request, res: Response) => {
     const reconciliacionUpdates = req.body;
     let con;
@@ -94,7 +102,11 @@ export const ActualizarIngresos = async (req: Request, res: Response) => {
         con = await connect();
         for (const update of reconciliacionUpdates) {
             const { IngresoID, ReconciliacionID, Saldo } = update;
-            await con.query('UPDATE ingresos SET ReconciliacionID = ?, Reconciliado = 1, Saldo = ? WHERE IngresoID = ?', [ReconciliacionID, Saldo, IngresoID]);
+            // Agregar el campo FechaConciliacion con NOW()
+            await con.query(
+                'UPDATE ingresos SET ReconciliacionID = ?, Reconciliado = 1, Saldo = ?, FechaConciliacion = NOW() WHERE IngresoID = ?',
+                [ReconciliacionID, Saldo, IngresoID]
+            );
         }
         res.json({ message: 'Ingresos actualizados exitosamente' });
     } catch (error: unknown) {
@@ -107,6 +119,7 @@ export const ActualizarIngresos = async (req: Request, res: Response) => {
         if (con) con.end();
     }
 };
+
 
 
 export const ObtenerReconciliaciones = async (req: Request, res: Response) => {

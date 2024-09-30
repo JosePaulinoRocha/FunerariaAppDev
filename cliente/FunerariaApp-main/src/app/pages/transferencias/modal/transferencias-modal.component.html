@@ -1,0 +1,112 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Realizar Transferencia</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal(false)">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form (ngSubmit)="RealizarTransferencia()" class="ion-padding">
+    <ion-grid>
+      <ion-row>
+        <ion-col size-md="6">
+
+          <!-- Selección del tipo de cuenta que envía -->
+          <ion-item>
+            <ion-label position="stacked">Tipo de Cuenta que Envía</ion-label>
+            <ion-select 
+              style="width: 13rem;" 
+              [(ngModel)]="transferencia.EnviaTipoCuentaID" 
+              name="enviaTipoCuentaID" 
+              required 
+              interface="popover" 
+              searchbar="true" 
+              placeholder="Tipo cuenta"
+              (ionChange)="onTipoCuentaChange('envia')">
+              <ion-select-option [value]="1">Caja Chica</ion-select-option>
+              <ion-select-option [value]="2">Cuenta Bancaria</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+        </ion-col>
+
+        <ion-col size-md="6">
+
+          <!-- Selección de la cuenta que envía -->
+          <ion-item>
+            <ion-label position="stacked">{{ transferencia.EnviaTipoCuentaID === 1 ? 'Caja Chica que Envía' : 'Cuenta Bancaria que Envía' }}</ion-label>
+            <ion-select placeholder="Seleccione cuenta" style="width: 13rem;" [(ngModel)]="transferencia.CuentaEnviaID" name="cuentaEnviaID" required interface="popover" searchbar="true">
+              <ion-select-option *ngFor="let item of filteredCuentasEnvia" [value]="item.CuentaID">{{ item.NombreCuenta }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size-md="6">
+
+          <!-- Selección del tipo de cuenta que recibe -->
+          <ion-item>
+            <ion-label position="stacked">Tipo de Cuenta que Recibe</ion-label>
+            <ion-select 
+              style="width: 13rem;" 
+              [(ngModel)]="transferencia.RecibeTipoCuentaID" 
+              name="recibeTipoCuentaID" 
+              required 
+              interface="popover" 
+              searchbar="true" 
+              placeholder="Tipo cuenta"
+              (ionChange)="onTipoCuentaChange('recibe')">
+              <ion-select-option [value]="1">Caja Chica</ion-select-option>
+              <ion-select-option [value]="2">Cuenta Bancaria</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+        </ion-col>
+
+        <ion-col size-md="6">
+
+          <!-- Selección de la cuenta que recibe -->
+          <ion-item>
+            <ion-label position="stacked">{{ transferencia.RecibeTipoCuentaID === 1 ? 'Caja Chica que Recibe' : 'Cuenta Bancaria Recibe' }}</ion-label>
+            <ion-select placeholder="Seleccione cuenta" style="width: 13rem;" [(ngModel)]="transferencia.CuentaRecibeID" name="cuentaRecibeID" required interface="popover" searchbar="true">
+              <ion-select-option *ngFor="let item of filteredCuentasRecibe" [value]="item.CuentaID">{{ item.NombreCuenta }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size-md="6">
+
+          <ion-item>
+            <ion-label position="stacked">Descripción</ion-label>
+            <ion-input placeholder="Descripcion" [(ngModel)]="transferencia.Descripcion" name="descripcion" required></ion-input>
+          </ion-item>
+
+        </ion-col>
+
+        <ion-col size-md="6">
+
+          <ion-item>
+            <ion-label position="stacked">Monto</ion-label>
+            <ion-input placeholder="Monto" [(ngModel)]="transferencia.Monto" name="monto" type="number" required></ion-input>
+          </ion-item>
+
+
+        </ion-col>
+      </ion-row>
+
+    </ion-grid>
+
+    <ion-footer>
+      <ion-button [disabled]="transferencia.CuentaEnviaID == 0 || transferencia.CuentaRecibeID == 0 || transferencia.Descripcion == '' || transferencia.Monto <= 0 || transferencia.CuentaEnviaID == transferencia.CuentaRecibeID" style="margin-bottom: 1rem;" expand="full" type="submit">Transferir</ion-button>
+    </ion-footer>
+  </form>
+</ion-content>

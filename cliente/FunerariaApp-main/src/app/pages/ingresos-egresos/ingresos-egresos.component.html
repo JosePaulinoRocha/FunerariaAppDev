@@ -38,8 +38,18 @@
     </div>
 
     <ion-button (click)="applySearch()">Buscar</ion-button>
+
     <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
+
     <ion-button style="margin-left: 4rem;" color="warning" (click)="openAssignAccountsModal()">Asignar Cuentas</ion-button>
+
+    <div style="margin-top: 1rem;" class="button-group">
+      <button (click)="setFilter('all')" [disabled]="filtroSeleccionado === 'all'">Todos</button>
+      <button (click)="setFilter('ingresos')" [disabled]="filtroSeleccionado === 'ingresos'">Ingresos</button>
+      <button (click)="setFilter('egresos')" [disabled]="filtroSeleccionado === 'egresos'">Egresos</button>
+    </div>
+
+    
   </div>
 
   
@@ -53,18 +63,19 @@
           <th><span style="margin-left: 2rem;"></span> Fecha <span style="margin-left: 2rem;"></span></th>
           <th><span style="margin-left: 2rem;"></span>Segmento<span style="margin-left: 2rem;"></span></th>
           <th><span style="margin-left: 3rem;"></span>Categoria<span style="margin-left: 3rem;"></span></th>
-          <th><span style="margin-left: 3rem;"></span>Subcategoria<span style="margin-left: 3rem;"></span></th>
+          <th *ngIf="!mostrarIngresos"><span style="margin-left: 3rem;"></span>Subcategoria<span style="margin-left: 3rem;"></span></th>
           <th><span style="margin-left: 10rem;"></span> Concepto <span style="margin-left: 10rem;"></span></th>
           <th><span style="margin-left: 10rem;"></span>Descripcion<span style="margin-left: 10rem;"></span></th>
-          <th><span style="margin-left: 3rem;"></span>Proveedor<span style="margin-left: 3rem;"></span></th>
-          <th>Piezas</th>
-          <th><span style="margin-left: 2rem;"></span>Tipo de ingreso<span style="margin-left: 2rem;"></span></th>
+          <th *ngIf="!mostrarIngresos"><span style="margin-left: 3rem;"></span>Proveedor<span style="margin-left: 3rem;"></span></th>
+          <th *ngIf="!mostrarIngresos"><span style="margin-left: 3rem;"></span>Estatus Proveedor<span style="margin-left: 3rem;"></span></th>
+          <th *ngIf="!mostrarIngresos">Piezas</th>
+          <th><span style="margin-left: 2rem;"></span>Tipo de cuenta<span style="margin-left: 2rem;"></span></th>
           <th><span style="margin-left: 2rem;"></span>Cuenta<span style="margin-left: 2rem;"></span></th>
           <th>RFC</th>
           <th>Monto</th>
           <th>Saldo</th>
-          <th><span style="margin-left: 1rem;"></span>Comprobante<span style="margin-left: 1rem;"></span></th>
-          <th><span style="margin-left: 4rem;"></span>Estatus<span style="margin-left: 4rem;"></span></th>
+          <th *ngIf="!mostrarIngresos"><span style="margin-left: 1rem;"></span>Comprobante<span style="margin-left: 1rem;"></span></th>
+          <th *ngIf="!mostrarIngresos"><span style="margin-left: 4rem;"></span>Estatus<span style="margin-left: 4rem;"></span></th>
           <th>Fecha Autorizacion</th>
           <th>Usuario Autoriza</th>
           <th>Usuario Recibe</th>
@@ -100,11 +111,22 @@
           <td>{{ income.Fecha }}</td>
           <td>{{ income.NombreSegmento }}</td>
           <td>{{ income.NombreCategoria }}</td>
-          <td>{{ income.NombreSubcategoria }}</td>
+          <td *ngIf="!mostrarIngresos">{{ income.NombreSubcategoria }}</td>
           <td>{{ income.NombreConcepto }}</td>
           <td>{{ income.Descripcion }}</td>
-          <td>{{ income.Proveedor }}</td>
-          <td>{{ income.Piezas }}</td>
+          <td *ngIf="!mostrarIngresos">{{ income.Proveedor }}</td>
+          <td *ngIf="!mostrarIngresos">
+            <ng-container *ngIf="income.ProveedorEstatus">
+              <span [ngClass]="(income.ProveedorEstatus.data && income.ProveedorEstatus.data.length > 0) ? 
+                               (income.ProveedorEstatus.data[0] === 0 ? 'text-red' : 
+                                income.ProveedorEstatus.data[0] === 1 ? 'text-green' : '') : ''">
+                {{ (income.ProveedorEstatus.data && income.ProveedorEstatus.data.length > 0) ? 
+                   (income.ProveedorEstatus.data[0] === 0 ? 'Proveedor no autorizado' : 
+                    income.ProveedorEstatus.data[0] === 1 ? 'Proveedor autorizado' : '') : '' }}
+              </span>
+            </ng-container>
+          </td>
+          <td *ngIf="!mostrarIngresos">{{ income.Piezas }}</td>
           <td [ngClass]="{'green-text': true}">
             {{ income.TipoCuenta}}
           </td>
@@ -112,7 +134,7 @@
           <td>{{ income.RFC }}</td>
           <td>{{ income.Monto }}</td>
           <td>{{ income.SaldoReconciliacion }}</td>
-          <td>
+          <td *ngIf="!mostrarIngresos">
             <ion-button 
               *ngIf="!income.TipoIngreso.data.includes(0)" 
               [color]="income.Comprobante ? 'warning' : 'primary'" 
@@ -120,7 +142,7 @@
               {{ income.Comprobante ? 'Descargar' : 'Subir' }}
             </ion-button>
           </td>
-          <td>{{ income.NombreEstatus }}</td>
+          <td *ngIf="!mostrarIngresos">{{ income.NombreEstatus }}</td>
           <td>{{ income.FechaAutorizacion }}</td>
           <td>{{ income.NombreUsuarioAutoriza }}</td>
           <td>{{ income.NombreUsuarioRecibe }}</td>
@@ -139,8 +161,10 @@
       </tbody>
     </table>
   </div>
-  <ion-footer class="margin_footer">
+  
+  <ion-footer style="margin-bottom: 4rem;" class="margin_footer">
     <ion-toolbar>
+
       <ion-buttons slot="start">
         <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
         <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
@@ -148,6 +172,14 @@
       <div class="page-info">
         Página {{ currentPage }} de {{ totalPages }}
       </div>
+
+      <ion-select slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
+        <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">
+          {{ option }}
+        </ion-select-option>
+      </ion-select>
+
     </ion-toolbar>
   </ion-footer>
+  
 </ion-content>
