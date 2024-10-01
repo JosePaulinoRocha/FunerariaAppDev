@@ -84,8 +84,8 @@ export class IngresosServices {
   } 
 
 
-  UpdateIngresos(ingreso: any): Observable<any> {
-    return this.http.put<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoUpdate}`, ingreso);
+  UpdateIngresos(incomeData: any): Observable<any> {
+    return this.http.put<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoUpdate}`, incomeData);
   }
 
   getConceptos(): Observable<Concepto[]> {

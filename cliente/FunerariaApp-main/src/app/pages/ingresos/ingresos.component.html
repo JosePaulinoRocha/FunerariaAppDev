@@ -16,36 +16,78 @@
     Crear
   </ion-button>
 
+  
+
+  <div class="search-container">
+    <ion-item>
+      <ion-label>Buscar por:</ion-label>
+      <ion-select [(ngModel)]="selectedFields" multiple="true" placeholder="Seleccionar campo">
+        <ion-select-option *ngFor="let field of searchFields" [value]="field.value">{{ field.label }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <div *ngFor="let field of selectedFields">
+      <ion-item *ngIf="!isDateField(field)">
+        <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
+        <ion-input [(ngModel)]="searchValues[field]"></ion-input>
+      </ion-item>
+    
+      <div *ngIf="isDateField(field)">
+        <ion-item>
+          <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
+          <input type="date" [value]="getStartDate(field)" (change)="onStartDateChange($event, field)">
+        </ion-item>
+        <ion-item>
+          <ion-label>{{ getFieldLabel(field) }} Hasta:</ion-label>
+          <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
+        </ion-item>
+      </div>
+      
+    </div>
+
+    <ion-button (click)="applySearch()">Buscar</ion-button>
+    <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
+  </div>
+
+
+
   <div class="income-list">
-    <div class="income-card" *ngFor="let income of getPaginatedIncomes()">
-      <ion-item>
+    <div class="income-card" *ngFor="let income of paginatedIncomes">
+      <ion-item (click)="openModal(income)">
         <ion-avatar slot="start">
           <ion-icon name="cash" size="large" color="primary"></ion-icon>
         </ion-avatar>
         <ion-label>
           <div class="income-details">
+
             <div class="income-column">
-              <h2><ion-icon name="calendar" slot="start"></ion-icon> Fecha: {{ income.Fecha }}</h2>
-              <p style="font-size: 11px;"><ion-icon name="document" slot="start"></ion-icon> Concepto: {{ income.NombreConcepto }}</p>
-              <p><ion-icon name="business" slot="start"></ion-icon> Proveedor: {{ income.Proveedor }}</p>
-              <p><ion-icon name="cube" slot="start"></ion-icon> Piezas: {{ income.Piezas }}</p>
-              <p><ion-icon name="construct" slot="start"></ion-icon> Tipo: {{ income.CajaChica ? 'Caja Chica' : 'Cuenta bancaria' }}</p>
-              <p><ion-icon name="cash" slot="start"></ion-icon> Monto: {{ income.Monto | currency }}</p>
-              <p><ion-icon name="wallet" slot="start"></ion-icon> Saldo: {{ income.Saldo | currency }}</p>
+
+              <h2><ion-icon name="home" slot="start"></ion-icon> ID: {{ income.IngresoID }}</h2>
+              <h2>
+                <ion-icon name="trail-sign" slot="start"></ion-icon> 
+                Tipo captura: {{ income.TipoIngreso.data[0] === 0 ? 'Ingreso' : 'Egreso' }}
+              </h2>
               <p><ion-icon name="layers" slot="start"></ion-icon> Segmento: {{ income.NombreSegmento }}</p>
               <p><ion-icon name="pricetag" slot="start"></ion-icon> Categoría: {{ income.NombreCategoria }}</p>
               <p><ion-icon name="pricetags" slot="start"></ion-icon> Subcategoría: {{ income.NombreSubcategoria }}</p>
+              <p style="font-size: 11px;"><ion-icon name="document" slot="start"></ion-icon> Concepto: {{ income.NombreConcepto }}</p>
+              <p><ion-icon name="clipboard" slot="start"></ion-icon> Descripción: {{ income.Descripcion }}</p>
+              
             </div>
 
             <div class="income-column">
-              <p><ion-icon name="clipboard" slot="start"></ion-icon> Descripción: {{ income.Descripcion }}</p>
-              <p><ion-icon name="checkmark-done" slot="start"></ion-icon> Estado: {{ income.NombreEstatus }}</p>
-              <p><ion-icon name="calendar-clear" slot="start"></ion-icon> Fecha de Aprobación: {{ income.FechaAutorizacion }}</p>
-              <p><ion-icon name="person-circle" slot="start"></ion-icon> Usuario Autorizado: {{ income.UsuarioAutorizaID }}</p>
-              <p><ion-icon name="person-add" slot="start"></ion-icon> Usuario Recibido: {{ income.UsuarioRecibeID }}</p>
-              <p><ion-icon name="refresh" slot="start"></ion-icon> Fechas de Conciliación: {{ income.FechaConciliacion }}</p>
-              <p><ion-icon name="chatbox-ellipses" slot="start"></ion-icon> Observaciones: {{ income.ObservacionesDifConciliacion }}</p>
+
+              <p><ion-icon name="business" slot="start"></ion-icon> Proveedor: {{ income.Proveedor }}</p>
+              <p><ion-icon name="cube" slot="start"></ion-icon> Piezas: {{ income.Piezas }}</p>
+              <p><ion-icon name="card" slot="start"></ion-icon> Tipo Cuenta: {{ income.TipoCuenta }}</p>
+              <p><ion-icon name="card" slot="start"></ion-icon> Cuenta: {{ income.NombreCuenta }}</p>
+              <h2><ion-icon name="card" slot="start"></ion-icon> RFC: {{ income.RFC }}</h2>
+              <p><ion-icon name="cash" slot="start"></ion-icon> Monto: {{ income.Monto | currency }}</p>
+              <h2><ion-icon name="calendar" slot="start"></ion-icon> Fecha: {{ income.Fecha }}</h2>
+              <p><ion-icon name="person-add" slot="start"></ion-icon> Usuario Recibe: {{ income.NombreUsuarioRecibe }}</p>
+
             </div>
+
           </div>
         </ion-label>
       </ion-item>
@@ -63,7 +105,7 @@
         Página {{ currentPage }} de {{ totalPages }}
       </div>
 
-      <ion-select slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
+      <ion-select interface="popover" slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
         <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">
           {{ option }}
         </ion-select-option>

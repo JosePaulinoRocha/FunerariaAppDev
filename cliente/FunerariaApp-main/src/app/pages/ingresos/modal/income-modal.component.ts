@@ -31,7 +31,7 @@ interface Ingreso {
   UsuarioRecibeID: number;
   FechaConciliacion: string;
   ObservacionesDifConciliacion: string;
-  TipoIngreso: number;
+  TipoIngreso: { data: any[] } | number | null;
   TipoCuentaID: number;
   CuentaID: number;
   RFC: string;
@@ -201,14 +201,29 @@ export class IncomeModalComponent implements OnInit {
 
   ngOnInit() {
 
+    console.log("Ingreso recibido en el modal:", this.ingreso);
+    console.log("Modo edición:", this.isEditMode);
+
+    this.newProveedor = this.ingreso.Proveedor || '';
+
+    if (typeof this.ingreso.TipoIngreso === 'object' && this.ingreso.TipoIngreso?.data) {
+      // Si es un objeto con propiedad 'data', asigna el primer valor del arreglo
+      this.ingreso.TipoIngreso = this.ingreso.TipoIngreso.data[0];
+    } else {
+      // Si es un número o nulo, asigna el valor por defecto
+      this.ingreso.TipoIngreso = this.ingreso.TipoIngreso || 0;
+    }
+
+    console.log("Valor de TipoIngreso antes de inicializar el formulario:", this.ingreso.TipoIngreso);
+
     this.form = this.fb.group({
       CategoriaID: [null, Validators.required],
       SubcategoriaID: [null, Validators.required],
       ConceptoID: [null, Validators.required],
-      // Fecha: [this.ingreso.Fecha, Validators.required],
       Monto: [this.ingreso.Monto, [Validators.required, Validators.min(1)]],
     });
 
+    this.loadCuentas();
     this.loadConceptos();
     this.loadSegmentos();
     this.loadCategorias();
@@ -217,7 +232,6 @@ export class IncomeModalComponent implements OnInit {
     this.loadUsuarios();
     this.loadCombinaciones();
     this.loadEstatus();
-    this.loadCuentas();
 
     this.onTipoCuentaChange();
   }
@@ -299,16 +313,24 @@ export class IncomeModalComponent implements OnInit {
   }
 
   onTipoCuentaChange() {
-    this.filteredCuentas = this.cuenta.filter(
-      (c) => c.TipoCuentaID === this.ingreso.TipoCuentaID
-    );
-
-    this.isNewCuenta = false;
-    this.ingreso.CuentaID = 0;
-    this.ingreso.RFC = '';
-    this.newNombreCuenta = '';
-    this.newRFC = '';
+    if (this.isEditMode) {
+      this.filteredCuentas = this.cuenta.filter(
+        (c) => c.TipoCuentaID === this.ingreso.TipoCuentaID
+      );
+    }
+    if (!this.isEditMode) {
+      this.filteredCuentas = this.cuenta.filter(
+        (c) => c.TipoCuentaID === this.ingreso.TipoCuentaID
+      );
+  
+      this.isNewCuenta = false;
+      this.ingreso.CuentaID = 0;
+      this.ingreso.RFC = '';
+      this.newNombreCuenta = '';
+      this.newRFC = '';
+    }
   }
+  
 
   onCuentaChange(event: any) {
     const cuentaID = event.detail.value;
@@ -423,6 +445,7 @@ export class IncomeModalComponent implements OnInit {
       (data: Cuenta[]) => {
         console.log('Esta es mi data en cuentas: ', data);
         this.cuenta = data;
+        this.onTipoCuentaChange();
       },
       (error) => {
         this.presentAlert('Error fetching combinations');
@@ -504,35 +527,71 @@ export class IncomeModalComponent implements OnInit {
         ObservacionesDifConciliacion: this.ingreso.ObservacionesDifConciliacion
     };
 
-    console.log("Estos son los datos que estoy mandando del nuevo Ingreso / Egreso: ", incomeData);
+    console.log("Estos son los datos que estoy mandando Ingreso / Egreso: ", incomeData);
   
-    this._ingresoServ.addIngreso(incomeData).subscribe(
-      response => {
-          console.log('Ingreso guardado correctamente:', response);
-          this.presentSuccessAlert();
 
-          if (this.selectedFile) {
-              const formData = new FormData();
-              formData.append('Comprobante', this.selectedFile);
+    if (this.isEditMode) {
+        // Lógica para actualizar ingreso
+        this._ingresoServ.UpdateIngresos(incomeData).subscribe(
+            response => {
+                console.log('Ingreso actualizado correctamente:', response);
+                this.presentSuccessAlert();
 
-              this._ingresoServ.uploadComprobante(response.IngresoID, formData).subscribe(
-                  fileResponse => {
-                      console.log('Archivo guardado correctamente:', fileResponse);
-                      this.closeModal(true);  
-                  },
-                  fileError => {
-                      console.error('Error al guardar el archivo:', fileError);
-                  }
-              );
-          } else {
-              this.closeModal(true); 
-          }
-      },
-      error => {
-          console.error('Error al guardar el ingreso:', error);
-          this.presentErrorAlert();
-      }
-    );
+                if (this.selectedFile) {
+                    const formData = new FormData();
+                    formData.append('Comprobante', this.selectedFile);
+
+                    // Usamos el IngresoID del incomeData en lugar del response
+                    this._ingresoServ.uploadComprobante(incomeData.IngresoID, formData).subscribe(
+                        fileResponse => {
+                            console.log('Archivo guardado correctamente:', fileResponse);
+                            this.closeModal(true);
+                        },
+                        fileError => {
+                            console.error('Error al guardar el archivo:', fileError);
+                        }
+                    );
+                } else {
+                    this.closeModal(true);
+                }
+            },
+            error => {
+                console.error('Error al actualizar el ingreso:', error);
+                this.presentErrorAlert();
+            }
+        );
+    } else {
+        // Lógica para crear un nuevo ingreso
+        this._ingresoServ.addIngreso(incomeData).subscribe(
+            response => {
+                console.log('Ingreso guardado correctamente:', response);
+                this.presentSuccessAlert();
+
+                if (this.selectedFile) {
+                    const formData = new FormData();
+                    formData.append('Comprobante', this.selectedFile);
+
+                    // Usamos el IngresoID del response, ya que es nuevo
+                    this._ingresoServ.uploadComprobante(response.IngresoID, formData).subscribe(
+                        fileResponse => {
+                            console.log('Archivo guardado correctamente:', fileResponse);
+                            this.closeModal(true);
+                        },
+                        fileError => {
+                            console.error('Error al guardar el archivo:', fileError);
+                        }
+                    );
+                } else {
+                    this.closeModal(true);
+                }
+            },
+            error => {
+                console.error('Error al guardar el ingreso:', error);
+                this.presentErrorAlert();
+            }
+        );
+    }
+    
   }
 
   closeModal(success: boolean) {
