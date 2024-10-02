@@ -99,14 +99,23 @@
             <ion-input placeholder="Monto" [(ngModel)]="transferencia.Monto" name="monto" type="number" required></ion-input>
           </ion-item>
 
+        </ion-col>
+
+        <ion-col size-md="12">
+
+          <ion-item>
+            <ion-label position="stacked">Fecha</ion-label>
+            <input style="margin-bottom: 2rem;" type="date" [(ngModel)]="transferencia.Fecha" name="fecha" required>
+          </ion-item>
 
         </ion-col>
+        
       </ion-row>
 
     </ion-grid>
 
     <ion-footer>
-      <ion-button [disabled]="transferencia.CuentaEnviaID == 0 || transferencia.CuentaRecibeID == 0 || transferencia.Descripcion == '' || transferencia.Monto <= 0 || transferencia.CuentaEnviaID == transferencia.CuentaRecibeID" style="margin-bottom: 1rem;" expand="full" type="submit">Transferir</ion-button>
+      <ion-button [disabled]="transferencia.CuentaEnviaID == 0 || transferencia.CuentaRecibeID == 0 || transferencia.Descripcion == '' || transferencia.Monto <= 0 || transferencia.CuentaEnviaID == transferencia.CuentaRecibeID || transferencia.Fecha == '' " style="margin-bottom: 1rem;" expand="full" type="submit">Transferir</ion-button>
     </ion-footer>
   </form>
 </ion-content>

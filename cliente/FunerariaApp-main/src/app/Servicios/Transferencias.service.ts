@@ -27,7 +27,7 @@ export class TransferenciasServices {
     return this.http.get<Transferencia[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlTransferencias}`);
   }
 
-  realizarTransferencia(nuevoProveedor: { CuentaEnviaID: number, CuentaRecibeID: number, Descripcion: string, Monto: number }): Observable<any> {
+  realizarTransferencia(nuevoProveedor: { CuentaEnviaID: number, CuentaRecibeID: number, Descripcion: string, Monto: number, Fecha: string }): Observable<any> {
     const url = `${this.myAppUrl}${this.MyApiUrl}RealizarTransferencia/`;
     return this.http.post(url, nuevoProveedor);
   }

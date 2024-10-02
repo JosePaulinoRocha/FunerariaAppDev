@@ -108,6 +108,7 @@ export class TransferenciasModalComponent implements OnInit {
       CuentaRecibeID: this.transferencia.CuentaRecibeID,
       Descripcion: this.transferencia.Descripcion,
       Monto: this.transferencia.Monto,
+      Fecha: this.transferencia.Fecha,
     };
   
     console.log("Datos de transferencia:", nuevaTransferencia);
@@ -117,14 +118,14 @@ export class TransferenciasModalComponent implements OnInit {
   
       const alert = await this.alertController.create({
         header: 'Éxito',
-        message: 'El proveedor ha sido agregado correctamente.',
+        message: 'La transferencia a sido realizada exitosamente.',
         buttons: ['OK']
       });
       await alert.present();
   
       this.closeModal(true);
     }, error => {
-      console.error('Error al agregar el proveedor:', error);
+      console.error('Error al realizar la transferencia:', error);
       const alert = this.alertController.create({
         header: 'Error',
         message: 'Algo salio mal.',

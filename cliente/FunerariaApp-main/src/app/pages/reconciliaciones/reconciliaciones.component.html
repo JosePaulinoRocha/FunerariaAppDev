@@ -22,7 +22,7 @@
 
       <ion-item>
         <ion-label>Tipo de cuenta:</ion-label>
-        <ion-select [(ngModel)]="tipoCuenta" (ionChange)="onTipoCuentaChange($event)">
+        <ion-select interface="popover" [(ngModel)]="tipoCuenta" (ionChange)="onTipoCuentaChange($event)">
           <ion-select-option value="cajaChica">Caja Chica</ion-select-option>
           <ion-select-option value="cuentaBancaria">Cuenta Bancaria</ion-select-option>
         </ion-select>
@@ -31,7 +31,7 @@
       <div *ngIf="tipoCuenta === 'cajaChica'">
         <ion-item>
           <ion-label>Cuenta caja chica:</ion-label>
-          <ion-select [(ngModel)]="cuentaCajaChica">
+          <ion-select interface="popover" [(ngModel)]="cuentaCajaChica">
             <ion-select-option *ngFor="let income of incomesCajaChica" [value]="income.CuentaID">{{ income.NombreCuenta }}</ion-select-option>
           </ion-select>
         </ion-item>
@@ -40,7 +40,7 @@
       <div *ngIf="tipoCuenta === 'cuentaBancaria'">
         <ion-item>
           <ion-label>Cuenta bancaria:</ion-label>
-          <ion-select [(ngModel)]="cuentaBancaria">
+          <ion-select interface="popover" [(ngModel)]="cuentaBancaria">
             <ion-select-option *ngFor="let income of incomesCuentaBancaria" [value]="income.CuentaID">{{ income.NombreCuenta }}</ion-select-option>
           </ion-select>
         </ion-item>

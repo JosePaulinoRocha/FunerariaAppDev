@@ -132,7 +132,7 @@ export class ReconciliacionesComponent implements OnInit {
   }
 
   isFormValid(): boolean {
-    return !!this.fechaFinal && !!this.balanceFinal && !!this.tipoCuenta && 
+    return !!this.fechaFinal && this.balanceFinal >= 0 && !!this.tipoCuenta && 
       (this.tipoCuenta === 'cajaChica' ? !!this.cuentaCajaChica : !!this.cuentaBancaria);
   }
 

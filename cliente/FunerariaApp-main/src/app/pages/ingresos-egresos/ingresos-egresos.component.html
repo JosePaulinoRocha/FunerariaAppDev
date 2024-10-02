@@ -133,7 +133,9 @@
           <td>{{ income.NombreCuenta }}</td>
           <td>{{ income.RFC }}</td>
           <td>{{ income.Monto }}</td>
-          <td>{{ income.SaldoReconciliacion }}</td>
+          <td>
+            {{ income.Reconciliado === 0 ? income.Saldo : income.SaldoReconciliacion }}
+          </td>
           <td *ngIf="!mostrarIngresos">
             <ion-button 
               *ngIf="!income.TipoIngreso.data.includes(0)" 

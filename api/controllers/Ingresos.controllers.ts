@@ -68,26 +68,6 @@ export const PostIngresos = async (req: Request, res: Response) => {
             return value;
         };
 
-        // Verificar y obtener el ProveedorID
-        let newProveedorID: number | null = null;
-        if (typeof ProveedorID === 'string') {
-            const [proveedorResult]: any = await con.query(`SELECT ProveedorID FROM proveedores WHERE Proveedor = ?`, [ProveedorID]);
-            if (proveedorResult.length > 0) {
-                newProveedorID = proveedorResult[0].ProveedorID;
-                console.log('Proveedor encontrado:', newProveedorID);
-            } else {
-                const insertProveedorQuery = `
-                    INSERT INTO proveedores (Proveedor, CategoriaID, SubcategoriaID, FechaRegistro) 
-                    VALUES (?, ?, ?, NOW())
-                `;
-                const [insertProveedorResult]: any = await con.query(insertProveedorQuery, [ProveedorID, CategoriaID, SubcategoriaID]);
-                newProveedorID = insertProveedorResult.insertId;
-                console.log('Nuevo proveedor insertado:', newProveedorID);
-            }
-        } else {
-            newProveedorID = ProveedorID;
-        }
-
         const newConceptoID = await getOrCreateId('conceptos', ConceptoID);
         const newSegmentoID = await getOrCreateId('segmentos', SegmentoID);
         const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
@@ -106,9 +86,46 @@ export const PostIngresos = async (req: Request, res: Response) => {
         const countParams = [newCategoriaID, newSubcategoriaID];
         const [countResult] = await con.query(checkCombinationCountQuery, countParams) as any[];
 
-        // Actualizar el Estatus del proveedor
-        const estatus = countResult[0].count >= 3 ? 0 : 0; // 0 si hay 3 o más registros, 1 si no
-        await con.query(`UPDATE proveedores SET Estatus = ? WHERE ProveedorID = ?`, [estatus, newProveedorID]);
+
+
+        // Verificar y obtener el ProveedorID
+        let newProveedorID: number | null = null;
+
+        if (typeof ProveedorID === 'number') {
+            // Si ProveedorID ya es un número, usarlo directamente
+            newProveedorID = ProveedorID;
+            console.log('ProveedorID es un número, se usará directamente:', newProveedorID);
+        } else if (typeof ProveedorID === 'string' && ProveedorID.trim() !== '') {
+            // Si ProveedorID es una cadena, buscar o crear el proveedor en la base de datos
+            const [proveedorResult]: any = await con.query(
+                `SELECT ProveedorID FROM proveedores WHERE Proveedor = ? AND CategoriaID = ? AND SubcategoriaID = ?`,
+                [ProveedorID, newCategoriaID, newSubcategoriaID]
+            );
+
+            if (proveedorResult.length > 0) {
+                newProveedorID = proveedorResult[0].ProveedorID;
+                console.log('Proveedor encontrado:', newProveedorID);
+            } else {
+                const insertProveedorQuery = `
+                    INSERT INTO proveedores (Proveedor, CategoriaID, SubcategoriaID, FechaRegistro) 
+                    VALUES (?, ?, ?, NOW())
+                `;
+                const [insertProveedorResult]: any = await con.query(insertProveedorQuery, [ProveedorID, newCategoriaID, newSubcategoriaID]);
+                newProveedorID = insertProveedorResult.insertId;
+                console.log('Nuevo proveedor insertado:', newProveedorID);
+            }
+        } else {
+            console.log('ProveedorID está vacío o no es válido, no se realizará ninguna acción para el proveedor.');
+        }
+
+        // Actualizar el Estatus del proveedor si newProveedorID no es nulo
+        if (newProveedorID !== null) {
+            const estatus = countResult[0].count >= 3 ? 0 : 0; // Asegúrate de que esta lógica sea correcta
+            await con.query(`UPDATE proveedores SET Estatus = ? WHERE ProveedorID = ?`, [estatus, newProveedorID]);
+        }
+
+
+
 
         const checkCombinationQuery = `
             SELECT * 
@@ -143,6 +160,60 @@ export const PostIngresos = async (req: Request, res: Response) => {
             throw new Error(`TipoCuentaID no válido: ${TipoCuentaIDNum}`);
         }
 
+
+        const calcularSaldoCuenta = async (CuentaID: number | string, nuevoMonto: number, esIngreso: boolean) => {
+            const saldoReconciliadoQuery = `
+                SELECT Saldo FROM reconciliaciones 
+                WHERE CuentaID = ?
+                ORDER BY ReconciliacionID DESC LIMIT 1
+            `;
+            const [saldoReconciliado]: any = await con.query(saldoReconciliadoQuery, [CuentaID]);
+            let saldoInicial = saldoReconciliado.length > 0 ? parseFloat(saldoReconciliado[0].Saldo) : 0;
+        
+            console.log(`Saldo inicial de la cuenta ${CuentaID}:`, saldoInicial);
+        
+            if (isNaN(saldoInicial)) saldoInicial = 0;
+        
+            // Obtener ingresos y egresos no reconciliados
+            const ingresosEgresosQuery = `
+                SELECT Monto, TipoIngreso FROM ingresos
+                WHERE CuentaID = ? AND Reconciliado = 0
+                ORDER BY IngresoID
+            `;
+            const [ingresosEgresos]: any = await con.query(ingresosEgresosQuery, [CuentaID]);
+        
+            let totalIngresos = 0;
+            let totalEgresos = 0;
+        
+            ingresosEgresos.forEach((registro: any) => {
+                const monto = parseFloat(registro.Monto);
+                if (!isNaN(monto)) {
+                    const tipoIngreso = registro.TipoIngreso[0]; // Aquí ya no es necesario compararlo con 1
+                    if (tipoIngreso === 1) { // Si es egreso (1)
+                        totalEgresos += monto; 
+                    } else { // Si es ingreso (0)
+                        totalIngresos += monto; 
+                    }
+                }
+            });
+        
+            console.log(`Total ingresos no reconciliados para la cuenta ${CuentaID}:`, totalIngresos);
+            console.log(`Total egresos no reconciliados para la cuenta ${CuentaID}:`, totalEgresos);
+        
+            // Incluir el monto del nuevo registro en el cálculo del saldo
+            const saldoFinal = saldoInicial + totalIngresos - totalEgresos + (esIngreso ? nuevoMonto : -nuevoMonto);
+        
+            console.log(`Saldo final calculado para la cuenta ${CuentaID}:`, saldoFinal);
+        
+            return isNaN(saldoFinal) ? 0 : saldoFinal;
+        };
+        
+        // Luego, al momento de llamar a esta función en tu lógica de alta de ingresos, hazlo así:
+        const esIngreso = TipoIngreso === 0; // Ahora '0' es ingreso y '1' es egreso
+        const saldoFinal = await calcularSaldoCuenta(newCuentaID, Monto, esIngreso);
+        
+
+
         // Imprimir valores que se usarán para el insert
         console.log('Valores a insertar en ingresos:', {
             Fecha,
@@ -170,7 +241,7 @@ export const PostIngresos = async (req: Request, res: Response) => {
             'ProveedorID', 'Piezas', 'TipoCuentaID', 'CuentaID', 'Monto', 
             'EstatusComprobacionID', 'FechaAutorizacion', 'UsuarioAutorizaID', 
             'UsuarioRecibeID', 'FechaConciliacion', 'ObservacionesDifConciliacion', 
-            'TipoIngreso', 'Fecha'  // Fecha ahora al final para insertar con NOW()
+            'TipoIngreso', 'Fecha', 'Saldo'
         ];
         
         const values = [
@@ -178,7 +249,7 @@ export const PostIngresos = async (req: Request, res: Response) => {
             newProveedorID, Piezas, TipoCuentaIDNum, newCuentaID, Monto, 
             EstatusComprobacionID, FechaAutorizacion, UsuarioAutorizaID, 
             UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion, 
-            TipoIngreso, Fecha
+            TipoIngreso, Fecha, saldoFinal
         ];
 
         // Solo incluye SubcategoriaID si no es null
@@ -283,6 +354,40 @@ export const UpdateIngresos = async (req: Request, res: Response) => {
         await con.beginTransaction();
         console.log('Transacción iniciada para actualización');
 
+
+        // Obtener el monto y saldo actuales del ingreso
+        const currentIngresoQuery = `SELECT Monto, Saldo FROM ingresos WHERE IngresoID = ?`;
+        const [currentIngreso] = await con.query(currentIngresoQuery, [IngresoID]) as any[];
+
+        if (currentIngreso.length === 0) {
+            throw new Error('Ingreso no encontrado');
+        }
+
+        const previousMonto = parseFloat(currentIngreso[0].Monto); // Asegúrate de que sea un número
+        const previousSaldo = parseFloat(currentIngreso[0].Saldo); // Asegúrate de que sea un número
+
+        console.log('Monto anterior:', previousMonto);
+        console.log('Saldo anterior:', previousSaldo);
+
+        // Calcular la diferencia en el monto
+        const diferencia = Monto - previousMonto; // Esta operación ya debería dar un número
+        console.log('Diferencia:', diferencia);
+
+        // Actualizar el saldo según el tipo de ingreso
+        let newSaldo = previousSaldo; // Aquí también asegúrate de que sea un número
+        console.log('Saldo inicial para actualización:', newSaldo);
+
+        if (TipoIngreso === 0) { // Ingreso
+            newSaldo += diferencia; // Aumentar saldo
+            console.log('Actualizando saldo como ingreso. Nuevo saldo:', newSaldo.toFixed(2)); // Asegúrate de formatear el número correctamente
+        } else if (TipoIngreso === 1) { // Egreso
+            newSaldo -= diferencia; // Disminuir saldo
+            console.log('Actualizando saldo como egreso. Nuevo saldo:', newSaldo.toFixed(2)); // Asegúrate de formatear el número correctamente
+        } else {
+            console.error('TipoIngreso no válido:', TipoIngreso);
+        }
+
+
         const getOrCreateCuentaId = async (cuentaId: number | string | null, additionalFields: { [key: string]: any } = {}) => {
             if (typeof cuentaId === 'string' || cuentaId === 0 || cuentaId === null) {
                 const columnName = 'NombreCuenta';
@@ -311,26 +416,6 @@ export const UpdateIngresos = async (req: Request, res: Response) => {
             return value;
         };
 
-        // Verificar y obtener el ProveedorID
-        let newProveedorID: number | null = null;
-        if (typeof ProveedorID === 'string') {
-            const [proveedorResult]: any = await con.query(`SELECT ProveedorID FROM proveedores WHERE Proveedor = ?`, [ProveedorID]);
-            if (proveedorResult.length > 0) {
-                newProveedorID = proveedorResult[0].ProveedorID;
-                console.log('Proveedor encontrado:', newProveedorID);
-            } else {
-                const insertProveedorQuery = `
-                    INSERT INTO proveedores (Proveedor, CategoriaID, SubcategoriaID, FechaRegistro) 
-                    VALUES (?, ?, ?, NOW())
-                `;
-                const [insertProveedorResult]: any = await con.query(insertProveedorQuery, [ProveedorID, CategoriaID, SubcategoriaID]);
-                newProveedorID = insertProveedorResult.insertId;
-                console.log('Nuevo proveedor insertado:', newProveedorID);
-            }
-        } else {
-            newProveedorID = ProveedorID;
-        }
-
         const newConceptoID = await getOrCreateId('conceptos', ConceptoID);
         const newSegmentoID = await getOrCreateId('segmentos', SegmentoID);
         const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
@@ -349,9 +434,45 @@ export const UpdateIngresos = async (req: Request, res: Response) => {
         const countParams = [newCategoriaID, newSubcategoriaID];
         const [countResult] = await con.query(checkCombinationCountQuery, countParams) as any[];
 
-        // Actualizar el Estatus del proveedor
-        const estatus = countResult[0].count >= 3 ? 0 : 0; // 0 si hay 3 o más registros, 1 si no
-        await con.query(`UPDATE proveedores SET Estatus = ? WHERE ProveedorID = ?`, [estatus, newProveedorID]);
+
+
+        // Verificar y obtener el ProveedorID
+        let newProveedorID: number | null = null;
+
+        if (typeof ProveedorID === 'number') {
+            // Si ProveedorID ya es un número, usarlo directamente
+            newProveedorID = ProveedorID;
+            console.log('ProveedorID es un número, se usará directamente:', newProveedorID);
+        } else if (typeof ProveedorID === 'string' && ProveedorID.trim() !== '') {
+            // Si ProveedorID es una cadena, buscar o crear el proveedor en la base de datos
+            const [proveedorResult]: any = await con.query(
+                `SELECT ProveedorID FROM proveedores WHERE Proveedor = ? AND CategoriaID = ? AND SubcategoriaID = ?`,
+                [ProveedorID, newCategoriaID, newSubcategoriaID]
+            );
+
+            if (proveedorResult.length > 0) {
+                newProveedorID = proveedorResult[0].ProveedorID;
+                console.log('Proveedor encontrado:', newProveedorID);
+            } else {
+                const insertProveedorQuery = `
+                    INSERT INTO proveedores (Proveedor, CategoriaID, SubcategoriaID, FechaRegistro) 
+                    VALUES (?, ?, ?, NOW())
+                `;
+                const [insertProveedorResult]: any = await con.query(insertProveedorQuery, [ProveedorID, newCategoriaID, newSubcategoriaID]);
+                newProveedorID = insertProveedorResult.insertId;
+                console.log('Nuevo proveedor insertado:', newProveedorID);
+            }
+        } else {
+            console.log('ProveedorID está vacío o no es válido, no se realizará ninguna acción para el proveedor.');
+        }
+
+        // Actualizar el Estatus del proveedor si newProveedorID no es nulo
+        if (newProveedorID !== null) {
+            const estatus = countResult[0].count >= 3 ? 0 : 0; // Asegúrate de que esta lógica sea correcta
+            await con.query(`UPDATE proveedores SET Estatus = ? WHERE ProveedorID = ?`, [estatus, newProveedorID]);
+        }
+
+
 
         let newCuentaID: number | string = 0;
         const TipoCuentaIDNum = Number(TipoCuentaID);
@@ -371,7 +492,7 @@ export const UpdateIngresos = async (req: Request, res: Response) => {
             'ProveedorID', 'Piezas', 'TipoCuentaID', 'CuentaID', 'Monto', 
             'EstatusComprobacionID', 'FechaAutorizacion', 'UsuarioAutorizaID', 
             'UsuarioRecibeID', 'FechaConciliacion', 'ObservacionesDifConciliacion', 
-            'TipoIngreso', 'Fecha'
+            'TipoIngreso', 'Fecha', 'Saldo'
         ];
 
         const values = [
@@ -379,7 +500,7 @@ export const UpdateIngresos = async (req: Request, res: Response) => {
             newProveedorID, Piezas, TipoCuentaIDNum, newCuentaID, Monto, 
             EstatusComprobacionID, FechaAutorizacion, UsuarioAutorizaID, 
             UsuarioRecibeID, FechaConciliacion, ObservacionesDifConciliacion, 
-            TipoIngreso, Fecha
+            TipoIngreso, Fecha, newSaldo 
         ];
 
         // Solo incluye SubcategoriaID si no es null
