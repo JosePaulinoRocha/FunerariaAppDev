@@ -41,11 +41,13 @@ export class LoginComponent implements OnInit {
     this.authService.login(email, password).subscribe(
       (response) => {
         if (response.success) {
-          this.authService.setSession(response); // Guardar token y usuario en sessionStorage
+          this.authService.setSession(response);
+          this.authService.loggedInSubject.next(true); // Actualizar el estado de loggedIn
+          this.authService.isAdminSubject.next(this.authService.isAdmin()); // Actualizar el estado de admin
           this.router.navigate(['/home']);
-          setTimeout(() => {
-            window.location.reload();
-          }, 100);
+          // setTimeout(() => {
+          //   window.location.reload();
+          // }, 100);
         } else {
           alert('Usuario o contraseña incorrectos');
         }

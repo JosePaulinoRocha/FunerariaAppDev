@@ -89,6 +89,14 @@
   </ion-header>
 
 
+
+  <!-- Barra de carga con barra de progreso -->
+  <div *ngIf="isLoading" class="loading-bar">
+    <ion-progress-bar type="indeterminate"></ion-progress-bar>
+    <p>Cargando registros, por favor espere...</p>
+  </div>
+
+
   <ion-router-outlet id="main-content"></ion-router-outlet>
 
 

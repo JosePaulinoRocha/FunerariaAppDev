@@ -27,7 +27,7 @@ export class App {
     }
 
     settings() {
-        this.app.set('port', this.port || process.env.PORT || 3080);
+        this.app.set('port', this.port || process.env.PORT || 8081);
         this.app.set('path', dir);
     }
 

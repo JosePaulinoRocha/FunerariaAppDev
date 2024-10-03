@@ -1,7 +1,7 @@
 // src/app/Servicios/AuthService.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { environmentProd } from 'src/environments/environment.prod';
 
@@ -12,6 +12,17 @@ import { environmentProd } from 'src/environments/environment.prod';
 export class AuthService {
 
   private myAppUrl: string; 
+
+
+
+  // BehaviorSubject para almacenar el estado de autenticación y el rol de admin
+  public loggedInSubject = new BehaviorSubject<boolean>(this.isLoggedIn());
+  public isLoggedIn$ = this.loggedInSubject.asObservable();
+
+  public isAdminSubject = new BehaviorSubject<boolean>(this.isAdmin());
+  public isAdmin$ = this.isAdminSubject.asObservable();
+
+
 
   constructor(private http: HttpClient) {
     this.myAppUrl = environment.endpoint;

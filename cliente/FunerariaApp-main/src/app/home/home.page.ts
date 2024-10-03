@@ -19,7 +19,9 @@ export class HomePage implements OnInit {
   constructor(private router: Router, private authService: AuthService) {}
 
   ngOnInit() {
-    this.isAdmin = this.authService.isAdmin();
+    this.authService.isAdminSubject.subscribe((isAdmin) => {
+      this.isAdmin = isAdmin;
+    });
   }
 
   navigateTo(route: string) {

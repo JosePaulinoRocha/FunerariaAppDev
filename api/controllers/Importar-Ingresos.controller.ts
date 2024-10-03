@@ -101,3 +101,51 @@ export async function ImportarIngresos(req: Request, res: Response): Promise<voi
         if (con) await con.end();
     }
 }
+
+
+
+export const ObtenerHistorialIngresos = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = `
+                SELECT * FROM historial_ingresos_importados 
+                ORDER BY ImportacionID DESC LIMIT 1
+                `;
+        const Users = (await con.query(query))[0] as any[];
+        result = Users;
+    } catch (error) {
+        console.log('Error en Usuarios');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+
+export const CrearHistorialIngresos = async (req: Request, res: Response) => {
+    let con;
+    const { FechaInicio, FechaCierre, NumeroRegistrosImportados } = req.body;
+
+    try {
+        con = await connect();
+
+        // Insertar el nuevo registro en la tabla historial_ingresos_importados
+        const query = `
+            INSERT INTO historial_ingresos_importados (FechaInicio, FechaCierre, NumeroRegistrosImportados)
+            VALUES (?, ?, ?)`;
+        
+        await con.query(query, [FechaInicio, FechaCierre, NumeroRegistrosImportados]);
+
+        return res.status(201).json({ message: 'Registro creado exitosamente.' });
+    } catch (error) {
+        console.error('Error al crear el historial de ingresos:', error);
+        return res.status(500).json({ error: 'Error al crear el historial de ingresos' });
+    } finally {
+        await con?.end();
+    }
+};

@@ -7,6 +7,7 @@ import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
 import { IngresosEgresosModalComponent } from './modal/ingresos-egresos-modal.component';
 import { IngresosEgresosArchivoModalComponent } from './modal-archivo/ingresos-egresos-archivo-modal.component';
 import { IngresosEgresosCuentaModalComponent } from './modal-cuenta/ingresos-egresos-cuenta-modal.component';
+import { LoadingController } from '@ionic/angular';
 
 
 interface Income {
@@ -65,6 +66,11 @@ interface Income {
   imports: [IonicModule, FormsModule, CommonModule, HttpClientModule, IngresosEgresosModalComponent, IngresosEgresosCuentaModalComponent],
 })
 export class IngresosEgresosComponent implements OnInit {
+
+
+  isLoading: boolean = false;
+
+
   incomes: Income[] = [];
   paginatedIncomes: Income[] = [];
   currentPage: number = 1;
@@ -129,7 +135,7 @@ export class IngresosEgresosComponent implements OnInit {
   searchValues: { [key: string]: string } = {};
   dateSearchValues: { [key: string]: { startDate: string, endDate: string } } = {};
 
-  constructor(private modalController: ModalController, private _ingresoServ: IngresosServices) { }
+  constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private loadingController: LoadingController) { }
 
   async openAssignAccountsModal() {
     // Obtener los IDs de todos los ingresos filtrados y paginados (no solo los de la página actual)
@@ -197,6 +203,9 @@ export class IngresosEgresosComponent implements OnInit {
   }
   
   loadIngresos() {
+
+    this.isLoading = true;
+    
     this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
 
       console.log("esta es la data de mis ingresos y egresos:", data)
@@ -226,10 +235,13 @@ export class IngresosEgresosComponent implements OnInit {
         FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
         FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
       }));
+
+      this.isLoading = false;
   
       this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
       this.updatePaginatedIncomes();
     }, (error) => {
+      this.isLoading = false;
       console.error('Error fetching incomes', error); 
     });
   }
@@ -377,6 +389,20 @@ export class IngresosEgresosComponent implements OnInit {
     const baseUrl = 'https://systemabmxli.com/';
     const fullUrl = `${baseUrl}${fileUrl}`;
     window.open(fullUrl, '_blank');
+  }
+
+
+  async presentLoading(message: string) {
+    const loading = await this.loadingController.create({
+      message: message,
+      spinner: 'crescent', // Puedes cambiar el spinner a 'lines', 'bubbles', etc.
+    });
+    await loading.present();
+    return loading;
+  }
+  
+  async dismissLoading(loading: HTMLIonLoadingElement) {
+    await loading.dismiss();
   }
   
 

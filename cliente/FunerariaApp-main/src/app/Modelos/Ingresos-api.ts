@@ -7,3 +7,12 @@ export interface Ingresos_api {
   transactions: number;
   total_amount: number;
   }
+
+
+  export interface Historial_Ingresos {
+    ImportacionID: number;
+    FechaInicio: string;
+    FechaCierre: string;
+    FechaImportacion: string;
+    NumeroRegistrosImportados : string;
+  }

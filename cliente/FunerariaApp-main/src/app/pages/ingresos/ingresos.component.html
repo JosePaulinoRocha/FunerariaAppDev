@@ -115,3 +115,10 @@
 
 
 </ion-content>
+
+
+      <!-- Barra de carga con barra de progreso -->
+      <div style="margin-top: 25%;" *ngIf="isLoading" class="loading-bar">
+        <ion-progress-bar type="indeterminate"></ion-progress-bar>
+        <p>Cargando registros, por favor espere...</p>
+      </div>

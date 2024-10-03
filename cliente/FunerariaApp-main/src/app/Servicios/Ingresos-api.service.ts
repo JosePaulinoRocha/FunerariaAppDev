@@ -1,4 +1,4 @@
-import { Ingresos_api } from '../Modelos/Ingresos-api';
+import { Ingresos_api, Historial_Ingresos } from '../Modelos/Ingresos-api';
 import { HttpClient, HttpHeaders  } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -14,12 +14,22 @@ export class IngresosApiServices {
   private myAppUrl: string;
   private MyApiUrl: string;
   private MyApiUrlImportarIngresos: string;
+  
+  private MyApiUrlHistorialIngresos: string;
+  private MyApiUrlHistorialIngresosAdd: string;
+
 
 
   constructor(private http: HttpClient) {
     this.myAppUrl = environment.endpoint;
     this.MyApiUrl = 'api/importar-ingresos/';
     this.MyApiUrlImportarIngresos = 'importarIngresos/';
+    
+    this.MyApiUrlHistorialIngresos = 'historialIngresos/';
+
+    this.MyApiUrlHistorialIngresosAdd = 'historialIngresosAdd/';
+
+
   }
 
   getToken(username: string, password: string) {
@@ -70,6 +80,21 @@ export class IngresosApiServices {
   importarIngresos(registros: Ingresos_api[]): Observable<any> {
     const url = `${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlImportarIngresos}`;
     return this.http.post(url, registros);
+  }
+
+
+  getHistorialIngresos(): Observable<Historial_Ingresos[]> {
+    return this.http.get<Historial_Ingresos[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlHistorialIngresos}`);
+  }
+
+
+  crearHistorial(fechaInicio: string, fechaCierre: Date, numeroRegistrosImportados: number): Observable<any> {
+    const body = {
+      FechaInicio: fechaInicio,
+      FechaCierre: fechaCierre,
+      NumeroRegistrosImportados: numeroRegistrosImportados
+    };
+    return this.http.post(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlHistorialIngresosAdd}`, body);
   }
 
 }

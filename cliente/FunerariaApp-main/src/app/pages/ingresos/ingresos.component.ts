@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { IncomeModalComponent } from './modal/income-modal.component';
 import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
+import { LoadingController } from '@ionic/angular';
+
 
 interface Income {
   IngresoID: number;
@@ -55,6 +57,8 @@ interface Income {
   imports: [IonicModule, FormsModule, CommonModule, IncomeModalComponent, HttpClientModule],
 })
 export class IngresosComponent implements OnInit {
+
+  isLoading: boolean = false;
 
   incomes: Income[] = [];
   paginatedIncomes: Income[] = [];
@@ -119,7 +123,7 @@ export class IngresosComponent implements OnInit {
   searchValues: { [key: string]: string } = {};
   dateSearchValues: { [key: string]: { startDate: string, endDate: string } } = {};
 
-  constructor(private modalController: ModalController, private _ingresoServ: IngresosServices) { }
+  constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private loadingController: LoadingController) { }
 
 
   
@@ -129,6 +133,9 @@ export class IngresosComponent implements OnInit {
   }
 
   loadIngresos() {
+
+    this.isLoading = true;
+
     this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
       
       // Filtrar los registros donde Reconciliado es igual a 0
@@ -142,11 +149,15 @@ export class IngresosComponent implements OnInit {
       }));
 
       console.log("estos son mis registros de ingresos y egresos: ", filteredData);
+
+      this.isLoading = false;
       
       this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
       this.updatePaginated();
     }, (error) => {
       console.error('Error fetching incomes', error);
+      this.isLoading = false;
+
     });
   }
   
@@ -301,4 +312,21 @@ export class IngresosComponent implements OnInit {
       CuentaID: 0,
     };
   }
+
+
+  async presentLoading(message: string) {
+    const loading = await this.loadingController.create({
+      message: message,
+      spinner: 'crescent', // Puedes cambiar el spinner a 'lines', 'bubbles', etc.
+    });
+    await loading.present();
+    return loading;
+  }
+  
+  async dismissLoading(loading: HTMLIonLoadingElement) {
+    await loading.dismiss();
+  }
+
+
+  
 }

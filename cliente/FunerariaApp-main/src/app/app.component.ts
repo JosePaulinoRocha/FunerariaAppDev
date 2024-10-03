@@ -1,11 +1,21 @@
-import { Component } from '@angular/core';
-import { IonicModule, MenuController } from "@ionic/angular";
+import { Component, OnDestroy  } from '@angular/core';
+import { IonicModule, MenuController, AlertController } from "@ionic/angular";
 import { RouterModule, Router } from '@angular/router';
 import { folder, folderOutline , barChart ,calendar, layers, pricetag, pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, chatboxEllipses, business, home, analytics, images, personCircle, person, mail, call, shieldCheckmark, addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, time, alertCircle, warning, trash, create, cashOutline, peopleOutline, trashSharp, searchSharp, personCircleSharp, checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline, keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card } from "ionicons/icons";
 import { addIcons } from 'ionicons';
 import { AuthService } from 'src/app/Servicios/AuthService';
 import { CommonModule } from '@angular/common';
 import { NotificacionesServices } from 'src/app/Servicios/Notificaciones.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { IngresosApiServices } from 'src/app/Servicios/Ingresos-api.service';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
+import { forkJoin } from 'rxjs';
+import { LoadingController } from '@ionic/angular';
+
+
+
 
 interface Combinacion {
   CombinacionID: number;
@@ -27,6 +37,24 @@ export interface Ingreso {
   ReconciliacionID: number
 }
 
+interface Historial_Ingresos {
+  ImportacionID: number;
+  FechaInicio: string;
+  FechaCierre: string;
+  FechaImportacion: string;
+  NumeroRegistrosImportados : string;
+}
+
+interface Ingreso_Importado {
+  collection?: string;
+  service_ref?: string;
+  agent?: string;
+  date_affect?: string;
+  date_ref?: string;
+  transactions: number;
+  total_amount: number;
+}
+
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -36,6 +64,17 @@ export interface Ingreso {
 })
 export class AppComponent {
 
+  readonly BATCH_SIZE = 100;
+
+  isLoading: boolean = false;
+
+  historial_ingresos: Historial_Ingresos[] = [];
+  afectaciones_ingresos: Ingreso_Importado[] = [];
+  funeraria_ingresos: Ingreso_Importado[] = [];
+  pagos_iniciales: Ingreso_Importado[] = [];
+
+  private unsubscribe$ = new Subject<void>();
+
   isAdmin: boolean = false;
   isLoggedIn: boolean = false;
   isNotificationsOpen: boolean = false;
@@ -43,6 +82,8 @@ export class AppComponent {
   reconciliaciones: Reconciliacion[] = [];
   ingresos: Ingreso[] = [];
   notifications: { message: string, icon: string, route: string }[] = [];
+
+  errorMessage: string | null = null;
 
   getIconColor(iconName: string): string {
     switch (iconName) {
@@ -61,7 +102,7 @@ export class AppComponent {
     }
   }
 
-  constructor(private menu: MenuController, private router: Router, private authService: AuthService, private _notificacionServ: NotificacionesServices) {
+  constructor(private menu: MenuController, private router: Router, private authService: AuthService, private _notificacionServ: NotificacionesServices, private _ingresoApiServ: IngresosApiServices, private alertController: AlertController, private loadingController: LoadingController) {
     addIcons({ 
       barChart , home, analytics, images, personCircle, person, mail, call, shieldCheckmark, 
       addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, 
@@ -71,22 +112,349 @@ export class AppComponent {
       checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline,
       keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card
     });
+
+    this.authService.isLoggedIn$.subscribe(isLoggedIn => {
+      this.isLoggedIn = isLoggedIn;
+    });
+
+    this.authService.isAdmin$.subscribe(isAdmin => {
+      this.isAdmin = isAdmin;
+    });
+
   }
 
   ngOnInit() {
-    this.isLoggedIn = this.authService.isLoggedIn();
-    this.isAdmin = this.authService.isAdmin();
-    if (this.isLoggedIn) {
-      this.loadCombinacionesNotificaciones();
-    }
-    if (this.isLoggedIn) {
-      this.loadReconciliacionesNotificaciones();
-    }
-    if (this.isLoggedIn) {
-      this.loadIngresosNotificaciones();
-    }
+    this.authService.isLoggedIn$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(isLoggedIn => {
+        this.isLoggedIn = isLoggedIn;
+        if (this.isLoggedIn) {
+          this.loadCombinacionesNotificaciones();
+          this.loadReconciliacionesNotificaciones();
+          this.loadIngresosNotificaciones();
+          this.loadHistorialIngresos();
+        }
+      });
+  
+    this.authService.isAdmin$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(isAdmin => {
+        this.isAdmin = isAdmin;
+    });
+  }
+  
+
+  loadHistorialIngresos() {
+    this._ingresoApiServ.getHistorialIngresos().subscribe(
+      (data: Historial_Ingresos[]) => {
+        console.log('Esta es mi data del historial de importaciones de ingresos: ', data);
+        this.historial_ingresos = data;
+  
+        // Verificar si el historial tiene registros
+        if (this.historial_ingresos.length > 0) {
+          // Obtener el registro más reciente
+          const ultimoHistorial = this.historial_ingresos[0];
+          const fechaCierre = new Date(ultimoHistorial.FechaCierre);
+          console.log("Esta es la fecha de cierre: ", fechaCierre);
+          
+          const fechaActual = new Date();
+  
+          // Normalizar ambas fechas (tomar solo año, mes y día)
+          const fechaCierreSinHora = new Date(fechaCierre.getFullYear(), fechaCierre.getMonth(), fechaCierre.getDate());
+          const fechaActualSinHora = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate());
+  
+          // Si la FechaCierre es menor a la fecha actual, hacer la importación
+          if (fechaCierreSinHora < fechaActualSinHora) {
+            console.log("La fecha de cierre es menor al día actual: ", fechaCierreSinHora, fechaActualSinHora);
+            this.getAfectacionesDesdeFecha(fechaCierreSinHora);
+          } else {
+            console.log('No es necesaria una nueva importación, la FechaCierre es más reciente o igual a hoy.');
+          }
+        } else {
+          // Si el historial está vacío, traer registros desde el 1 de enero del 2000
+          console.log('Se hará la importación masiva.');
+          this.getAfectacionesDesde2000();
+        }
+      },
+      (error) => {
+        this.presentAlert('Error al buscar el historial de importaciones');
+      }
+    );
+  }
+  
+
+
+  getAfectacionesDesdeFecha(fechaCierreSinHora: Date) {
+    this.errorMessage = null;
+    const fechaInicio = fechaCierreSinHora.toISOString().split('T')[0]; // Convertir la FechaCierre a string
+    console.log("esta es la fecha de inicio: ",fechaInicio);
+    const fechaFin = new Date().toISOString().split('T')[0]; // Fecha actual
+  
+    // Obtener el token para la API
+    this._ingresoApiServ.getToken('test', '1234').pipe(
+      catchError(err => {
+        this.errorMessage = 'Error al obtener el token';
+        return throwError(err);
+      })
+    ).subscribe((tokenResponse: any) => {
+      const token = tokenResponse.token;
+  
+      let responsesCount = 0; // Contador para las respuestas
+  
+      // Traer datos de afectaciones (primer ingreso)
+      this._ingresoApiServ.getPaidsAffected(token, fechaInicio, fechaFin).pipe(
+        catchError(err => {
+          this.errorMessage = 'Error al obtener ingresos de Afectaciones';
+          return throwError(err);
+        })
+      ).subscribe((data: Ingreso_Importado[]) => {
+        this.afectaciones_ingresos = data;
+        console.log('Datos de Afectaciones:', data);
+        responsesCount++;
+        this.checkImportarIngresos(responsesCount);
+      });
+  
+      // Traer datos de pagos funerarios
+      forkJoin([
+        this._ingresoApiServ.getFunerariaPayments(token, 'Mexicali', fechaInicio, fechaFin),
+        this._ingresoApiServ.getFunerariaPayments(token, 'San Luis Río Colorado', fechaInicio, fechaFin)
+      ])
+      .pipe(
+        catchError(err => {
+          this.errorMessage = 'Error al obtener pagos funerarios';
+          return throwError(err);
+        })
+      ).subscribe((results: [Ingreso_Importado[], Ingreso_Importado[]]) => {
+        this.funeraria_ingresos = [...results[0], ...results[1]];
+        console.log('Datos de Funeraria:', this.funeraria_ingresos);
+        responsesCount++;
+        this.checkImportarIngresos(responsesCount);
+      });
+  
+      // Traer datos de pagos iniciales
+      this._ingresoApiServ.getPagosIniciales(token, fechaInicio, fechaFin).pipe(
+        catchError(err => {
+          this.errorMessage = 'Error al obtener pagos iniciales';
+          return throwError(err);
+        })
+      ).subscribe((data: Ingreso_Importado[]) => {
+        this.pagos_iniciales = data;
+        console.log('Datos de Pagos Iniciales:', data);
+        responsesCount++;
+        this.checkImportarIngresos(responsesCount);
+      });
+    });
+  }
+  
+  
+  
+  getAfectacionesDesde2000() {
+    this.errorMessage = null;
+    const fechaInicio = '2024-10-01'; // Fecha de inicio: 1 de enero de 2000
+    const fechaFin = new Date().toISOString().split('T')[0]; // Fecha actual
+
+    // Obtener el token para la API
+    this._ingresoApiServ.getToken('test', '1234').pipe(
+        catchError(err => {
+            this.errorMessage = 'Error al obtener el token';
+            return throwError(err);
+        })
+    ).subscribe((tokenResponse: any) => {
+        const token = tokenResponse.token;
+
+        let responsesCount = 0; // Contador para las respuestas
+
+        // Traer datos de afectaciones (primer ingreso)
+        this._ingresoApiServ.getPaidsAffected(token, fechaInicio, fechaFin).pipe(
+            catchError(err => {
+                this.errorMessage = 'Error al obtener ingresos de Afectaciones';
+                return throwError(err);
+            })
+        ).subscribe((data: Ingreso_Importado[]) => {
+            this.afectaciones_ingresos = data;
+            console.log('Datos de Afectaciones:', data);
+            responsesCount++; // Incrementar el contador
+            this.checkImportarIngresos(responsesCount); // Verificar si se debe llamar a importarIngresos
+        });
+
+        // Traer datos de pagos funerarios para Mexicali y San Luis Río Colorado
+        forkJoin([
+            this._ingresoApiServ.getFunerariaPayments(token, 'Mexicali', fechaInicio, fechaFin),
+            this._ingresoApiServ.getFunerariaPayments(token, 'San Luis Río Colorado', fechaInicio, fechaFin)
+        ])
+        .pipe(
+            catchError(err => {
+                this.errorMessage = 'Error al obtener pagos funerarios';
+                return throwError(err);
+            })
+        ).subscribe((results: [Ingreso_Importado[], Ingreso_Importado[]]) => {
+            this.funeraria_ingresos = [...results[0], ...results[1]];
+            console.log('Datos de Funeraria:', this.funeraria_ingresos);
+            responsesCount++; // Incrementar el contador
+            this.checkImportarIngresos(responsesCount); // Verificar si se debe llamar a importarIngresos
+        });
+
+        // Traer datos de pagos iniciales (tercer ingreso)
+        this._ingresoApiServ.getPagosIniciales(token, fechaInicio, fechaFin).pipe(
+            catchError(err => {
+                this.errorMessage = 'Error al obtener pagos iniciales';
+                return throwError(err);
+            })
+        ).subscribe((data: Ingreso_Importado[]) => {
+            this.pagos_iniciales = data;
+            console.log('Datos de Pagos Iniciales:', data);
+            responsesCount++; // Incrementar el contador
+            this.checkImportarIngresos(responsesCount); // Verificar si se debe llamar a importarIngresos
+        });
+    });
   }
 
+  // Método para verificar si se deben importar ingresos
+  checkImportarIngresos(responsesCount: number) {
+      if (responsesCount === 3) {
+          this.importarIngresos(); // Llamar a importarIngresos solo si se han recuperado los 3 tipos de ingresos
+      }
+  }
+
+
+
+importarIngresos() {
+    // Asegúrate de que hay registros para importar
+    if (this.afectaciones_ingresos.length === 0 && this.funeraria_ingresos.length === 0 && this.pagos_iniciales.length === 0) {
+        console.warn('No hay registros para importar.');
+        return;
+    }
+
+    // Prepara los datos para enviar en una sola solicitud
+    const registrosParaImportar = [
+        ...this.afectaciones_ingresos.map(ingreso => ({
+            tipoIngreso: 'afectaciones',
+            collection: ingreso.collection,
+            service_ref: ingreso.service_ref,
+            agent: ingreso.agent,
+            date_affect: ingreso.date_affect,
+            date_ref: ingreso.date_ref,
+            transactions: ingreso.transactions,
+            total_amount: ingreso.total_amount
+        })),
+        ...this.funeraria_ingresos.map(ingreso => ({
+            tipoIngreso: 'funeraria',
+            collection: ingreso.collection,
+            service_ref: ingreso.service_ref,
+            agent: ingreso.agent,
+            date_affect: ingreso.date_affect,
+            date_ref: ingreso.date_ref,
+            transactions: ingreso.transactions,
+            total_amount: ingreso.total_amount
+        })),
+        ...this.pagos_iniciales.map(ingreso => ({
+            tipoIngreso: 'pagos-iniciales',
+            collection: ingreso.collection,
+            service_ref: ingreso.service_ref,
+            agent: ingreso.agent,
+            date_affect: ingreso.date_affect,
+            date_ref: ingreso.date_ref,
+            transactions: ingreso.transactions,
+            total_amount: ingreso.total_amount
+        }))
+    ];
+
+    console.log("Estos son los registros a importar: ", registrosParaImportar);
+    
+    // Inicia el indicador de carga
+    this.isLoading = true;
+
+    // Enviar registros en batches
+    this.sendBatches(registrosParaImportar);
+} 
+
+
+
+
+  // Método para enviar batches de registros
+  sendBatches(registros: any[]) {
+      const totalRegistros = registros.length;
+      let offset = 0;
+
+      const fechaInicio = '2000-01-01';
+
+      const sendNextBatch = () => {
+          // Obtiene el batch actual de registros
+          const batch = registros.slice(offset, offset + this.BATCH_SIZE);
+          
+          // Si no hay más registros que enviar, finaliza
+          if (batch.length === 0) {
+              console.log('Todos los registros han sido importados.');
+
+
+              const fechaCierre = new Date(); // Almacena la fecha de cierre de la importación
+
+              // Llama a crearHistorial
+              this._ingresoApiServ.crearHistorial(fechaInicio, fechaCierre, totalRegistros).subscribe(
+                () => {
+                  console.log('Historial de importación creado con éxito.');
+                },
+                (error) => {
+                  console.error('Error al crear el historial de importación:', error);
+                }
+              );
+
+
+
+              // Finaliza el indicador de carga
+              this.isLoading = false;
+              return;
+          }
+
+          // Enviar el batch al endpoint
+          this._ingresoApiServ.importarIngresos(batch).subscribe(
+              () => {
+                  console.log(`Batch de ${batch.length} registros importados correctamente`);
+                  offset += this.BATCH_SIZE; // Incrementar el offset para el siguiente batch
+                  sendNextBatch(); // Llamar de nuevo para enviar el siguiente batch
+              },
+              (error: any) => {
+                  console.error('Error al importar el batch de registros', error);
+                  // Aquí podrías manejar errores específicos o realizar un reintento si es necesario
+                  this.isLoading = false; // Finaliza el indicador de carga en caso de error
+              }
+          );
+      };
+
+      // Iniciar el proceso de envío
+      sendNextBatch();
+  }
+
+
+  
+
+  async presentAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Error',
+      message: message,
+      buttons: ['OK'],
+    });
+
+    await alert.present();
+  }
+
+  async presentSuccessAlert() {
+    const alert = await this.alertController.create({
+      header: 'Éxito',
+      message: 'El registro se ha guardado correctamente.',
+      buttons: ['OK']
+    });
+    await alert.present();
+  }
+  
+  async presentErrorAlert() {
+    const alert = await this.alertController.create({
+      header: 'Error',
+      message: 'Hubo un problema al guardar el registro. Inténtalo nuevamente.',
+      buttons: ['OK']
+    });
+    await alert.present();
+  }
 
   loadIngresosNotificaciones() {
     this._notificacionServ.loadIngresosNotificaciones().subscribe((data: Ingreso[]) => {
@@ -173,11 +541,36 @@ export class AppComponent {
     this.isNotificationsOpen = !this.isNotificationsOpen;
   }
 
+  ngOnDestroy() {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+  }
+
   logout() {
     sessionStorage.removeItem('user'); 
     sessionStorage.removeItem('token');
     this.menu.close(); 
     this.isLoggedIn = false;  
     this.router.navigate(['/login']); 
+    this.authService.logout();
+    this.unsubscribe$.next();  // Desuscribir inmediatamente al cerrar sesión
+    this.isLoggedIn = false;
   }
+
+
+  async presentLoading(message: string) {
+    const loading = await this.loadingController.create({
+      message: message,
+      spinner: 'crescent', // Puedes cambiar el spinner a 'lines', 'bubbles', etc.
+    });
+    await loading.present();
+    return loading;
+  }
+  
+  async dismissLoading(loading: HTMLIonLoadingElement) {
+    await loading.dismiss();
+  }
+  
+
+  
 }
