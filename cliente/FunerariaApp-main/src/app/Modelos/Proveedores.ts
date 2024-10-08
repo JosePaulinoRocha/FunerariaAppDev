@@ -9,4 +9,5 @@ export interface Proveedor {
   NombreSubcategoria: string;
   FechaRegistro: string;
   Rentabilidad: string;
+  RentabilidadCostoPeriodo: number;
   }

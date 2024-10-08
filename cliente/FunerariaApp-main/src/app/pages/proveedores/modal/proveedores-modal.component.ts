@@ -71,6 +71,9 @@ export class ProveedoresModalComponent implements OnInit {
 
 
   ngOnInit() {
+    console.log("Proveedor recibido en el modal:", this.proveedor);
+    console.log("Modo edición:", this.isEditMode);
+
     this.loadProveedores();
     this.loadCategorias();
     this.loadSubcategorias();
@@ -120,6 +123,7 @@ export class ProveedoresModalComponent implements OnInit {
 
   async agregarProveedor() {
     const nuevoProveedor = {
+      ProveedorID: this.proveedor.ProveedorID,
       Proveedor: this.isNewProveedor ? this.newProveedor : this.proveedor.Proveedor,
       CategoriaID: this.isNewCategoria ? this.newCategoria : this.proveedor.CategoriaID,
       SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.proveedor.SubcategoriaID,
@@ -127,26 +131,58 @@ export class ProveedoresModalComponent implements OnInit {
     };
   
     console.log("Datos del nuevo proveedor:", nuevoProveedor);
+
+
+    if (this.isEditMode) {
+
+      console.log("entro a agregar proveedor")
+
+      this._proveedorServ.updateProveedor(nuevoProveedor).subscribe(async response => {
+        console.log('Proveedor actualizado exitosamente:', response);
   
-    this._proveedorServ.addProveedor(nuevoProveedor).subscribe(async response => {
-      console.log('Proveedor agregado exitosamente:', response);
+        const alert = await this.alertController.create({
+          header: 'Éxito',
+          message: 'El proveedor ha sido actualizado correctamente.',
+          buttons: ['OK']
+        });
+        await alert.present();
   
-      const alert = await this.alertController.create({
-        header: 'Éxito',
-        message: 'El proveedor ha sido agregado correctamente.',
-        buttons: ['OK']
+        this.closeModal(true);
+      }, error => {
+        console.error('Error al actualizar el proveedor:', error);
+        const alert = this.alertController.create({
+          header: 'Error',
+          message: 'Hubo un error al actualizar el proveedor.',
+          buttons: ['OK']
+        });
       });
-      await alert.present();
-  
-      this.closeModal(true);
-    }, error => {
-      console.error('Error al agregar el proveedor:', error);
-      const alert = this.alertController.create({
-        header: 'Error',
-        message: 'Algo salio mal.',
-        buttons: ['OK']
+
+    } else {
+
+      console.log("entro a agregar proveedor")
+
+      this._proveedorServ.addProveedor(nuevoProveedor).subscribe(async response => {
+        console.log('Proveedor agregado exitosamente:', response);
+    
+        const alert = await this.alertController.create({
+          header: 'Éxito',
+          message: 'El proveedor ha sido agregado correctamente.',
+          buttons: ['OK']
+        });
+        await alert.present();
+    
+        this.closeModal(true);
+      }, error => {
+        console.error('Error al agregar el proveedor:', error);
+        const alert = this.alertController.create({
+          header: 'Error',
+          message: 'Algo salio mal.',
+          buttons: ['OK']
+        });
       });
-    });
+
+    }
+
   }
   
 

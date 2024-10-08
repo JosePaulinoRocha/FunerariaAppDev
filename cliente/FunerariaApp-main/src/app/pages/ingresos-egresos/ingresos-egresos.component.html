@@ -40,8 +40,13 @@
     <ion-button (click)="applySearch()">Buscar</ion-button>
 
     <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
+    
 
-    <ion-button style="margin-left: 4rem;" color="warning" (click)="openAssignAccountsModal()">Asignar Cuentas</ion-button>
+    <ion-button style="margin-left: 4rem;" color="warning" 
+      [disabled]="selectedIncomes.length === 0"
+      (click)="openAssignAccountsModal()">Asignar Cuentas
+    </ion-button>
+
 
     <div style="margin-top: 1rem;" class="button-group">
       <button (click)="setFilter('all')" [disabled]="filtroSeleccionado === 'all'">Todos</button>
@@ -57,9 +62,12 @@
     <table class="table">
       <thead class="header-row">
         <tr class="color_header_tabla">
+          <th>
+            <!-- <input type="checkbox" (change)="toggleSelectAll($event)" /> -->
+          </th>
           <th>ID</th>
-          <th *ngIf="isAdmin">Editar</th>
           <th *ngIf="isAdmin">Cuenta</th>
+          <th *ngIf="isAdmin">Combinacion</th>
           <th><span style="margin-left: 2rem;"></span> Fecha <span style="margin-left: 2rem;"></span></th>
           <th><span style="margin-left: 2rem;"></span>Segmento<span style="margin-left: 2rem;"></span></th>
           <th><span style="margin-left: 3rem;"></span>Categoria<span style="margin-left: 3rem;"></span></th>
@@ -90,22 +98,25 @@
         <tr *ngFor="let income of paginatedIncomes"     [ngClass]="{
           'yellow-background': !income.NombreCuenta && income.Reconciliado === 0,
           'aquamarine-background': income.NombreCuenta && income.Reconciliado === 0}" class="data-row">
-          <td>{{ income.IngresoID }}</td>
-          <td *ngIf="isAdmin">
-            <ion-icon 
-              name="checkbox" 
-              (click)="income.Reconciliado === 1 ? editarCombinacion(income.IngresoID) : null"
-              [style.cursor]="income.Reconciliado === 1 ? 'pointer' : 'default'"
-              [style.color]="income.Reconciliado === 1 ? 'green' : 'grey'"
-              aria-label="Editar">
-            </ion-icon>
+          <td>
+            <input type="checkbox" [(ngModel)]="income['selected']" (change)="onSelectIncome(income)" />
           </td>
+          <td>{{ income.IngresoID }}</td>
           <td *ngIf="isAdmin">
             <ion-icon 
               style="color: green; cursor: pointer;"
               name="key-sharp" 
               (click)="asignarCuenta(income.IngresoID)"
               aria-label="Asignar Cuenta">
+            </ion-icon>
+          </td>
+          <td *ngIf="isAdmin">
+            <ion-icon 
+              name="git-compare" 
+              (click)="editarCombinacion(income.IngresoID)"
+              [style.cursor]="'pointer'"
+              [style.color]="'blue'"
+              aria-label="Editar">
             </ion-icon>
           </td>
           <td>{{ income.Fecha }}</td>

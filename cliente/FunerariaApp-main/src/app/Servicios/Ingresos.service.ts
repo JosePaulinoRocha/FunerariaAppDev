@@ -138,7 +138,7 @@ export class IngresosServices {
     return this.http.put(url, incomeData);
   }
 
-  actualizarCuentasIngresoMasivas(data: { ids: number[], cuenta: { TipoCuentaID: number, CuentaID: number, RFC: string } }): Observable<any> {
+  actualizarCuentasIngresoMasivas(data: any): Observable<any> {
     const url = `${this.myAppUrl}${this.MyApiUrl}AsignarCuentasMasivas/`;
     return this.http.put(url, data);
   }

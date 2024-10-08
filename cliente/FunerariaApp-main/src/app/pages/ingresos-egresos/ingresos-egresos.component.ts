@@ -67,6 +67,8 @@ interface Income {
 })
 export class IngresosEgresosComponent implements OnInit {
 
+  selectedIncomes: number[] = []; // Almacena los IDs seleccionados
+  selectAll: boolean = false;     // Controla si todos los registros están seleccionados
 
   isLoading: boolean = false;
 
@@ -81,6 +83,34 @@ export class IngresosEgresosComponent implements OnInit {
   mostrarIngresos: boolean = true;
   filtroSeleccionado: 'all' | 'ingresos' | 'egresos' = 'all'; 
 
+
+
+  // Función para seleccionar o deseleccionar todos los ingresos
+  toggleSelectAll(event: any) {
+    const isChecked = event.target.checked;
+    this.selectedIncomes = [];
+
+    this.paginatedIncomes.forEach(income => {
+      income['selected'] = isChecked; // Acceso dinámico con corchetes
+      if (isChecked) {
+        this.selectedIncomes.push(income.IngresoID);
+      }
+    });
+  }
+
+  // Función para seleccionar ingresos individualmente
+  onSelectIncome(income: any) {
+    if (income['selected']) {  // Acceso dinámico con corchetes
+      this.selectedIncomes.push(income.IngresoID);
+    } else {
+      const index = this.selectedIncomes.indexOf(income.IngresoID);
+      if (index > -1) {
+        this.selectedIncomes.splice(index, 1);
+      }
+    }
+  }
+
+    
 
   getStartDate(field: string): string {
     return this.dateSearchValues[field]?.startDate || '';
@@ -139,7 +169,7 @@ export class IngresosEgresosComponent implements OnInit {
 
   async openAssignAccountsModal() {
     // Obtener los IDs de todos los ingresos filtrados y paginados (no solo los de la página actual)
-    const selectedIncomeIDs = this.incomes.map(income => income.IngresoID);
+    const selectedIncomeIDs = this.selectedIncomes;
   
     console.log("estos son los ID's :", selectedIncomeIDs);
     
@@ -155,6 +185,10 @@ export class IngresosEgresosComponent implements OnInit {
     modal.onDidDismiss().then((data) => {
       if (data.data?.success) {
         this.loadIngresos(); 
+
+        // Vaciar el arreglo de IDs después de la asignación
+        this.selectedIncomes = [];
+        
       }
     });
   
@@ -189,6 +223,13 @@ export class IngresosEgresosComponent implements OnInit {
         ingreso: ingreso 
       }
     });
+
+    modal.onDidDismiss().then((data) => {
+      if (data.data?.success) {
+        this.loadIngresos(); 
+      }
+    });
+    
     return await modal.present();
   }
 

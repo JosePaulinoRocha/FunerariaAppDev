@@ -10,6 +10,8 @@ interface Ingreso {
   TipoCuentaID: number;
   CuentaID: number;
   RFC: string;
+  CategoriaID: number;
+  SubcategoriaID: number;
 }
 
 interface Cuenta {
@@ -17,6 +19,16 @@ interface Cuenta {
   TipoCuentaID: number;
   NombreCuenta: string;
   RFC: string;
+}
+
+interface Categoria {
+  CategoriaID: number;
+  Nombre: string;
+}
+
+interface Subcategoria {
+  SubcategoriaID: number;
+  Nombre: string;
 }
 
 @Component({
@@ -32,6 +44,8 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     TipoCuentaID: 0,
     CuentaID: 0,
     RFC: '',
+    CategoriaID: 0,
+    SubcategoriaID: 0,
   };
 
   @Input() isMassiveAssignMode: boolean = false;
@@ -39,6 +53,15 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
 
   @Input() incomeIDs: number[] = [];
   @Input() bulkAssignment: boolean = false;
+
+  categoria: Categoria[] = [];
+  subcategoria: Subcategoria[] = [];
+
+  isNewCategoria = false;
+  isNewSubcategoria = false;
+
+  newCategoria = '';
+  newSubcategoria = '';
 
   cuenta: Cuenta[] = [];
 
@@ -66,6 +89,10 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     }
   
     this.loadCuentas();
+    this.loadCategorias();
+    this.loadSubcategorias();
+    this.onTipoCuentaChange();
+
   }
   
 
@@ -85,6 +112,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
       (data: Cuenta[]) => {
         console.log('Esta es mi data en cuentas: ', data);
         this.cuenta = data;
+        this.onTipoCuentaChange();
       },
       (error) => {
         this.presentAlert('Error fetching combinations');
@@ -92,16 +120,28 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     );
   }
 
+  loadCategorias() {
+    this._ingresoServ.getCategorias().subscribe((data: Categoria[]) => {
+      this.categoria = data;
+    }, (error) => {
+      this.presentAlert('Error fetching categories');
+    });
+  }
+
+  loadSubcategorias() {
+    this._ingresoServ.getSubcategorias().subscribe((data: Subcategoria[]) => {
+      this.subcategoria = data;
+    }, (error) => {
+      this.presentAlert('Error fetching subcategories');
+    });
+  }
+
   onTipoCuentaChange() {
+
     this.filteredCuentas = this.cuenta.filter(
       (c) => c.TipoCuentaID === this.ingreso.TipoCuentaID
     );
-
-    this.isNewCuenta = false;
-    this.ingreso.CuentaID = 0;
-    this.ingreso.RFC = '';
-    this.newNombreCuenta = '';
-    this.newRFC = '';
+    
   }
 
   onCuentaChange(event: any) {
@@ -136,26 +176,29 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
       console.log("entro en asignacion masiva");
       const cuentaData = {
         TipoCuentaID: this.ingreso.TipoCuentaID,
-        CuentaID: this.isNewCuenta ? parseInt(this.newNombreCuenta, 10) : this.ingreso.CuentaID,
+        CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
         RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
+        CategoriaID: this.isNewCategoria ? this.newCategoria : this.ingreso.CategoriaID,
+        SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
       };
     
+      console.log("Informacion de la actualizacion de cuenta y datos: ", cuentaData);
       console.log("Income IDs en el modal: ", this.incomeIDs);
       
       this._ingresoServ.actualizarCuentasIngresoMasivas({
         ids: this.incomeIDs,  // Aquí usamos `this.incomeIDs`
-        cuenta: cuentaData
-      }).subscribe(
-        () => {
-          this.presentAlert('Cuentas asignadas correctamente a los registros seleccionados.');
-          this.closeModal(true);
-        },
-        (error) => {
-          console.error('Error al asignar cuentas: ', error);
-          this.presentAlert('Error al asignar cuentas. Inténtalo de nuevo.');
-          this.closeModal(false);
-        }
-      );
+         cuenta: cuentaData
+       }).subscribe(
+         () => {
+           this.presentAlert('Cuentas asignadas correctamente a los registros seleccionados.');
+           this.closeModal(true);
+         },
+         (error) => {
+           console.error('Error al asignar cuentas: ', error);
+           this.presentAlert('Error al asignar cuentas. Inténtalo de nuevo.');
+           this.closeModal(false);
+         }
+       );
     } else {
       console.log("entro en asignacion individual");
       const incomeData = {
@@ -163,7 +206,12 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
         TipoCuentaID: this.ingreso.TipoCuentaID,
         CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
         RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
+        CategoriaID: this.isNewCategoria ? this.newCategoria : this.ingreso.CategoriaID,
+        SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
       };
+
+      console.log("Informacion de la actualizacion de cuenta y datos: ", incomeData);
+
   
       this._ingresoServ.actualizarCuentaIngreso(incomeData).subscribe(
         () => {

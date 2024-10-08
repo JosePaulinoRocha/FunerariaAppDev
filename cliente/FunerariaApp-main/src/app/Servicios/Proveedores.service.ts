@@ -32,6 +32,11 @@ export class ProveedoresServices {
     return this.http.post(url, nuevoProveedor);
   }
 
+  updateProveedor(proveedor: { ProveedorID: number, CategoriaID: number | string, SubcategoriaID: number | string, CostoPorPieza: number }): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}UpdateProveedor/`;
+    return this.http.put(url, proveedor);
+  }
+
   updateProveedorStatus(proveedorID: number, nuevoEstatus: number): Observable<any> {
     const url = `${this.myAppUrl}${this.MyApiUrl}UpdateProveedorStatus/`; 
     const body = { ProveedorID: proveedorID, Estatus: nuevoEstatus };

@@ -1,7 +1,7 @@
 import { Component, OnDestroy  } from '@angular/core';
 import { IonicModule, MenuController, AlertController } from "@ionic/angular";
 import { RouterModule, Router } from '@angular/router';
-import { folder, folderOutline , barChart ,calendar, layers, pricetag, pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, chatboxEllipses, business, home, analytics, images, personCircle, person, mail, call, shieldCheckmark, addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, time, alertCircle, warning, trash, create, cashOutline, peopleOutline, trashSharp, searchSharp, personCircleSharp, checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline, keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card } from "ionicons/icons";
+import { folder, folderOutline , barChart ,calendar, layers, pricetag, pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, chatboxEllipses, business, home, analytics, images, personCircle, person, mail, call, shieldCheckmark, addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, time, alertCircle, warning, trash, create, cashOutline, peopleOutline, trashSharp, searchSharp, personCircleSharp, checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline, keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card, createOutline } from "ionicons/icons";
 import { addIcons } from 'ionicons';
 import { AuthService } from 'src/app/Servicios/AuthService';
 import { CommonModule } from '@angular/common';
@@ -110,7 +110,7 @@ export class AppComponent {
       pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, 
       chatboxEllipses, cashOutline, peopleOutline, folderOutline, folder, trashSharp, searchSharp, personCircleSharp,
       checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline,
-      keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card
+      keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card, createOutline
     });
 
     this.authService.isLoggedIn$.subscribe(isLoggedIn => {
@@ -156,11 +156,14 @@ export class AppComponent {
           const ultimoHistorial = this.historial_ingresos[0];
           const fechaCierre = new Date(ultimoHistorial.FechaCierre);
           console.log("Esta es la fecha de cierre: ", fechaCierre);
+
+          const fechaCierreUTC = new Date(fechaCierre.getUTCFullYear(), fechaCierre.getUTCMonth(), fechaCierre.getUTCDate());
+          console.log("Esta es la fecha de cierre en UTC: ", fechaCierreUTC);
           
           const fechaActual = new Date();
   
           // Normalizar ambas fechas (tomar solo año, mes y día)
-          const fechaCierreSinHora = new Date(fechaCierre.getFullYear(), fechaCierre.getMonth(), fechaCierre.getDate());
+          const fechaCierreSinHora = new Date(fechaCierreUTC.getFullYear(), fechaCierreUTC.getMonth(), fechaCierreUTC.getDate());
           const fechaActualSinHora = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate());
   
           // Si la FechaCierre es menor a la fecha actual, hacer la importación

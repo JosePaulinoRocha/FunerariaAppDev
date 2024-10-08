@@ -183,14 +183,15 @@ export class IngresosEgresosModalComponent implements OnInit {
       });
       await alert.present();
   
-      this.closeModal();
-      window.location.reload();
+      this.closeModal(true);
+      
     }, error => {
       console.error('Error al actualizar ingreso:', error);
+      this.closeModal(false);
     });
   }
 
-  closeModal() {
-    this.modalController.dismiss(null, 'close');
+  closeModal(success: boolean = false) {
+    this.modalController.dismiss({ success });
   }
 }

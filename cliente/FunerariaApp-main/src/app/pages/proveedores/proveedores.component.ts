@@ -18,6 +18,7 @@ interface Proveedor {
   NombreSubcategoria: string;
   FechaRegistro: string;
   Rentabilidad: string;
+  RentabilidadCostoPeriodo: number;
   [key: string]: any;
 }
 
@@ -34,7 +35,8 @@ export class ProveedoresComponent  implements OnInit {
   proveedores: Proveedor[] = [];
   paginatedProveedores: Proveedor[] = [];
   currentPage: number = 1;
-  itemsPerPage: number = 8;
+  itemsPerPageOptions: number[] = [10, 20, 50, 100, 200, 500, 1000, 2000];
+  itemsPerPage: number = 10;
   totalPages: number = 0;
   isAdmin: boolean = false;
 
@@ -84,8 +86,15 @@ export class ProveedoresComponent  implements OnInit {
   }
 
   async openModal(proveedor?: Proveedor) {
+
+    console.log("estos son los datos de edicion: ", proveedor)
+
     const modal = await this.modalController.create({
       component: ProveedoresModalComponent,
+      componentProps: {
+        proveedor: proveedor ? { ...proveedor } : this.getEmptyIncome(),
+        isEditMode: !!proveedor
+      }
     });
   
     modal.onDidDismiss().then((result) => {
@@ -120,6 +129,17 @@ export class ProveedoresComponent  implements OnInit {
   }
 
   updatePaginatedProveedores() {
+    this.totalPages = Math.ceil(this.proveedores.length / this.itemsPerPage);
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    this.paginatedProveedores = this.proveedores.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  onItemsPerPageChange() {
+    this.currentPage = 1;  // Reiniciar a la página 1 cuando cambie los registros por página
+    this.updatePaginatedIncomes();  // Actualizar la paginación
+  }
+
+  updatePaginatedIncomes() {
     this.totalPages = Math.ceil(this.proveedores.length / this.itemsPerPage);
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     this.paginatedProveedores = this.proveedores.slice(startIndex, startIndex + this.itemsPerPage);
@@ -246,6 +266,23 @@ export class ProveedoresComponent  implements OnInit {
     }, (error: any) => {
       console.error('Error updating status', error);
     });
+  }
+
+
+  getEmptyIncome(): Proveedor {
+    return {
+      ProveedorID: 0,
+      Proveedor: '',
+      Estatus: { data: [], type: '' },
+      CostoPorPieza: 0,
+      CategoriaID: 0,
+      NombreCategoria: '',
+      SubcategoriaID: 0,
+      NombreSubcategoria: '',
+      FechaRegistro: '',
+      Rentabilidad: '',
+      RentabilidadCostoPeriodo: 0,
+    };
   }
 
 }

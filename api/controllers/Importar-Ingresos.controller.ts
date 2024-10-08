@@ -61,7 +61,7 @@ export async function ImportarIngresos(req: Request, res: Response): Promise<voi
             } else if (tipoIngreso === 'pagos-iniciales') {
                 Descripcion = agent;
                 Fecha = date_ref;
-                SegmentoID = await getOrCreateId('segmentos', 'Nombre', 'Inversiones');
+                SegmentoID = await getOrCreateId('segmentos', 'Nombre', 'Ventas');
                 CategoriaID = await getOrCreateId('categorias', 'Nombre', 'Inversiones Iniciales');
             } else {
                 throw new Error("Tipo de ingreso no válido");

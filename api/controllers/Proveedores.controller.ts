@@ -94,6 +94,51 @@ export const addProveedor = async (req: Request, res: Response) => {
 };
 
 
+export const updateProveedor = async (req: Request, res: Response) => {
+    let con: any;
+    const { ProveedorID, CategoriaID, SubcategoriaID, CostoPorPieza } = req.body;
+  
+    try {
+      con = await connect();
+      await con.beginTransaction();
+
+
+      const getOrCreateId = async (table: string, value: number | string) => {
+        if (typeof value === 'string') {
+            const insertQuery = `INSERT INTO ${table} (Nombre) VALUES (?)`;
+            const [insertResult]: any = await con.query(insertQuery, [value]);
+            return insertResult.insertId;
+        }
+        return value;
+        };
+  
+      const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
+      const newSubcategoriaID = await getOrCreateId('subcategorias', SubcategoriaID);
+  
+      const updateProveedorQuery = `
+        UPDATE proveedores 
+        SET CategoriaID = ?, SubcategoriaID = ?, CostoPorPieza = ?
+        WHERE ProveedorID = ?
+      `;
+      await con.query(updateProveedorQuery, [newCategoriaID, newSubcategoriaID, CostoPorPieza, ProveedorID]);
+  
+      await con.commit();
+      return res.json({ message: 'Proveedor actualizado exitosamente' });
+  
+    } catch (error) {
+      console.error('Error al actualizar el proveedor:', error);
+      await con.rollback();
+      return res.status(500).json({ message: 'Error al actualizar el proveedor' });
+    } finally {
+      if (con) {
+        await con.end();
+        console.log('Conexión a la base de datos cerrada.');
+      }
+    }
+  };
+  
+
+
 
 export const updateProveedorStatus = async (req: Request, res: Response) => {
     let con;

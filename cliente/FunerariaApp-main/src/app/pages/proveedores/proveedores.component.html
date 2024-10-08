@@ -55,13 +55,15 @@
         <tr class="color_header_tabla">
           <th>ID</th>
           <th>Activar</th>
+          <th>Editar</th>
           <th>Proveedor</th>
           <th>CostoPorPieza</th>
           <th>Categoria</th>
           <th>Subcategoria</th>
           <th>Estatus</th>
           <th>FechaRegistro</th>
-          <th>Rentabilidad</th>
+          <th>Rentabilidad Estado</th>
+          <th>Rentabilidad Monto</th>
         </tr>
       </thead>
       <tbody>
@@ -75,6 +77,14 @@
               style="cursor: pointer;">
             </ion-icon>
           </td>
+          <td>
+            <ion-icon 
+              [name]="'create-outline'"
+              [color]="'primary'"
+              (click)="openModal(proveedor)"
+              style="cursor: pointer;">
+            </ion-icon>
+          </td>
           <td>{{ proveedor.Proveedor }}</td>
           <td>{{ proveedor.CostoPorPieza }}</td>
           <td>{{ proveedor.NombreCategoria }}</td>
@@ -82,12 +92,16 @@
           <td>{{ proveedor.Estatus.data[0] === 1 ? 'ACTIVO' : 'NO ACTIVO' }}</td>
           <td>{{ proveedor.FechaRegistro }}</td>
           <td>{{ proveedor.Rentabilidad }}</td>
+          <td>{{ proveedor.RentabilidadCostoPeriodo }}</td>
         </tr>
       </tbody>
     </table>
   </div>
-  <ion-footer class="margin_footer">
+
+
+  <ion-footer style="margin-bottom: 4rem;" class="margin_footer">
     <ion-toolbar>
+
       <ion-buttons slot="start">
         <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
         <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
@@ -95,6 +109,13 @@
       <div class="page-info">
         Página {{ currentPage }} de {{ totalPages }}
       </div>
+
+      <ion-select slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
+        <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">
+          {{ option }}
+        </ion-select-option>
+      </ion-select>
+
     </ion-toolbar>
   </ion-footer>
 

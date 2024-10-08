@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Agregar Proveedor</ion-title>
+    <ion-title>{{ isEditMode ? 'Modificar Proveedor' : 'Añadir Proveedor' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="closeModal(false)">
         <ion-icon name="close"></ion-icon>
@@ -15,31 +15,26 @@
       <ion-row>
         <ion-col size-md="12">
 
-          <!-- <ion-item>
-            <ion-label position="stacked">Proveedor</ion-label>
-            <ion-input placeholder="Proveedor" style="width: 30rem;" [(ngModel)]="proveedor.Proveedor" name="proveedor" required></ion-input>
-          </ion-item> -->
-
           <!-- Proveedor -->
           <ion-item>
             <ion-label position="stacked">Proveedor</ion-label>
             <ion-radio-group style="display: flex;" [(ngModel)]="isNewProveedor" name="isNewProveedor">
               <ion-item>
                 <ion-label>Usar existente</ion-label>
-                <ion-radio slot="start" [value]="false"></ion-radio>
+                <ion-radio [disabled]="isEditMode" slot="start" [value]="false"></ion-radio>
               </ion-item>
               <ion-item>
                 <ion-label>Crear nuevo</ion-label>
-                <ion-radio slot="start" [value]="true"></ion-radio>
+                <ion-radio [disabled]="isEditMode" slot="start" [value]="true"></ion-radio>
               </ion-item>
             </ion-radio-group>
             <div *ngIf="!isNewProveedor">
-              <ion-select placeholder="Proveedor"  style="width: 30rem;" [(ngModel)]="proveedor.Proveedor" name="proveedor" required interface="alert" searchbar="true">
+              <ion-select [disabled]="isEditMode" placeholder="Proveedor"  style="width: 30rem;" [(ngModel)]="proveedor.Proveedor" name="proveedor" required interface="alert" searchbar="true">
                 <ion-select-option *ngFor="let item of proveedorCatalogo" [value]="item.Proveedor">{{ item.Proveedor }}</ion-select-option>
               </ion-select>
             </div>
             <div *ngIf="isNewProveedor">
-              <ion-input placeholder="Nuevo Proveedor"  style="width: 30rem;" [(ngModel)]="newProveedor" name="newProveedor" placeholder="Nuevo Proveedor" required></ion-input>
+              <ion-input [disabled]="isEditMode" placeholder="Nuevo Proveedor"  style="width: 30rem;" [(ngModel)]="newProveedor" name="newProveedor" placeholder="Nuevo Proveedor" required></ion-input>
             </div>
           </ion-item>
 
