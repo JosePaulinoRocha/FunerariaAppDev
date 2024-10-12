@@ -4,10 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
+import { IngresosArchivoServices } from 'src/app/Servicios/Importar-ingresos-archivo.service';
 import { IngresosEgresosModalComponent } from './modal/ingresos-egresos-modal.component';
 import { IngresosEgresosArchivoModalComponent } from './modal-archivo/ingresos-egresos-archivo-modal.component';
 import { IngresosEgresosCuentaModalComponent } from './modal-cuenta/ingresos-egresos-cuenta-modal.component';
+import { IngresosArchivoModalComponent } from './modal-ingresos-archivo/ingresos-archivo-modal.component';
 import { LoadingController } from '@ionic/angular';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 
 interface Income {
@@ -54,6 +58,8 @@ interface Income {
 
   ReconciliacionID: number;
 
+  CuentaContable: number;
+
   [key: string]: any; // Para permitir acceso dinámico
 }
 
@@ -63,7 +69,7 @@ interface Income {
   templateUrl: './ingresos-egresos.component.html',
   styleUrls: ['./ingresos-egresos.component.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule, IngresosEgresosModalComponent, IngresosEgresosCuentaModalComponent],
+  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule, IngresosEgresosModalComponent, IngresosEgresosCuentaModalComponent, IngresosArchivoModalComponent],
 })
 export class IngresosEgresosComponent implements OnInit {
 
@@ -81,8 +87,7 @@ export class IngresosEgresosComponent implements OnInit {
   totalPages: number = 0;
   isAdmin: boolean = false;
   mostrarIngresos: boolean = true;
-  filtroSeleccionado: 'all' | 'ingresos' | 'egresos' = 'all'; 
-
+  filtroSeleccionado: 'all' | 'ingresos' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados' = 'all'; 
 
 
   // Función para seleccionar o deseleccionar todos los ingresos
@@ -145,6 +150,7 @@ export class IngresosEgresosComponent implements OnInit {
     { value: 'NombreCategoria', label: 'Categoria' },
     { value: 'NombreSubcategoria', label: 'Subcategoria' },
     { value: 'NombreConcepto', label: 'Concepto' },
+    { value: 'CuentaContable', label: 'Cuenta Contable' },
     { value: 'Descripcion', label: 'Descripcion' },
     { value: 'Proveedor', label: 'Proveedor' },
     { value: 'Piezas', label: 'Piezas' },
@@ -165,7 +171,7 @@ export class IngresosEgresosComponent implements OnInit {
   searchValues: { [key: string]: string } = {};
   dateSearchValues: { [key: string]: { startDate: string, endDate: string } } = {};
 
-  constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private loadingController: LoadingController) { }
+  constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private ingresosArchivoServices: IngresosArchivoServices, private loadingController: LoadingController) { }
 
   async openAssignAccountsModal() {
     // Obtener los IDs de todos los ingresos filtrados y paginados (no solo los de la página actual)
@@ -215,6 +221,25 @@ export class IngresosEgresosComponent implements OnInit {
     await modal.present();
   }
 
+  async asignarCuentaContable(ingresoID: number) {
+    const ingreso = this.incomes.find(i => i.IngresoID === ingresoID); 
+    const modal = await this.modalController.create({
+      component: IngresosArchivoModalComponent,
+      componentProps: {
+        ingreso: ingreso,
+        bulkAssignment: false  // Indicamos que es una asignación individual
+      }
+    });
+    
+    modal.onDidDismiss().then((data) => {
+      if (data.data?.success) {
+        this.loadIngresos(); 
+      }
+    });
+
+    await modal.present();
+  }
+
   async editarCombinacion(ingresoID: number) {
     const ingreso = this.incomes.find(i => i.IngresoID === ingresoID); 
     const modal = await this.modalController.create({
@@ -238,6 +263,120 @@ export class IngresosEgresosComponent implements OnInit {
     this.checkAdminStatus();
   }
 
+
+  triggerFileInput() {
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+    fileInput.click();
+  }
+
+
+  onFileChange(event: any) {
+    const file = event.target.files[0];
+    
+    if (file) {
+      const fileReader = new FileReader();
+      
+      fileReader.onload = (e: any) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+  
+        // Asumimos que el primer sheet es el correcto
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+  
+        // Convertir los datos a formato JSON
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        
+        // Aquí manejamos los datos extraídos del Excel
+        this.processExcelData(jsonData);
+      };
+  
+      fileReader.readAsArrayBuffer(file);
+    }
+
+    event.target.value = '';
+
+  }
+  
+
+  processExcelData(data: any[]) {
+    // Asumiendo que la primera fila tiene los encabezados
+    const headers = data[0];
+    
+    // Procesar el resto de las filas
+    const rows = data.slice(1);
+  
+    const processedData = rows.map((row) => ({
+      Segmento: row[0] || '',
+      Categoria: row[1] || '',
+      Subcategoria: row[2] || '',
+      Concepto: row[3] || '',
+      Cuenta: row[4] || '',
+      RFC: row[5] || '',
+      CuentaContpaq: row[6] || 0,
+    }));
+  
+    console.log("Datos procesados:", processedData);
+  
+    // Llamar al servicio para enviar los datos a la API
+    this.ingresosArchivoServices.importarIngresosArchivo(processedData).subscribe(
+      (response) => {
+        console.log('Datos enviados exitosamente:', response);
+        this.loadIngresos();
+      },
+      (error) => {
+        console.error('Error al enviar los datos:', error);
+      }
+    );
+
+  }
+  
+
+  exportEgresos() {
+    // Filtrar solo los egresos reconciliados y donde el campo Reconciliado sea 1
+    const egresosReconciliados = this.incomes.filter(egreso => egreso.Reconciliado === 1);
+
+    console.log("estos son los registros reconciliados que se exportarán: ", egresosReconciliados);
+  
+    // Mapear solo los campos que deseas exportar
+    const exportData = egresosReconciliados.map(egreso => ({
+      ID: egreso.IngresoID,
+      Fecha: egreso.Fecha,
+      Tipo: egreso.TipoIngreso.data[0] === 1 ? 'Egreso' : 'Ingreso',
+      Segmento: egreso.NombreSegmento,
+      Categoria: egreso.NombreCategoria,
+      Subcategoria: egreso.NombreSubcategoria,
+      Concepto: egreso.NombreConcepto,
+      CuentaContable: egreso.CuentaContable,
+      Descripcion: egreso.Descripcion,
+      Proveedor: egreso.Proveedor,
+      Proveedor_Estatus: egreso.ProveedorEstatus,
+      Piezas: egreso.Piezas,
+      Tipo_Cuenta: egreso.TipoCuenta,
+      Cuenta: egreso.NombreCuenta,
+      RFC: egreso.RFC,
+      Monto: egreso.Monto,
+      Saldo: egreso.Saldo,
+      Estatus: egreso.NombreEstatus,
+      Fecha_Autorizacion: egreso.FechaAutorizacion,
+      Nombre_Usuario_Autoriza: egreso.NombreUsuarioAutoriza,
+      Nombre_Usuario_Recibe: egreso.NombreUsuarioRecibe,
+      Fecha_Conciliacion: egreso.FechaConciliacion,
+      Reconciliado: egreso.Reconciliado,
+      ReconciliacionID: egreso.ReconciliacionID,
+      Observaciones: egreso.ObservacionesDifConciliacion,
+    }));
+  
+    // Crear la hoja de Excel a partir del array de egresos reconciliados
+    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook: XLSX.WorkBook = { Sheets: { 'Capturas': worksheet }, SheetNames: ['Capturas'] };
+  
+    // Generar el archivo Excel y descargarlo
+    const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(blob, 'Capturas_reconciliados.xlsx');
+  }
+  
+
   checkAdminStatus() {
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     this.isAdmin = user.isAdmin === 1;
@@ -254,7 +393,7 @@ export class IngresosEgresosComponent implements OnInit {
       data.sort((a, b) => b.IngresoID - a.IngresoID);
   
       // Actualizar la variable de control según el filtro seleccionado
-      if (this.filtroSeleccionado === 'ingresos') {
+      if (this.filtroSeleccionado === 'ingresos'  || this.filtroSeleccionado === 'cuentaContable') {
         this.mostrarIngresos = true; // Muestra columnas específicas de ingresos
       } else {
         this.mostrarIngresos = false; // Oculta las columnas para otros filtros
@@ -268,6 +407,21 @@ export class IngresosEgresosComponent implements OnInit {
           return income.TipoIngreso.data.includes(0);  // Filtra solo ingresos
         } else if (this.filtroSeleccionado === 'egresos') {
           return income.TipoIngreso.data.includes(1);  // Filtra solo egresos
+        } else if (this.filtroSeleccionado === 'cuentaContable') {
+          return income.CuentaContable !== null && income.CuentaContable > 0 &&
+                 income.SegmentoID !== null && income.CategoriaID !== null &&
+                 income.SubcategoriaID !== null && income.ConceptoID !== null &&
+                 income['CuentaID'] !== null;  // Filtra solo los que tienen CuentaContable no nula y mayores a 0
+        } else if (this.filtroSeleccionado === 'sinCuentaContable') {
+          return income.CuentaContable !== null && 
+                 (income.CuentaContable <= 0 || 
+                 income.SegmentoID === null || 
+                 income.CategoriaID === null || 
+                 income.SubcategoriaID === null || 
+                 income.ConceptoID === null || 
+                 income['CuentaID'] === null);
+        } else if (this.filtroSeleccionado === 'reconciliados') {
+          return income.Reconciliado === 1;  // Filtra solo reconciliados
         }
         return false;
       }).map(income => ({
@@ -288,7 +442,7 @@ export class IngresosEgresosComponent implements OnInit {
   }
   
 
-  setFilter(filtro: 'all' | 'ingresos' | 'egresos') {
+  setFilter(filtro: 'all' | 'ingresos' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados') {
     this.filtroSeleccionado = filtro;
     this.currentPage = 1;  // Reiniciar a la página 1 cuando se cambia el filtro
     this.loadIngresos();  // Recargar los ingresos según el nuevo filtro
@@ -335,7 +489,28 @@ export class IngresosEgresosComponent implements OnInit {
         filteredData = data.filter(income => income.TipoIngreso.data.includes(0)); // Solo ingresos
       } else if (this.filtroSeleccionado === 'egresos') {
         filteredData = data.filter(income => income.TipoIngreso.data.includes(1)); // Solo egresos
-      } 
+      } else if (this.filtroSeleccionado === 'cuentaContable') {
+        // Solo cuentas contables que no son nulas y mayores a 0
+        filteredData = data.filter(income => 
+          income.CuentaContable !== null && income.CuentaContable > 0 &&
+          income.SegmentoID !== null && income.CategoriaID !== null &&
+          income.SubcategoriaID !== null && income.ConceptoID !== null &&
+          income['CuentaID'] !== null
+        );
+      } else if (this.filtroSeleccionado === 'sinCuentaContable') {
+        // Solo ingresos o egresos con CuentaContable no nula, pero 0 o faltan otros campos
+        filteredData = data.filter(income => 
+          income.CuentaContable !== null &&
+          (income.CuentaContable <= 0 || 
+           income.SegmentoID === null || 
+           income.CategoriaID === null ||
+           income.SubcategoriaID === null || 
+           income.ConceptoID === null ||
+           income['CuentaID'] === null)
+        );
+      } else if (this.filtroSeleccionado === 'reconciliados') {
+        filteredData = data.filter(income => income.Reconciliado); // Solo ingresos reconciliados
+      }
   
       // Si se selecciona "todos", no se filtra
       this.incomes = filteredData

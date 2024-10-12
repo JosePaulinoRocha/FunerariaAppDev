@@ -9,6 +9,7 @@ import Reconciliaciones from "./routes/Reconciliaciones.routes"
 import Combinaciones from "./routes/Combinaciones.routes"
 import Notificaciones from "./routes/Notificaciones.routes"
 import ImportarIngresos from "./routes/Importar-Ingresos.routes"
+import ImportarIngresosArchivo from "./routes/Importar-Ingresos-Archivo.routes"
 import Proveedores from "./routes/Proveedores.routes"
 import Transferencias from "./routes/Transferencias.routes"
 
@@ -62,6 +63,7 @@ export class App {
         this.app.use('/api/combinaciones', Combinaciones);
         this.app.use('/api/notificaciones', Notificaciones);
         this.app.use('/api/importar-ingresos', ImportarIngresos);
+        this.app.use('/api/importar-ingresos-archivo', ImportarIngresosArchivo);
         this.app.use('/api/proveedores', Proveedores);
         this.app.use('/api/transferencias', Transferencias);
 

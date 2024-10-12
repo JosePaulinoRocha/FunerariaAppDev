@@ -663,6 +663,25 @@ export const ObtenerCuentas = async (req: Request, res: Response) => {
     }
 };
 
+
+export const ObtenerCuentasContables = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT IngresoID, SegmentoID, NombreSegmento, CategoriaID, NombreCategoria, SubcategoriaID, NombreSubcategoria, ConceptoID, NombreConcepto, CuentaContable FROM funeraria_db.vistaingresos where CuentaContable is not null';
+        const usuarios = (await con.query(query))[0] as any[];
+        result = usuarios;
+    } catch (error) {
+        console.log('Error en CuentasContables');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
 export const ObtenerCombinaciones = async (req: Request, res: Response) => {
     let con;
     let result;
@@ -944,6 +963,108 @@ export const asignarCuenta = async (req: Request, res: Response) => {
     }
 };
 
+
+
+export const asignarCuentaContable = async (req: Request, res: Response) => {
+    let con: any;
+    let result: any;
+    const { IngresoID, TipoCuentaID, CuentaID, RFC, CategoriaID, SubcategoriaID, SegmentoID, ConceptoID, CuentaContable } = req.body;
+
+    try {
+        con = await connect();
+        await con.beginTransaction();
+        console.log('Transacción iniciada');
+
+        // Función para obtener o crear una CuentaID
+        const getOrCreateCuentaId = async (cuentaId: number | string | null, additionalFields: { [key: string]: any } = {}) => {
+            if (typeof cuentaId === 'string' || cuentaId === 0 || cuentaId === null) {
+                const columnName = 'NombreCuenta';
+
+                if (!additionalFields[columnName]) {
+                    additionalFields[columnName] = cuentaId;
+                }
+
+                let insertQuery = `INSERT INTO cuentas (${Object.keys(additionalFields).join(', ')})`;
+                let queryValues = Object.values(additionalFields);
+
+                insertQuery += ` VALUES (${queryValues.map(() => '?').join(', ')})`;
+                const [insertResult]: any = await con.query(insertQuery, queryValues);
+                return insertResult.insertId;
+            }
+            return cuentaId;
+        };
+
+        // Verifica o crea la CuentaID dependiendo del TipoCuentaID
+        let newCuentaID: number | string = 0;
+        const TipoCuentaIDNum = Number(TipoCuentaID);
+
+        if (TipoCuentaIDNum === 1) {
+            newCuentaID = await getOrCreateCuentaId(CuentaID, { TipoCuentaID: TipoCuentaIDNum });
+        } else if (TipoCuentaIDNum === 2) {
+            newCuentaID = await getOrCreateCuentaId(CuentaID, { RFC, TipoCuentaID: TipoCuentaIDNum });
+        } else {
+            throw new Error(`TipoCuentaID no válido: ${TipoCuentaIDNum}`);
+        }
+
+
+        // Función para obtener o crear una Categoría/Subcategoría
+        const getOrCreateId = async (table: string, value: number | string) => {
+            if (typeof value === 'string') {
+                const insertQuery = `INSERT INTO ${table} (Nombre) VALUES (?)`;
+                const [insertResult]: any = await con.query(insertQuery, [value]);
+                return insertResult.insertId;
+            }
+            return value;
+        };
+
+        // Obtener o crear IDs de la categoría y subcategoría
+        const newSegmentoID = await getOrCreateId('segmentos', SegmentoID);
+        const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
+        const newSubcategoriaID = await getOrCreateId('subcategorias', SubcategoriaID);
+        const newConceptoID = await getOrCreateId('conceptos', ConceptoID );
+
+
+        // Actualizar la cuenta, categoría y subcategoría en el ingreso
+        const updateIngresoQuery = `
+            UPDATE ingresos 
+            SET CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?, SegmentoID = ?, ConceptoID = ?, CuentaContable = ?
+            WHERE IngresoID = ?
+        `;
+        const updateValues = [newCuentaID, TipoCuentaIDNum, newCategoriaID, newSubcategoriaID, newSegmentoID, newConceptoID, CuentaContable, IngresoID];
+        await con.query(updateIngresoQuery, updateValues);
+
+
+        // Obtener el Monto antes de calcular el saldo
+        const montoQuery = `SELECT Monto FROM ingresos WHERE IngresoID = ?`;
+        const [montoResult]: any = await con.query(montoQuery, [IngresoID]);
+        const nuevoMonto = montoResult.length > 0 ? parseFloat(montoResult[0].Monto) : 0;
+
+        // Calcular el saldo después de la asignación
+        const esIngreso = true; // Asumes que es un ingreso porque TipoIngreso es siempre 0 en este caso
+        const saldoFinal = await calcularSaldoCuenta(CuentaID, nuevoMonto, esIngreso, con);
+
+        // Actualizar el saldo en la tabla ingresos
+        const updateSaldoQuery = `UPDATE ingresos SET Saldo = ? WHERE IngresoID = ?`;
+        await con.query(updateSaldoQuery, [saldoFinal, IngresoID]);
+
+        
+
+        await con.commit();
+        console.log('Transacción confirmada.');
+        result = { message: 'Cuenta, categoría y subcategoría asignadas exitosamente', IngresoID };
+    } catch (error) {
+        console.error('Error en asignarCuenta:', error instanceof Error ? error.message : error);
+        await con.rollback();
+        console.log('Transacción revertida.');
+        result = { message: `Error al asignar la cuenta: ${error instanceof Error ? error.message : 'desconocido'}` };
+    } finally {
+        if (con) {
+            await con.end();
+            console.log('Conexión a la base de datos cerrada.');
+        }
+        return res.json(result);
+    }
+};
 
 
 

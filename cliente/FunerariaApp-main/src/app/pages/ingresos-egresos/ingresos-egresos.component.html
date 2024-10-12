@@ -47,11 +47,27 @@
       (click)="openAssignAccountsModal()">Asignar Cuentas
     </ion-button>
 
+    <ion-button style="margin-left: 2rem;" (click)="exportEgresos()">Exportar Ingresos / Egresos</ion-button>
+
+
+    <!-- Botón para importar archivo de Excel -->
+    <input 
+      type="file" 
+      accept=".xlsx, .xls" 
+      (change)="onFileChange($event)" 
+      style="display: none" 
+      id="fileInput" 
+    />
+    <ion-button style="margin-left: 2rem;" color="danger" (click)="triggerFileInput()">Importar Excel</ion-button>
+
 
     <div style="margin-top: 1rem;" class="button-group">
       <button (click)="setFilter('all')" [disabled]="filtroSeleccionado === 'all'">Todos</button>
       <button (click)="setFilter('ingresos')" [disabled]="filtroSeleccionado === 'ingresos'">Ingresos</button>
       <button (click)="setFilter('egresos')" [disabled]="filtroSeleccionado === 'egresos'">Egresos</button>
+      <button (click)="setFilter('cuentaContable')" [disabled]="filtroSeleccionado === 'cuentaContable'">Con Cuenta Contable</button>
+      <button (click)="setFilter('sinCuentaContable')" [disabled]="filtroSeleccionado === 'sinCuentaContable'">Sin Cuenta Contable</button>
+      <button (click)="setFilter('reconciliados')" [disabled]="filtroSeleccionado === 'reconciliados'">Reconciliados</button>
     </div>
 
     
@@ -73,6 +89,7 @@
           <th><span style="margin-left: 3rem;"></span>Categoria<span style="margin-left: 3rem;"></span></th>
           <th *ngIf="!mostrarIngresos"><span style="margin-left: 3rem;"></span>Subcategoria<span style="margin-left: 3rem;"></span></th>
           <th><span style="margin-left: 10rem;"></span> Concepto <span style="margin-left: 10rem;"></span></th>
+          <th><span style="margin-left: 1rem;"></span> Cuenta Contable <span style="margin-left: 1rem;"></span></th>
           <th><span style="margin-left: 10rem;"></span>Descripcion<span style="margin-left: 10rem;"></span></th>
           <th *ngIf="!mostrarIngresos"><span style="margin-left: 3rem;"></span>Proveedor<span style="margin-left: 3rem;"></span></th>
           <th *ngIf="!mostrarIngresos"><span style="margin-left: 3rem;"></span>Estatus Proveedor<span style="margin-left: 3rem;"></span></th>
@@ -95,9 +112,17 @@
         </tr>
       </thead>
       <tbody style="font-size: 12px;">
-        <tr *ngFor="let income of paginatedIncomes"     [ngClass]="{
-          'yellow-background': !income.NombreCuenta && income.Reconciliado === 0,
-          'aquamarine-background': income.NombreCuenta && income.Reconciliado === 0}" class="data-row">
+
+        <tr *ngFor="let income of paginatedIncomes" 
+          [ngClass]="{
+            'yellow-background': !income.NombreCuenta && income.Reconciliado === 0,
+            'aquamarine-background': income.NombreCuenta && income.Reconciliado === 0, 
+            'green-text': income['CuentaContable'] !== null && income['CuentaContable'] !== undefined && income['SegmentoID'] && income['CategoriaID'] && income['SubcategoriaID'] && income['ConceptoID'] && income['CuentaID'] && income['CuentaContable'] !== 0,
+            'red-text': income['CuentaContable'] !== null && income['CuentaContable'] !== undefined && (!income['SegmentoID'] || !income['CategoriaID'] || !income['SubcategoriaID'] || !income['ConceptoID'] || !income['CuentaID'] || income['CuentaContable'] === 0)
+          }" 
+          class="data-row"
+          (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">
+
           <td>
             <input type="checkbox" [(ngModel)]="income['selected']" (change)="onSelectIncome(income)" />
           </td>
@@ -124,6 +149,7 @@
           <td>{{ income.NombreCategoria }}</td>
           <td *ngIf="!mostrarIngresos">{{ income.NombreSubcategoria }}</td>
           <td>{{ income.NombreConcepto }}</td>
+          <td>{{ income.CuentaContable }}</td>
           <td>{{ income.Descripcion }}</td>
           <td *ngIf="!mostrarIngresos">{{ income.Proveedor }}</td>
           <td *ngIf="!mostrarIngresos">
@@ -186,7 +212,7 @@
         Página {{ currentPage }} de {{ totalPages }}
       </div>
 
-      <ion-select slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
+      <ion-select interface="popover" slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
         <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">
           {{ option }}
         </ion-select-option>

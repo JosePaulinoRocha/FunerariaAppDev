@@ -36,6 +36,7 @@ export interface Ingreso {
   TipoIngreso: { data: number[]; type: string; };
   ReconciliacionID: number;
   CuentaID: number;
+  CuentaContable: number;
 }
 
 export interface Concepto {

@@ -189,8 +189,13 @@ export class AppComponent {
 
   getAfectacionesDesdeFecha(fechaCierreSinHora: Date) {
     this.errorMessage = null;
-    const fechaInicio = fechaCierreSinHora.toISOString().split('T')[0]; // Convertir la FechaCierre a string
-    console.log("esta es la fecha de inicio: ",fechaInicio);
+
+    // No redefinimos fechaCierreSinHora, usamos el argumento directamente
+    const fechaInicio = new Date(fechaCierreSinHora);
+    fechaInicio.setDate(fechaInicio.getDate() - 1); // Restar un día
+    const fechaInicioStr = fechaInicio.toISOString().split('T')[0]; // Convertir a string
+    console.log("esta es la nueva fecha de inicio: ", fechaInicioStr);
+
     const fechaFin = new Date().toISOString().split('T')[0]; // Fecha actual
   
     // Obtener el token para la API
@@ -205,7 +210,7 @@ export class AppComponent {
       let responsesCount = 0; // Contador para las respuestas
   
       // Traer datos de afectaciones (primer ingreso)
-      this._ingresoApiServ.getPaidsAffected(token, fechaInicio, fechaFin).pipe(
+      this._ingresoApiServ.getPaidsAffected(token, fechaInicioStr, fechaFin).pipe(
         catchError(err => {
           this.errorMessage = 'Error al obtener ingresos de Afectaciones';
           return throwError(err);
@@ -219,8 +224,8 @@ export class AppComponent {
   
       // Traer datos de pagos funerarios
       forkJoin([
-        this._ingresoApiServ.getFunerariaPayments(token, 'Mexicali', fechaInicio, fechaFin),
-        this._ingresoApiServ.getFunerariaPayments(token, 'San Luis Río Colorado', fechaInicio, fechaFin)
+        this._ingresoApiServ.getFunerariaPayments(token, 'Mexicali', fechaInicioStr, fechaFin),
+        this._ingresoApiServ.getFunerariaPayments(token, 'San Luis Río Colorado', fechaInicioStr, fechaFin)
       ])
       .pipe(
         catchError(err => {
@@ -235,7 +240,7 @@ export class AppComponent {
       });
   
       // Traer datos de pagos iniciales
-      this._ingresoApiServ.getPagosIniciales(token, fechaInicio, fechaFin).pipe(
+      this._ingresoApiServ.getPagosIniciales(token, fechaInicioStr, fechaFin).pipe(
         catchError(err => {
           this.errorMessage = 'Error al obtener pagos iniciales';
           return throwError(err);

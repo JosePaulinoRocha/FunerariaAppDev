@@ -116,7 +116,7 @@
               </ion-item>
             </ion-radio-group>
             <div *ngIf="!isNewConcepto">
-              <ion-select placeholder="Concepto" style="width: 32rem;" [(ngModel)]="ingreso.ConceptoID" name="concepto" required interface="popover" searchbar="true">
+              <ion-select placeholder="Concepto" style="width: 32rem;" [(ngModel)]="ingreso.ConceptoID" name="concepto" required searchbar="true">
                 <ion-select-option *ngFor="let item of concepto" [value]="item.ConceptoID">{{ item.Nombre }}</ion-select-option>
               </ion-select>
             </div>
@@ -346,7 +346,7 @@
               </ion-item>
             </ion-radio-group>
             <div *ngIf="!isNewConcepto">
-              <ion-select placeholder="Concepto" style="width: 13rem;" [(ngModel)]="ingreso.ConceptoID" name="concepto" required interface="popover" searchbar="true">
+              <ion-select placeholder="Concepto" style="width: 13rem;" [(ngModel)]="ingreso.ConceptoID" name="concepto" required searchbar="true">
                 <ion-select-option *ngFor="let item of concepto" [value]="item.ConceptoID">{{ item.Nombre }}</ion-select-option>
               </ion-select>
             </div>

@@ -37,6 +37,8 @@ export class IngresosServices {
 
   private MyApiUrlCuentas: string;
 
+  private MyApiUrlCuentasContables: string;
+
 
   constructor(private http: HttpClient) {
     this.myAppUrl = environment.endpoint;
@@ -66,6 +68,8 @@ export class IngresosServices {
     this.MyApiUrlEstatus = 'GetEstatus/';
 
     this.MyApiUrlCuentas = 'GetCuentas/';
+
+    this.MyApiUrlCuentasContables = 'GetCuentasContables/';
 
 
   }
@@ -128,6 +132,10 @@ export class IngresosServices {
     return this.http.get<Cuenta[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlCuentas}`);
   }
 
+  getCuentasContables(): Observable<any> {
+    return this.http.get<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlCuentasContables}`);
+  }
+
   updateCombination(updatedData: { IngresoID: number ,ConceptoID: number | string, SegmentoID: number | string, CategoriaID: number | string, SubcategoriaID: number | string }): Observable<any> {
     const url = `${this.myAppUrl}${this.MyApiUrl}UpdateCombination/`;
     return this.http.put(url, updatedData);
@@ -135,6 +143,11 @@ export class IngresosServices {
 
   actualizarCuentaIngreso(incomeData: any): Observable<any> {
     const url = `${this.myAppUrl}${this.MyApiUrl}AsignarCuenta/`;
+    return this.http.put(url, incomeData);
+  }
+
+  actualizarCuentaContable(incomeData: any): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}AsignarCuentaContable/`;
     return this.http.put(url, incomeData);
   }
 
