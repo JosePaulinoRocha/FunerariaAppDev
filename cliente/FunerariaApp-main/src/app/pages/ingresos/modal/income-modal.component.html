@@ -496,7 +496,7 @@
     </ion-grid>
 
     <ion-footer>
-      <ion-button [disabled]="ingreso.SegmentoID == 0 || ingreso.CategoriaID == 0 || ingreso.SubcategoriaID == 0 || ingreso.SubcategoriaID == null || ingreso.ConceptoID == 0 || ingreso.ConceptoID == null || ingreso.Descripcion == '' || (ingreso.CuentaID == 0 && newNombreCuenta == '') || ingreso.Monto <= 0 || ingreso.UsuarioRecibeID == 0 || ingreso.UsuarioRecibeID == null || (isNewProveedor ? newProveedor == '' : (ingreso.ProveedorID <= 0 || ingreso.ProveedorID == null || ingreso.ProveedorID == undefined)) || ingreso.Piezas <= 0  || ingreso.Fecha == ''" style="margin-bottom: 1rem;" style="margin-bottom: 1rem;" expand="full" type="submit">{{ isEditMode ? 'Modificar' : 'Añadir' }}</ion-button>
+      <ion-button [disabled]="(ingreso.SegmentoID == 0 && newSegmento == '') || (ingreso.CategoriaID == 0 && newCategoria == '') || (ingreso.SubcategoriaID == 0 && newSubcategoria == '') || ingreso.SubcategoriaID == null || (ingreso.ConceptoID == 0 && newConcepto == '') || ingreso.ConceptoID == null || ingreso.Descripcion == '' || (ingreso.CuentaID == 0 && newNombreCuenta == '') || ingreso.Monto <= 0 || ingreso.UsuarioRecibeID == 0 || ingreso.UsuarioRecibeID == null || (isNewProveedor ? newProveedor == '' : (ingreso.ProveedorID <= 0 || ingreso.ProveedorID == null || ingreso.ProveedorID == undefined)) || ingreso.Piezas <= 0  || ingreso.Fecha == ''" style="margin-bottom: 1rem;" style="margin-bottom: 1rem;" expand="full" type="submit">{{ isEditMode ? 'Modificar' : 'Añadir' }}</ion-button>
     </ion-footer>
   </form>
 

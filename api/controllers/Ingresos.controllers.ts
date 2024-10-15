@@ -669,7 +669,7 @@ export const ObtenerCuentasContables = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT IngresoID, SegmentoID, NombreSegmento, CategoriaID, NombreCategoria, SubcategoriaID, NombreSubcategoria, ConceptoID, NombreConcepto, CuentaContable FROM funeraria_db.vistaingresos where CuentaContable is not null';
+        let query = 'SELECT IngresoID, SegmentoID, NombreSegmento, CategoriaID, NombreCategoria, SubcategoriaID, NombreSubcategoria, ConceptoID, NombreConcepto, CuentaContable FROM vistaingresos where CuentaContable is not null';
         const usuarios = (await con.query(query))[0] as any[];
         result = usuarios;
     } catch (error) {

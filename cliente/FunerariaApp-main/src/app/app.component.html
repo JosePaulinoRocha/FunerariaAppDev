@@ -55,6 +55,11 @@
             <ion-label>Proveedores</ion-label>
           </ion-item>
 
+          <ion-item *ngIf="isAdmin" button (click)="navigateTo('presupuesto')">
+            <ion-icon slot="start" [name]="'cash-outline'"></ion-icon>
+            <ion-label>Presupuesto</ion-label>
+          </ion-item>
+
           <ion-item *ngIf="isAdmin" button (click)="navigateTo('usuarios')">
             <ion-icon slot="start" [name]="'people-outline'"></ion-icon>
             <ion-label>Usuarios</ion-label>

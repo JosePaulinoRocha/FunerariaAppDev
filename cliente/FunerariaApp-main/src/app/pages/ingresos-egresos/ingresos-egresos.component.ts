@@ -332,10 +332,44 @@ export class IngresosEgresosComponent implements OnInit {
   
 
   exportEgresos() {
-    // Filtrar solo los egresos reconciliados y donde el campo Reconciliado sea 1
-    const egresosReconciliados = this.incomes.filter(egreso => egreso.Reconciliado === 1);
 
-    console.log("estos son los registros reconciliados que se exportarán: ", egresosReconciliados);
+    // Filtrar los ingresos seleccionados
+    const selectedEgresos = this.incomes.filter(egreso => 
+      this.selectedIncomes.includes(egreso.IngresoID)
+    );
+
+    // Verificar si hay registros no reconciliados
+    const noReconciliados = selectedEgresos.filter(egreso => egreso.Reconciliado !== 1);
+    if (noReconciliados.length > 0) {
+      // Mostrar un mensaje con los IngresoID de los registros no reconciliados
+      const idsNoReconciliados = noReconciliados.map(egreso => egreso.IngresoID).join(', ');
+      alert(`Los siguientes registros no están reconciliados: ${idsNoReconciliados}. No se puede exportar el archivo.`);
+      return; // Detener la ejecución si hay registros no reconciliados
+    }
+
+    // Filtrar solo los registros reconciliados
+    const egresosReconciliados = selectedEgresos.filter(egreso => egreso.Reconciliado === 1);
+
+    // Verificar si hay registros con cuenta contable inválida o combinación incompleta
+    const cuentaContableInvalida = egresosReconciliados.filter(egreso => 
+      egreso.CuentaContable !== null &&
+      (egreso.CuentaContable <= 0 || 
+      egreso.SegmentoID === null || 
+      egreso.CategoriaID === null || 
+      egreso.SubcategoriaID === null || 
+      egreso.ConceptoID === null || 
+      egreso['CuentaID'] === null)
+    );
+
+    if (cuentaContableInvalida.length > 0) {
+      // Mostrar un mensaje con los IngresoID de los registros con cuenta contable inválida
+      const idsCuentaInvalida = cuentaContableInvalida.map(egreso => egreso.IngresoID).join(', ');
+      alert(`Los siguientes registros tienen una cuenta contable inválida o falta completar la combinación: ${idsCuentaInvalida}. No se puede exportar el archivo.`);
+      return; // Detener la ejecución si hay registros con cuenta contable inválida
+    }
+
+    console.log("Estos son los registros seleccionados y reconciliados que se exportarán: ", egresosReconciliados);
+  
   
     // Mapear solo los campos que deseas exportar
     const exportData = egresosReconciliados.map(egreso => ({

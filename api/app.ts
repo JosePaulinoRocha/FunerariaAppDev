@@ -11,6 +11,7 @@ import Notificaciones from "./routes/Notificaciones.routes"
 import ImportarIngresos from "./routes/Importar-Ingresos.routes"
 import ImportarIngresosArchivo from "./routes/Importar-Ingresos-Archivo.routes"
 import Proveedores from "./routes/Proveedores.routes"
+import Presupuesto from "./routes/Presupuesto.routes"
 import Transferencias from "./routes/Transferencias.routes"
 
 
@@ -65,6 +66,7 @@ export class App {
         this.app.use('/api/importar-ingresos', ImportarIngresos);
         this.app.use('/api/importar-ingresos-archivo', ImportarIngresosArchivo);
         this.app.use('/api/proveedores', Proveedores);
+        this.app.use('/api/presupuesto', Presupuesto);
         this.app.use('/api/transferencias', Transferencias);
 
 
