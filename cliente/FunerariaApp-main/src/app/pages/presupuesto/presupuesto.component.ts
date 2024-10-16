@@ -20,6 +20,8 @@ interface Presupuesto {
   PromedioPiezas: number;
   FrecuenciaPromedio: number;
   UltimaFecha: string;
+  FrecuenciaDictaminada: number;
+  MontoDictaminado: number;
   [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
 }
 
@@ -224,52 +226,6 @@ export class PresupuestoComponent  implements OnInit {
     return this.searchFields.find(f => f.value === field)?.label || field;
   }
 
-  async confirmarAccion(proveedorID: number, estatus: number) {
-    const isActivating = estatus === 0;
-    const action = isActivating ? 'activar' : 'desactivar';
-    const icon = isActivating ? 'checkmark-circle-outline' : 'close-circle-outline';
-    const color = isActivating ? 'success' : 'danger';
-    const confirmText = isActivating ? 'activar' : 'desactivar';
-
-    const alert = await this.alertController.create({
-      header: 'Confirmar Acción',
-      message: `¿Está seguro de que desea ${confirmText} este proveedor?`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          handler: () => {
-            console.log('Acción cancelada');
-          }
-        },
-        {
-          text: 'Confirmar',
-          handler: () => {
-            this.toggleProveedorStatus(proveedorID, estatus);
-          }
-        }
-      ]
-    });
-
-    await alert.present();
-  }
-
-  toggleProveedorStatus(proveedorID: number, estatus: number) {
-    const nuevoEstatus = estatus === 0 ? 1 : 0;
-    this._presupuestoServ.updateProveedorStatus(proveedorID, nuevoEstatus).subscribe(async () => {
-      this.loadPresupuesto();
-      const successMessage = nuevoEstatus === 1 ? 'activado' : 'desactivado';
-      const alert = await this.alertController.create({
-        header: 'Éxito',
-        message: `Proveedor ${successMessage} correctamente.`,
-        buttons: ['OK']
-      });
-      await alert.present();
-    }, (error: any) => {
-      console.error('Error updating status', error);
-    });
-  }
-
 
   getEmptyIncome(): Presupuesto {
     return {
@@ -285,8 +241,35 @@ export class PresupuestoComponent  implements OnInit {
       PromedioPiezas: 0,
       FrecuenciaPromedio: 0,
       UltimaFecha: '',
+      FrecuenciaDictaminada: 0,
+      MontoDictaminado: 0,
     };
   }
+
+
+  async asignarMonto_Frecuencia(presupuesto?: Presupuesto) {
+
+    console.log("estos son los datos de edicion: ", presupuesto)
+
+    const modal = await this.modalController.create({
+      component: PresupuestoModalComponent,
+      componentProps: {
+        presupuesto: presupuesto ? { ...presupuesto } : this.getEmptyIncome(),
+        isEditMode: !!presupuesto
+      }
+    });
+  
+    modal.onDidDismiss().then((result) => {
+      if (result.data && result.role === 'success') {
+        this.loadPresupuesto();
+      }
+    });
+  
+    return await modal.present();
+  }
+
+
+
 
 }
 

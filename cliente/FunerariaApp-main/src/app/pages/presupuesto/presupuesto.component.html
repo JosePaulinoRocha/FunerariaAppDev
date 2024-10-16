@@ -50,10 +50,13 @@
           <th>Segmento</th>
           <th>Categoria</th>
           <th>Subcategoria</th>
-          <th>Concepto</th>
+          <th><span style="margin-left: 12rem;"></span>Concepto<span style="margin-left: 12rem;"></span></th>
           <th>Monto Promedio</th>
           <th>Piezas Promedio</th>
           <th>Frecuencia Promedio (dias)</th>
+          <th *ngIf="isAdmin">Dictaminar</th>
+          <th style="background-color: greenyellow; color: black;">Monto Dictaminado</th>
+          <th style="background-color: greenyellow; color: black;">Frecuencia Dictaminada (dias)</th>
         </tr>
       </thead>
       <tbody>
@@ -67,6 +70,19 @@
           <td>{{ presupuesto.PromedioMonto }}</td>
           <td>{{ presupuesto.PromedioPiezas }}</td>
           <td>{{ presupuesto.FrecuenciaPromedio }}</td>
+          <td *ngIf="isAdmin">
+            <ion-icon 
+              name="create-outline" 
+              (click)="asignarMonto_Frecuencia(presupuesto)"
+              [style.cursor]="'pointer'"
+              [style.color]="'blue'"
+              aria-label="Editar">
+            </ion-icon>
+          </td>
+          <td style="background-color: yellow;">{{ presupuesto.MontoDictaminado }}</td>
+          <td style="background-color: yellow;">
+            {{ presupuesto.FrecuenciaDictaminada == -1 ? 'Extra Ordinario' : presupuesto.FrecuenciaDictaminada }}
+          </td>
         </tr>
       </tbody>
     </table>

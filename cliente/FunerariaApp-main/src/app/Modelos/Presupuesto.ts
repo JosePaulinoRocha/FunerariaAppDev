@@ -11,5 +11,7 @@ export interface Presupuesto {
     PromedioPiezas: number;
     FrecuenciaPromedio: number;
     UltimaFecha: string;
+    FrecuenciaDictaminada: number;
+    MontoDictaminado: number;
     [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
   }

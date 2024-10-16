@@ -27,21 +27,12 @@ export class PresupuestoServices {
     return this.http.get<Presupuesto[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlCombinaciones}`);
   }
 
-  addProveedor(nuevoProveedor: { Proveedor: string, CategoriaID: number | string, SubcategoriaID: number | string }): Observable<any> {
-    const url = `${this.myAppUrl}${this.MyApiUrl}AddProveedor/`;
-    return this.http.post(url, nuevoProveedor);
-  }
 
-  updateProveedor(proveedor: { ProveedorID: number, CategoriaID: number | string, SubcategoriaID: number | string, CostoPorPieza: number }): Observable<any> {
-    const url = `${this.myAppUrl}${this.MyApiUrl}UpdateProveedor/`;
+  updatePresupuesto(proveedor: { SegmentoID: number, CategoriaID: number, SubcategoriaID: number, ConceptoID: number, MontoDictaminado: number, FrecuenciaDictaminada: number }): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}UpdatePresupuesto/`;
     return this.http.put(url, proveedor);
   }
 
-  updateProveedorStatus(proveedorID: number, nuevoEstatus: number): Observable<any> {
-    const url = `${this.myAppUrl}${this.MyApiUrl}UpdateProveedorStatus/`; 
-    const body = { ProveedorID: proveedorID, Estatus: nuevoEstatus };
-    return this.http.put(url, body);
-  }
   
   
 }
