@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { PresupuestoServices } from 'src/app/Servicios/Presupuesto.service';
 import { PresupuestoModalComponent } from './modal/presupuesto-modal.component';
+import { PresupuestoCuentaModalComponent } from './modal-cuenta/presupuesto-cuenta-modal.component';
 
 
 interface Presupuesto {
@@ -22,6 +23,8 @@ interface Presupuesto {
   UltimaFecha: string;
   FrecuenciaDictaminada: number;
   MontoDictaminado: number;
+  NombreCuenta: string;
+  DiaLimite: number;
   [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
 }
 
@@ -43,6 +46,12 @@ export class PresupuestoComponent  implements OnInit {
   itemsPerPage: number = 10;
   totalPages: number = 0;
   isAdmin: boolean = false;
+
+  filtroSeleccionado: 'all' | 'asignados' | 'noAsignados' = 'noAsignados'; 
+
+  filtroAsignarCuenta: 'semanal' | 'periodico' | 'extraordinario' | null = 'semanal';
+  modoFiltro: 'dictaminar' | 'asignarCuenta' = 'dictaminar';
+
 
   getStartDate(field: string): string {
     return this.dateSearchValues[field]?.startDate || '';
@@ -79,6 +88,8 @@ export class PresupuestoComponent  implements OnInit {
     { value: 'PromedioMonto', label: 'Monto Promedio' },
     { value: 'PromedioPiezas', label: 'Promedio Piezas' },
     { value: 'FrecuenciaPromedio', label: 'Frecuencia Promedio' },
+    { value: 'MontoDictaminado', label: 'Monto Dictaminado' },
+    { value: 'FrecuenciaDictaminada', label: 'Frecuencia Dictaminada' },
   ];
   selectedFields: string[] = [];
   searchValues: { [key: string]: string } = {};
@@ -91,47 +102,70 @@ export class PresupuestoComponent  implements OnInit {
     this.checkAdminStatus();
   }
 
-  async openModal(presupuesto?: Presupuesto) {
-
-    console.log("estos son los datos de edicion: ", presupuesto)
-
-    const modal = await this.modalController.create({
-      component: PresupuestoModalComponent,
-      componentProps: {
-        presupuesto: presupuesto ? { ...presupuesto } : this.getEmptyIncome(),
-        isEditMode: !!presupuesto
-      }
-    });
-  
-    modal.onDidDismiss().then((result) => {
-      if (result.data && result.role === 'success') {
-        this.loadPresupuesto();
-      }
-    });
-  
-    return await modal.present();
-  }
-
   checkAdminStatus() {
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     this.isAdmin = user.isAdmin === 1;
   }
 
+
   loadPresupuesto() {
     this._presupuestoServ.getPresupuesto().subscribe((data: Presupuesto[]) => {
-  
+      // Transformar la fecha y asignar la data inicial
       this.presupuesto = data.map(proveedor => ({
         ...proveedor,
         UltimaFecha: new Date(proveedor.UltimaFecha).toISOString().split('T')[0],
       }));
       
+      // Filtrar según el modo de filtro seleccionado
+      if (this.modoFiltro === 'dictaminar') {
+        // Filtrar según el filtro seleccionado para Dictaminar
+        this.presupuesto = this.presupuesto.filter(presupuesto => {
+          if (this.filtroSeleccionado === 'all') {
+            return true; // Mostrar todos
+          } else if (this.filtroSeleccionado === 'asignados') {
+            return presupuesto.MontoDictaminado !== null && presupuesto.FrecuenciaDictaminada !== null;
+          } else if (this.filtroSeleccionado === 'noAsignados') {
+            return presupuesto.MontoDictaminado === null || presupuesto.FrecuenciaDictaminada === null;
+          }
+          return false;
+        });
+      } else if (this.modoFiltro === 'asignarCuenta') {
+        // Filtrar por registros que tienen Monto y Frecuencia Dictaminados
+        this.presupuesto = this.presupuesto.filter(presupuesto => 
+          presupuesto.MontoDictaminado !== null && presupuesto.FrecuenciaDictaminada !== null
+        );
+  
+        // Aplicar subfiltros para Asignar Cuenta
+        if (this.filtroAsignarCuenta === 'semanal') {
+          this.presupuesto = this.presupuesto.filter(presupuesto => presupuesto.FrecuenciaDictaminada == 7);
+        } else if (this.filtroAsignarCuenta === 'periodico') {
+          this.presupuesto = this.presupuesto.filter(presupuesto => presupuesto.FrecuenciaDictaminada >= 14 && presupuesto.FrecuenciaDictaminada <= 180);
+        } else if (this.filtroAsignarCuenta === 'extraordinario') {
+          this.presupuesto = this.presupuesto.filter(presupuesto => presupuesto.FrecuenciaDictaminada == -1);
+        }
+      }
+  
       console.log("esta es la data de presupuesto: ", this.presupuesto);
       this.totalPages = Math.ceil(this.presupuesto.length / this.itemsPerPage);
       this.updatePaginated();
     }, (error) => {
-      console.error('Error fetching incomes', error); 
+      console.error('Error fetching presupuesto', error); 
     });
   }
+  
+  
+  setFilter(filtro: 'all' | 'asignados' | 'noAsignados') {
+    this.filtroSeleccionado = filtro;
+    this.currentPage = 1;
+    this.loadPresupuesto();
+  }
+
+  setFilterCuenta(filtro: 'semanal' | 'periodico' | 'extraordinario') {
+    this.filtroAsignarCuenta = filtro;
+    this.currentPage = 1;
+    this.loadPresupuesto();
+  }
+  
 
   updatePaginated() {
     this.totalPages = Math.ceil(this.presupuesto.length / this.itemsPerPage);
@@ -165,6 +199,9 @@ export class PresupuestoComponent  implements OnInit {
   }
 
   applySearch() {
+    this.currentPage = 1;
+    
+    // Asegurar que los campos de fecha están configurados correctamente
     for (let field of this.selectedFields) {
       if (this.isDateField(field) && !this.dateSearchValues[field]) {
         this.dateSearchValues[field] = { startDate: '', endDate: '' };
@@ -172,16 +209,59 @@ export class PresupuestoComponent  implements OnInit {
     }
   
     this._presupuestoServ.getPresupuesto().subscribe((data: Presupuesto[]) => {
-      this.presupuesto = data
+      let filteredData = data;
+  
+      // Filtrar según el botón seleccionado
+      if (this.filtroSeleccionado === 'asignados') {
+        // Filtrar solo los registros con MontoDictaminado y FrecuenciaDictaminada no nulos
+        filteredData = data.filter(presupuesto => 
+          presupuesto.MontoDictaminado !== null && 
+          presupuesto.FrecuenciaDictaminada !== null
+        );
+      } else if (this.filtroSeleccionado === 'noAsignados') {
+        // Filtrar solo los registros con MontoDictaminado o FrecuenciaDictaminada nulos
+        filteredData = data.filter(presupuesto => 
+          presupuesto.MontoDictaminado === null || 
+          presupuesto.FrecuenciaDictaminada === null
+        );
+      }
+  
+      // Filtro adicional para "Asignar Cuenta"
+      if (this.modoFiltro === 'asignarCuenta') {
+        // Filtrar por registros que tienen Monto y Frecuencia Dictaminados
+        filteredData = filteredData.filter(presupuesto => 
+          presupuesto.MontoDictaminado !== null && presupuesto.FrecuenciaDictaminada !== null
+        );
+  
+        // Aplicar subfiltros para Asignar Cuenta
+        if (this.filtroAsignarCuenta === 'semanal') {
+          filteredData = filteredData.filter(presupuesto => presupuesto.FrecuenciaDictaminada == 7);
+        } else if (this.filtroAsignarCuenta === 'periodico') {
+          filteredData = filteredData.filter(presupuesto => 
+            presupuesto.FrecuenciaDictaminada >= 14 && presupuesto.FrecuenciaDictaminada <= 180
+          );
+        } else if (this.filtroAsignarCuenta === 'extraordinario') {
+          filteredData = filteredData.filter(presupuesto => presupuesto.FrecuenciaDictaminada == -1);
+        }
+      }
+  
+      // Aplicar la búsqueda adicional
+      this.presupuesto = filteredData
         .filter(presupuesto => this.matchesSearch(presupuesto))
         .map(presupuesto => ({
           ...presupuesto,
           UltimaFecha: new Date(presupuesto.UltimaFecha).toISOString().split('T')[0],
         }));
+  
+      console.log("Esta es la data de presupuesto después del filtro: ", this.presupuesto);
       this.totalPages = Math.ceil(this.presupuesto.length / this.itemsPerPage);
       this.updatePaginated();
+    }, (error) => {
+      console.error('Error fetching presupuesto', error);
     });
   }
+  
+  
 
   resetSearch() {
     this.searchValues = {};
@@ -243,6 +323,8 @@ export class PresupuestoComponent  implements OnInit {
       UltimaFecha: '',
       FrecuenciaDictaminada: 0,
       MontoDictaminado: 0,
+      NombreCuenta: '',
+      DiaLimite: 0,
     };
   }
 
@@ -268,6 +350,42 @@ export class PresupuestoComponent  implements OnInit {
     return await modal.present();
   }
 
+
+  async asignarCuenta_DiaLimite(presupuesto?: Presupuesto) {
+
+    console.log("estos son los datos de edicion en cuenta y dia limite: ", presupuesto)
+
+    const modal = await this.modalController.create({
+      component: PresupuestoCuentaModalComponent,
+      componentProps: {
+        presupuesto: presupuesto ? { ...presupuesto } : this.getEmptyIncome(),
+        isEditMode: !!presupuesto,
+        esPeriodico: this.filtroAsignarCuenta === 'periodico'
+      }
+    });
+  
+    modal.onDidDismiss().then((result) => {
+      if (result.data && result.role === 'success') {
+        this.loadPresupuesto();
+      }
+    });
+  
+    return await modal.present();
+  }
+
+
+  setModoFiltro(modo: 'dictaminar' | 'asignarCuenta') {
+    this.modoFiltro = modo;
+    this.filtroAsignarCuenta = 'semanal'; // Reiniciar el subfiltro
+    this.currentPage = 1;
+    this.loadPresupuesto();
+  }
+  
+  setFiltroAsignarCuenta(filtro: 'semanal' | 'periodico' | 'extraordinario') {
+    this.filtroAsignarCuenta = filtro;
+    this.currentPage = 1;
+    this.loadPresupuesto();
+  }
 
 
 

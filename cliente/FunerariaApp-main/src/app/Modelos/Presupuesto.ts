@@ -13,5 +13,7 @@ export interface Presupuesto {
     UltimaFecha: string;
     FrecuenciaDictaminada: number;
     MontoDictaminado: number;
+    NombreCuenta: string;
+    DiaLimite: number;
     [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
   }

@@ -71,3 +71,56 @@
 .inactive-row {
   background-color: #f8d7da; 
 }
+
+
+
+.button-group button[disabled] {
+  background-color: #007bff;
+  color: white;
+}
+
+.button-group button {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-right: 5px;
+}
+
+
+
+/* Estilos para el selector */
+.select-custom {
+  width: 250px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  font-size: 16px;
+  color: #333;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Añadir un ícono de flecha hacia abajo */
+.select-custom::after {
+  content: '\25BC'; /* Símbolo de flecha hacia abajo */
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 12px;
+}
+
+/* Efecto hover */
+.select-custom:hover {
+  border-color: #888;
+}
+
+/* Efecto focus */
+.select-custom:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}

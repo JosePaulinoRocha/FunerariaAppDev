@@ -1,0 +1,79 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>{{ isEditMode ? 'Dictaminar cuenta y dia limite' : 'Dictaminar cuenta y dia limite' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal(false)">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form (ngSubmit)="dictaminarMonto_Frecuencia()" class="ion-padding">
+    <ion-grid>
+      <ion-row>
+        <ion-col size-md="12">
+
+          <ion-item>
+            <ion-label position="stacked">Tipo de Cuenta</ion-label>
+            <ion-select 
+              style="width: 32rem;" 
+              [(ngModel)]="presupuesto.TipoCuentaID" 
+              name="tipoCuentaID" 
+              required 
+              interface="popover" 
+              searchbar="true" 
+              placeholder="Tipo cuenta"
+              (ionChange)="onTipoCuentaChange()">
+              <ion-select-option [value]="1">Caja Chica</ion-select-option>
+              <ion-select-option [value]="2">Cuenta Bancaria</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item *ngIf="!isNewCuenta && presupuesto.TipoCuentaID === 2">
+            <ion-label position="stacked">Cuenta Bancaria</ion-label>
+            <ion-select placeholder="Cuenta Bancaria" style="width: 32rem;" [(ngModel)]="presupuesto.CuentaID" name="cuenta" required interface="popover" searchbar="true" (ionChange)="onCuentaChange($event)">
+              <ion-label position="stacked">Cuenta Bancaria</ion-label>
+              <ion-select-option style="width: 32rem;" *ngFor="let item of filteredCuentas" [value]="item.CuentaID" placeholder="Seleccione Cuenta Bancaria">{{ item.NombreCuenta }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item *ngIf="!isNewCuenta && presupuesto.TipoCuentaID === 2">
+            <ion-label position="stacked">RFC</ion-label>
+            <ion-input placeholder="RFC" style="width: 32rem;" [(ngModel)]="presupuesto.RFC" name="rfc" [readonly]="true"></ion-input>
+          </ion-item>
+
+          <ion-item *ngIf="esPeriodico">
+            <ion-label position="stacked">Día Límite</ion-label>
+            <ion-input 
+              placeholder="Día Límite" 
+              style="width: 32rem;" 
+              [(ngModel)]="presupuesto.DiaLimite" 
+              name="diaLimite" 
+              type="number" 
+              required 
+              min="1" 
+              max="28">
+            </ion-input>
+          </ion-item>
+
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <ion-footer>
+      <ion-button 
+        [disabled]="
+          !(presupuesto.TipoCuentaID === 1 || (presupuesto.TipoCuentaID === 2 && presupuesto.CuentaID)) || 
+          (esPeriodico && (!presupuesto.DiaLimite || presupuesto.DiaLimite < 1 || presupuesto.DiaLimite > 28))" 
+        style="margin-bottom: 1rem;" 
+        expand="full" 
+        type="submit">
+        Guardar
+      </ion-button>
+    </ion-footer>
+    
+
+  </form>
+</ion-content>

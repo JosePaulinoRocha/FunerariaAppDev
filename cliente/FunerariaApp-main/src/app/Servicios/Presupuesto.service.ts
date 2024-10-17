@@ -33,6 +33,11 @@ export class PresupuestoServices {
     return this.http.put(url, proveedor);
   }
 
+  updatePresupuestoCuenta(proveedor: { SegmentoID: number, CategoriaID: number, SubcategoriaID: number, ConceptoID: number, CuentaID: number, DiaLimite: number }): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}UpdatePresupuestoCuenta/`;
+    return this.http.put(url, proveedor);
+  }
+
   
   
 }
