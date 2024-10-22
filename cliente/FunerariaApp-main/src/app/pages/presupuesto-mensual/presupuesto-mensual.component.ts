@@ -8,51 +8,55 @@ import { PresupuestoModalComponent } from './modal/presupuesto-modal.component';
 import { PresupuestoCuentaModalComponent } from './modal-cuenta/presupuesto-cuenta-modal.component';
 import { Router } from '@angular/router'
 
-
-
-interface Presupuesto {
+interface Gastos {
+  GastoID: number;
+  FechaPreautorizada: string;
+  Concepto: string;
+  Monto: number;
+  ProveedorID: number;
+  NombreProveedor: string;
   SegmentoID: number;
   NombreSegmento: string;
+  EstatusPresupuestoID: number;
+  Estatus: string;
+  CuentaID: number;
+  TipoCuentaID: number;
+  TipoCuenta: string;
+  NombreCuenta: string;
+  RFC: string;
+  Fecha: string;
   CategoriaID: number;
   NombreCategoria: string;
   SubcategoriaID: number;
   NombreSubcategoria: string;
   ConceptoID: number;
   NombreConcepto: string;
-  PromedioMonto: number;
-  PromedioPiezas: number;
-  FrecuenciaPromedio: number;
-  UltimaFecha: string;
-  FrecuenciaDictaminada: number;
-  MontoDictaminado: number;
-  NombreCuenta: string;
-  DiaLimite: number;
-  [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
+  [key: string]: any;
 }
 
 
 
 @Component({
-  selector: 'app-presupuesto',
-  templateUrl: './presupuesto.component.html',
-  styleUrls: ['./presupuesto.component.scss'],
+  selector: 'app-presupuesto-mensual',
+  templateUrl: './presupuesto-mensual.component.html',
+  styleUrls: ['./presupuesto-mensual.component.scss'],
   standalone: true,
   imports: [IonicModule, FormsModule, CommonModule, HttpClientModule],
 })
-export class PresupuestoComponent  implements OnInit {
+export class PresupuestoMensualComponent  implements OnInit {
 
-  presupuesto: Presupuesto[] = [];
-  paginatedPresupuesto: Presupuesto[] = [];
+  gastos: Gastos[] = [];
+  paginatedPresupuesto: Gastos[] = [];
   currentPage: number = 1;
   itemsPerPageOptions: number[] = [10, 20, 50, 100, 200, 500, 1000, 2000];
   itemsPerPage: number = 10;
   totalPages: number = 0;
   isAdmin: boolean = false;
 
-  filtroSeleccionado: 'all' | 'asignados' | 'noAsignados' = 'noAsignados'; 
+  filtroSeleccionado: 'extraordinario' | 'asignados' | 'noAsignados' = 'extraordinario'; 
 
   filtroAsignarCuenta: 'semanal' | 'periodico' | 'extraordinario' | null = 'semanal';
-  modoFiltro: 'dictaminar' | 'asignarCuenta' | 'presupuestoMensual' = 'dictaminar';
+  modoFiltro: 'gastosSemestrales' | 'presupuestoMensual' = 'presupuestoMensual';
 
 
   getStartDate(field: string): string {
@@ -82,16 +86,20 @@ export class PresupuestoComponent  implements OnInit {
   }
 
   searchFields = [
-    { value: 'UltimaFecha', label: 'Ultima Fecha' },
+    { value: 'GastoID', label: 'ID' },
+    { value: 'FechaPreautorizada', label: 'Fecha Gasto' },
+    { value: 'Concepto', label: 'Concepto Gasto' },
+    { value: 'Monto', label: 'Monto' },
+    { value: 'NombreProveedor', label: 'Proveedor' },
     { value: 'NombreSegmento', label: 'Segmento' },
+    { value: 'Estatus', label: 'Estatus' },
+    { value: 'NombreCuenta', label: 'Cuenta' },
+    { value: 'TipoCuenta', label: 'Tipo Cuenta' },
+    { value: 'RFC', label: 'RFC' },
+    { value: 'Fecha', label: 'Fecha' },
     { value: 'NombreCategoria', label: 'Categoria' },
     { value: 'NombreSubcategoria', label: 'Subcategoria' },
     { value: 'NombreConcepto', label: 'Concepto' },
-    { value: 'PromedioMonto', label: 'Monto Promedio' },
-    { value: 'PromedioPiezas', label: 'Promedio Piezas' },
-    { value: 'FrecuenciaPromedio', label: 'Frecuencia Promedio' },
-    { value: 'MontoDictaminado', label: 'Monto Dictaminado' },
-    { value: 'FrecuenciaDictaminada', label: 'Frecuencia Dictaminada' },
   ];
   selectedFields: string[] = [];
   searchValues: { [key: string]: string } = {};
@@ -100,8 +108,9 @@ export class PresupuestoComponent  implements OnInit {
   constructor(private modalController: ModalController, private _presupuestoServ: PresupuestoServices, private alertController: AlertController, private router: Router) {}
 
   ngOnInit() {
-    this.loadPresupuesto();
+    this.loadGastoMensual();
     this.checkAdminStatus();
+    this.modoFiltro === 'presupuestoMensual'
   }
 
   checkAdminStatus() {
@@ -110,47 +119,30 @@ export class PresupuestoComponent  implements OnInit {
   }
 
 
-  loadPresupuesto() {
-    this._presupuestoServ.getPresupuesto().subscribe((data: Presupuesto[]) => {
+  loadGastoMensual() {
+    this._presupuestoServ.getGastoMensual().subscribe((data: Gastos[]) => {
       // Transformar la fecha y asignar la data inicial
-      this.presupuesto = data.map(proveedor => ({
-        ...proveedor,
-        UltimaFecha: new Date(proveedor.UltimaFecha).toISOString().split('T')[0],
+      this.gastos = data.map(gastos => ({
+        ...gastos,
+        FechaPreautorizada: new Date(gastos.FechaPreautorizada).toISOString().split('T')[0],
+        Fecha: new Date(gastos.Fecha).toISOString().split('T')[0],
       }));
       
       // Filtrar según el modo de filtro seleccionado
-      if (this.modoFiltro === 'dictaminar') {
+      if (this.modoFiltro === 'presupuestoMensual') {
         // Filtrar según el filtro seleccionado para Dictaminar
-        this.presupuesto = this.presupuesto.filter(presupuesto => {
-          if (this.filtroSeleccionado === 'all') {
+        this.gastos = this.gastos.filter(gastos => {
+          if (this.filtroSeleccionado === 'extraordinario') {
             return true; // Mostrar todos
-          } else if (this.filtroSeleccionado === 'asignados') {
-            return presupuesto.MontoDictaminado !== null && presupuesto.FrecuenciaDictaminada !== null;
-          } else if (this.filtroSeleccionado === 'noAsignados') {
-            return presupuesto.MontoDictaminado === null || presupuesto.FrecuenciaDictaminada === null;
           }
           return false;
         });
-      } else if (this.modoFiltro === 'asignarCuenta') {
-        // Filtrar por registros que tienen Monto y Frecuencia Dictaminados
-        this.presupuesto = this.presupuesto.filter(presupuesto => 
-          presupuesto.MontoDictaminado !== null && presupuesto.FrecuenciaDictaminada !== null
-        );
-  
-        // Aplicar subfiltros para Asignar Cuenta
-        if (this.filtroAsignarCuenta === 'semanal') {
-          this.presupuesto = this.presupuesto.filter(presupuesto => presupuesto.FrecuenciaDictaminada == 7);
-        } else if (this.filtroAsignarCuenta === 'periodico') {
-          this.presupuesto = this.presupuesto.filter(presupuesto => presupuesto.FrecuenciaDictaminada >= 14 && presupuesto.FrecuenciaDictaminada <= 180);
-        } else if (this.filtroAsignarCuenta === 'extraordinario') {
-          this.presupuesto = this.presupuesto.filter(presupuesto => presupuesto.FrecuenciaDictaminada == -1);
-        }
-      } else if (this.modoFiltro === 'presupuestoMensual') {
-        this.router.navigate(['/presupuesto-mensual']);
+      } else if (this.modoFiltro === 'gastosSemestrales') {
+        this.router.navigate(['/presupuesto']);
       }
   
-      console.log("esta es la data de presupuesto: ", this.presupuesto);
-      this.totalPages = Math.ceil(this.presupuesto.length / this.itemsPerPage);
+      console.log("esta es la data de gastos mensuales: ", this.gastos);
+      this.totalPages = Math.ceil(this.gastos.length / this.itemsPerPage);
       this.updatePaginated();
     }, (error) => {
       console.error('Error fetching presupuesto', error); 
@@ -158,23 +150,23 @@ export class PresupuestoComponent  implements OnInit {
   }
   
   
-  setFilter(filtro: 'all' | 'asignados' | 'noAsignados') {
+  setFilter(filtro: 'extraordinario' | 'asignados' | 'noAsignados') {
     this.filtroSeleccionado = filtro;
     this.currentPage = 1;
-    this.loadPresupuesto();
+    this.loadGastoMensual();
   }
 
   setFilterCuenta(filtro: 'semanal' | 'periodico' | 'extraordinario') {
     this.filtroAsignarCuenta = filtro;
     this.currentPage = 1;
-    this.loadPresupuesto();
+    this.loadGastoMensual();
   }
   
 
   updatePaginated() {
-    this.totalPages = Math.ceil(this.presupuesto.length / this.itemsPerPage);
+    this.totalPages = Math.ceil(this.gastos.length / this.itemsPerPage);
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    this.paginatedPresupuesto = this.presupuesto.slice(startIndex, startIndex + this.itemsPerPage);
+    this.paginatedPresupuesto = this.gastos.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
   onItemsPerPageChange() {
@@ -183,9 +175,9 @@ export class PresupuestoComponent  implements OnInit {
   }
 
   updatePaginatedRegistros() {
-    this.totalPages = Math.ceil(this.presupuesto.length / this.itemsPerPage);
+    this.totalPages = Math.ceil(this.gastos.length / this.itemsPerPage);
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    this.paginatedPresupuesto = this.presupuesto.slice(startIndex, startIndex + this.itemsPerPage);
+    this.paginatedPresupuesto = this.gastos.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
   prevPage() {
@@ -212,53 +204,20 @@ export class PresupuestoComponent  implements OnInit {
       }
     }
   
-    this._presupuestoServ.getPresupuesto().subscribe((data: Presupuesto[]) => {
+    this._presupuestoServ.getGastoMensual().subscribe((data: Gastos[]) => {
       let filteredData = data;
   
-      // Filtrar según el botón seleccionado
-      if (this.filtroSeleccionado === 'asignados') {
-        // Filtrar solo los registros con MontoDictaminado y FrecuenciaDictaminada no nulos
-        filteredData = data.filter(presupuesto => 
-          presupuesto.MontoDictaminado !== null && 
-          presupuesto.FrecuenciaDictaminada !== null
-        );
-      } else if (this.filtroSeleccionado === 'noAsignados') {
-        // Filtrar solo los registros con MontoDictaminado o FrecuenciaDictaminada nulos
-        filteredData = data.filter(presupuesto => 
-          presupuesto.MontoDictaminado === null || 
-          presupuesto.FrecuenciaDictaminada === null
-        );
-      }
-  
-      // Filtro adicional para "Asignar Cuenta"
-      if (this.modoFiltro === 'asignarCuenta') {
-        // Filtrar por registros que tienen Monto y Frecuencia Dictaminados
-        filteredData = filteredData.filter(presupuesto => 
-          presupuesto.MontoDictaminado !== null && presupuesto.FrecuenciaDictaminada !== null
-        );
-  
-        // Aplicar subfiltros para Asignar Cuenta
-        if (this.filtroAsignarCuenta === 'semanal') {
-          filteredData = filteredData.filter(presupuesto => presupuesto.FrecuenciaDictaminada == 7);
-        } else if (this.filtroAsignarCuenta === 'periodico') {
-          filteredData = filteredData.filter(presupuesto => 
-            presupuesto.FrecuenciaDictaminada >= 14 && presupuesto.FrecuenciaDictaminada <= 180
-          );
-        } else if (this.filtroAsignarCuenta === 'extraordinario') {
-          filteredData = filteredData.filter(presupuesto => presupuesto.FrecuenciaDictaminada == -1);
-        }
-      }
-  
       // Aplicar la búsqueda adicional
-      this.presupuesto = filteredData
-        .filter(presupuesto => this.matchesSearch(presupuesto))
-        .map(presupuesto => ({
-          ...presupuesto,
-          UltimaFecha: new Date(presupuesto.UltimaFecha).toISOString().split('T')[0],
+      this.gastos = filteredData
+        .filter(gastos => this.matchesSearch(gastos))
+        .map(gastos => ({
+          ...gastos,
+          FechaPreautorizada: new Date(gastos.FechaPreautorizada).toISOString().split('T')[0],
+          Fecha: new Date(gastos.Fecha).toISOString().split('T')[0],
         }));
   
-      console.log("Esta es la data de presupuesto después del filtro: ", this.presupuesto);
-      this.totalPages = Math.ceil(this.presupuesto.length / this.itemsPerPage);
+      console.log("Esta es la data de gastos después del filtro: ", this.gastos);
+      this.totalPages = Math.ceil(this.gastos.length / this.itemsPerPage);
       this.updatePaginated();
     }, (error) => {
       console.error('Error fetching presupuesto', error);
@@ -271,10 +230,10 @@ export class PresupuestoComponent  implements OnInit {
     this.searchValues = {};
     this.dateSearchValues = {};
     this.selectedFields = [];
-    this.loadPresupuesto();
+    this.loadGastoMensual();
   }
 
-  matchesSearch(presupuesto: Presupuesto): boolean {
+  matchesSearch(presupuesto: Gastos): boolean {
     for (let field of this.selectedFields) {
       if (this.isDateField(field)) {
         const dateRange = this.dateSearchValues[field];
@@ -311,43 +270,49 @@ export class PresupuestoComponent  implements OnInit {
   }
 
 
-  getEmptyIncome(): Presupuesto {
+  getEmptyIncome(): Gastos {
     return {
+      GastoID: 0,
+      FechaPreautorizada: '',
+      Concepto: '',
+      Monto: 0,
+      ProveedorID: 0,
+      NombreProveedor: '',
       SegmentoID: 0,
       NombreSegmento: '',
+      EstatusPresupuestoID: 0,
+      Estatus: '',
+      CuentaID: 0,
+      TipoCuentaID: 0,
+      TipoCuenta: '',
+      NombreCuenta: '',
+      RFC: '',
+      Fecha: '',
       CategoriaID: 0,
       NombreCategoria: '',
       SubcategoriaID: 0,
       NombreSubcategoria: '',
       ConceptoID: 0,
       NombreConcepto: '',
-      PromedioMonto: 0,
-      PromedioPiezas: 0,
-      FrecuenciaPromedio: 0,
-      UltimaFecha: '',
-      FrecuenciaDictaminada: 0,
-      MontoDictaminado: 0,
-      NombreCuenta: '',
-      DiaLimite: 0,
     };
   }
 
 
-  async asignarMonto_Frecuencia(presupuesto?: Presupuesto) {
+  async asignarDatos(gastos?: Gastos) {
 
-    console.log("estos son los datos de edicion: ", presupuesto)
+    console.log("estos son los datos de edicion: ", gastos)
 
     const modal = await this.modalController.create({
       component: PresupuestoModalComponent,
       componentProps: {
-        presupuesto: presupuesto ? { ...presupuesto } : this.getEmptyIncome(),
-        isEditMode: !!presupuesto
+        gastos: gastos ? { ...gastos } : this.getEmptyIncome(),
+        isEditMode: !!gastos
       }
     });
   
     modal.onDidDismiss().then((result) => {
       if (result.data && result.role === 'success') {
-        this.loadPresupuesto();
+        this.loadGastoMensual();
       }
     });
   
@@ -355,22 +320,22 @@ export class PresupuestoComponent  implements OnInit {
   }
 
 
-  async asignarCuenta_DiaLimite(presupuesto?: Presupuesto) {
+  async asignarEstatus(gastos?: Gastos) {
 
-    console.log("estos son los datos de edicion en cuenta y dia limite: ", presupuesto)
+    console.log("estos son los datos de edicion en cuenta y estatus: ", gastos)
 
     const modal = await this.modalController.create({
       component: PresupuestoCuentaModalComponent,
       componentProps: {
-        presupuesto: presupuesto ? { ...presupuesto } : this.getEmptyIncome(),
-        isEditMode: !!presupuesto,
+        gastos: gastos ? { ...gastos } : this.getEmptyIncome(),
+        isEditMode: !!gastos,
         esPeriodico: this.filtroAsignarCuenta === 'periodico'
       }
     });
   
     modal.onDidDismiss().then((result) => {
       if (result.data && result.role === 'success') {
-        this.loadPresupuesto();
+        this.loadGastoMensual();
       }
     });
   
@@ -378,17 +343,17 @@ export class PresupuestoComponent  implements OnInit {
   }
 
 
-  setModoFiltro(modo: 'dictaminar' | 'asignarCuenta' | 'presupuestoMensual') {
+  setModoFiltro(modo: 'gastosSemestrales' | 'presupuestoMensual') {
     this.modoFiltro = modo;
     this.filtroAsignarCuenta = 'semanal'; // Reiniciar el subfiltro
     this.currentPage = 1;
-    this.loadPresupuesto();
+    this.loadGastoMensual();
   }
   
   setFiltroAsignarCuenta(filtro: 'semanal' | 'periodico' | 'extraordinario') {
     this.filtroAsignarCuenta = filtro;
     this.currentPage = 1;
-    this.loadPresupuesto();
+    this.loadGastoMensual();
   }
 
 

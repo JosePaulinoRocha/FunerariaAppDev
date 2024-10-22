@@ -1,0 +1,126 @@
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 1.5rem;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    padding: 1.5rem;
+
+  }
+  
+  .header-row {
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .header-row th {
+    font-weight: bold;
+    text-align: center;
+    padding: 8px;
+    border: 1px solid #ddd;
+    white-space: nowrap;
+  }
+  
+  .data-row {
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .data-row td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ddd;
+  }
+  
+  .page-info {
+    display: inline-block;
+    margin-left: auto;
+    margin-right: 16px;
+    font-weight: bold;
+  }
+  
+  .margin_footer {
+    margin-left: 1rem;
+    width: 98%;
+  }
+
+  .green-text {
+    color: green;
+  }
+
+.search-container {
+  margin: 16px;
+}
+
+.search-container ion-item {
+    margin-bottom: 8px;
+}
+
+.color_header_tabla {
+ background-color: #0054E9;
+ color: #FFFFFF;
+}
+
+
+.active-row {
+  background-color: #d4edda; 
+}
+
+.inactive-row {
+  background-color: #f8d7da; 
+}
+
+
+
+.button-group button[disabled] {
+  background-color: #007bff;
+  color: white;
+}
+
+.button-group button {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-right: 5px;
+}
+
+
+
+/* Estilos para el selector */
+.select-custom {
+  width: 250px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  font-size: 16px;
+  color: #333;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Añadir un ícono de flecha hacia abajo */
+.select-custom::after {
+  content: '\25BC'; /* Símbolo de flecha hacia abajo */
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 12px;
+}
+
+/* Efecto hover */
+.select-custom:hover {
+  border-color: #888;
+}
+
+/* Efecto focus */
+.select-custom:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}

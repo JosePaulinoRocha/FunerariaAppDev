@@ -17,3 +17,36 @@ export interface Presupuesto {
     DiaLimite: number;
     [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
   }
+
+
+export interface Gastos {
+    GastoID: number;
+    FechaPreautorizada: string;
+    Concepto: string;
+    Monto: number;
+    ProveedorID: number;
+    NombreProveedor: string;
+    SegmentoID: number;
+    NombreSegmento: string;
+    EstatusPresupuestoID: number;
+    Estatus: string;
+    CuentaID: number;
+    TipoCuentaID: number;
+    TipoCuenta: string;
+    NombreCuenta: string;
+    RFC: string;
+    Fecha: string;
+    CategoriaID: number;
+    NombreCategoria: string;
+    SubcategoriaID: number;
+    NombreSubcategoria: string;
+    ConceptoID: number;
+    NombreConcepto: string;
+    [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
+  }
+  
+
+  export interface Estatus {
+    EstatusPresupuestoID: number;
+    Nombre: string;
+  }

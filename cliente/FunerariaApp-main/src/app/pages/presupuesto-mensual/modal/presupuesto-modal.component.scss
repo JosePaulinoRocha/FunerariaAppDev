@@ -1,0 +1,51 @@
+/* income-modal.component.scss */
+:host {
+  ion-content {
+    --background: #f4f4f4;
+    padding: 16px;
+
+    form {
+      display: flex;
+      flex-direction: column;
+
+      ion-item {
+        margin-bottom: 16px;
+      }
+
+      ion-button {
+        margin-top: 16px;
+      }
+    }
+  }
+
+  ion-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  ion-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  ion-input,
+  ion-checkbox,
+  ion-select {
+    --background: #D4D4D4;
+    --border-radius: 8px;
+    --padding-start: 10px;
+    margin-bottom: 10px;
+  }
+
+  ion-datetime {
+    margin: 0 auto;
+    display: block;
+    --padding-end: 0; /* Reduce el espacio al final del datetime picker */
+  }
+
+  ion-footer {
+    display: flex;
+    justify-content: center;
+  }
+}

@@ -25,10 +25,10 @@
             <ion-label>Ingresos / Egresos</ion-label>
           </ion-item>
 
-          <ion-item routerLink="/ingresos-api" routerDirection="root">
+          <!-- <ion-item routerLink="/ingresos-api" routerDirection="root">
             <ion-icon slot="start" name="bar-Chart"></ion-icon>
             <ion-label>Importar ingresos</ion-label>
-          </ion-item>
+          </ion-item> -->
 
           <ion-item routerLink="/reconciliaciones" routerDirection="root">
             <ion-icon slot="start" name="folder"></ion-icon>
@@ -58,6 +58,11 @@
           <ion-item *ngIf="isAdmin" button (click)="navigateTo('presupuesto')">
             <ion-icon slot="start" [name]="'cash-outline'"></ion-icon>
             <ion-label>Presupuesto</ion-label>
+          </ion-item>
+
+          <ion-item *ngIf="isAdmin" button (click)="navigateTo('presupuesto-mensual')">
+            <ion-icon slot="start" [name]="'cash-outline'"></ion-icon>
+            <ion-label>Presupuesto mensual</ion-label>
           </ion-item>
 
           <ion-item *ngIf="isAdmin" button (click)="navigateTo('usuarios')">

@@ -33,7 +33,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card (click)="navigateTo('ingresos-api')">
+    <!-- <ion-card (click)="navigateTo('ingresos-api')">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
         <ion-card-title>Importar Ingresos</ion-card-title>
@@ -41,7 +41,7 @@
       <ion-card-content>
         <p>Modulo diseñado para la importacion de ingresos externos.</p>
       </ion-card-content>
-    </ion-card>
+    </ion-card> -->
 
     <ion-card *ngIf="isAdmin" (click)="navigateTo('usuarios')">
       <ion-card-content>
@@ -106,10 +106,20 @@
     <ion-card *ngIf="isAdmin" (click)="navigateTo('presupuesto')">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
-        <ion-card-title>Presupuesto</ion-card-title>
+        <ion-card-title>Presupuesto Semetral (Datos)</ion-card-title>
       </ion-card-content>
       <ion-card-content>
-        <p>Seccion de presupuesto aun en desarrollo.</p>
+        <p>Seccion de presupuesto semestral promedio y datos.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="isAdmin" (click)="navigateTo('presupuesto-mensual')">
+      <ion-card-content>
+        <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
+        <ion-card-title>Presupuesto Mensual</ion-card-title>
+      </ion-card-content>
+      <ion-card-content>
+        <p>Seccion para planificar el presupuesto mensual.</p>
       </ion-card-content>
     </ion-card>
 

@@ -1,0 +1,161 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>{{ isEditMode ? 'Asignar Datos y estatus' : 'Asignar Datos y estatus' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal(false)">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form (ngSubmit)="CuentaEstatus()" class="ion-padding">
+    <ion-grid>
+      <ion-row>
+        <ion-col size-md="12">
+
+          <ion-item style="width: 34rem;">
+            <ion-label position="stacked">Estatus</ion-label>
+            <ion-select placeholder="Estatus" [(ngModel)]="gastos.EstatusPresupuestoID" name="estatus" required interface="popover" searchbar="true">
+              <ion-select-option *ngFor="let item of estatus" [value]="item.EstatusPresupuestoID">{{ item.Nombre }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Tipo de Cuenta</ion-label>
+            <ion-select 
+              style="width: 32rem;" 
+              [(ngModel)]="gastos.TipoCuentaID" 
+              name="tipoCuentaID" 
+              required 
+              interface="popover" 
+              searchbar="true" 
+              placeholder="Tipo cuenta"
+              (ionChange)="onTipoCuentaChange()">
+              <ion-select-option [value]="1">Caja Chica</ion-select-option>
+              <ion-select-option [value]="2">Cuenta Bancaria</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item *ngIf="!isNewCuenta && gastos.TipoCuentaID === 1">
+            <ion-label position="stacked">Caja Chica</ion-label>
+            <ion-select placeholder="Caja Chica" style="width: 32rem;" [(ngModel)]="gastos.CuentaID" name="cuenta" required interface="popover" searchbar="true">
+              <ion-select-option *ngFor="let item of filteredCuentas" [value]="item.CuentaID" placeholder="Seleccione Caja Chica">{{ item.NombreCuenta }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item *ngIf="!isNewCuenta && gastos.TipoCuentaID === 2">
+            <ion-label position="stacked">Cuenta Bancaria</ion-label>
+            <ion-select placeholder="Cuenta Bancaria" style="width: 32rem;" [(ngModel)]="gastos.CuentaID" name="cuenta" required interface="popover" searchbar="true" (ionChange)="onCuentaChange($event)">
+              <ion-label position="stacked">Cuenta Bancaria</ion-label>
+              <ion-select-option style="width: 32rem;" *ngFor="let item of filteredCuentas" [value]="item.CuentaID" placeholder="Seleccione Cuenta Bancaria">{{ item.NombreCuenta }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item *ngIf="!isNewCuenta && gastos.TipoCuentaID === 2">
+            <ion-label position="stacked">RFC</ion-label>
+            <ion-input placeholder="RFC" style="width: 32rem;" [(ngModel)]="gastos.RFC" name="rfc" [readonly]="true"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Fecha</ion-label>
+            <input style="margin-bottom: 2rem;" type="date" [(ngModel)]="gastos.Fecha" name="fecha" required>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Categoría</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewCategoria" name="isNewCategoria">
+              <ion-item style="font-size: 12px;">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewCategoria">
+              <ion-select
+                placeholder="Categoría"
+                style="width: 32rem;"
+                [(ngModel)]="gastos.CategoriaID"
+                name="categoria"
+                required
+                interface="popover"
+                searchbar="true"
+              >
+              <ion-select-option *ngFor="let item of categoria" [value]="item.CategoriaID">
+                {{ item.Nombre }}
+              </ion-select-option>
+            </ion-select>
+            </div>
+            <div *ngIf="isNewCategoria">
+              <ion-input style="width: 32rem;" [(ngModel)]="newCategoria" name="newCategoria" placeholder="Nueva Categoría" required></ion-input>
+            </div>
+          </ion-item>
+
+
+          <ion-item>
+            <ion-label position="stacked">Subcategoría</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewSubcategoria" name="isNewSubcategoria">
+              <ion-item style="font-size: 12px;">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewSubcategoria">
+              <ion-select placeholder="Subcategoria" style="width: 32rem;" [(ngModel)]="gastos.SubcategoriaID" name="subcategoria" interface="popover" searchbar="true">
+                <ion-select-option *ngFor="let item of subcategoria" [value]="item.SubcategoriaID">{{ item.Nombre }}</ion-select-option>
+              </ion-select>
+            </div>
+            <div *ngIf="isNewSubcategoria">
+              <ion-input style="width: 32rem;" [(ngModel)]="newSubcategoria" name="newSubcategoria" placeholder="Nueva Subcategoría"></ion-input>
+            </div>
+          </ion-item>
+
+
+          <ion-item>
+            <ion-label position="stacked">Concepto</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isNewConcepto" name="isNewConcepto">
+              <ion-item style="font-size: 12px;">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <div *ngIf="!isNewConcepto">
+              <ion-select placeholder="Concepto" style="width: 32rem;" [(ngModel)]="gastos.ConceptoID" name="concepto" required searchbar="true">
+                <ion-select-option *ngFor="let item of concepto" [value]="item.ConceptoID">{{ item.Nombre }}</ion-select-option>
+              </ion-select>
+            </div>
+            <div *ngIf="isNewConcepto">
+              <ion-input style="width: 32rem;" [(ngModel)]="newConcepto" name="newConcepto" placeholder="Nuevo Concepto" required></ion-input>
+            </div>
+          </ion-item>
+
+
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <ion-footer>
+      <ion-button 
+        [disabled]="gastos.EstatusPresupuestoID == null || gastos.CuentaID == null || gastos.Fecha == '' || (gastos.CategoriaID == null && newCategoria == '') || (gastos.SubcategoriaID == null && newSubcategoria == '') || (gastos.ConceptoID == null && newConcepto == '')  "
+        style="margin-bottom: 1rem;" 
+        expand="full" 
+        type="submit">
+        Guardar
+      </ion-button>
+    </ion-footer>
+    
+
+  </form>
+</ion-content>

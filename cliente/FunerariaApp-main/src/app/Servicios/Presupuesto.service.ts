@@ -1,4 +1,4 @@
-import { Presupuesto } from '../Modelos/Presupuesto';
+import { Presupuesto, Gastos, Estatus } from '../Modelos/Presupuesto';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -27,6 +27,17 @@ export class PresupuestoServices {
     return this.http.get<Presupuesto[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlCombinaciones}`);
   }
 
+  getGastoMensual(): Observable<Gastos[]> {
+    return this.http.get<Gastos[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoMensual/`);
+  }
+
+  addGasto(gastos: any): Observable<any> {
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}PostGastos`, gastos);
+  }
+
+  UpdateGasto(incomeData: any): Observable<any> {
+    return this.http.put<Gastos[]>(`${this.myAppUrl}${this.MyApiUrl}UpdateGastos`, incomeData);
+  }
 
   updatePresupuesto(proveedor: { SegmentoID: number, CategoriaID: number, SubcategoriaID: number, ConceptoID: number, MontoDictaminado: number, FrecuenciaDictaminada: number }): Observable<any> {
     const url = `${this.myAppUrl}${this.MyApiUrl}UpdatePresupuesto/`;
@@ -38,6 +49,13 @@ export class PresupuestoServices {
     return this.http.put(url, proveedor);
   }
 
-  
+  updateGastoEstatus(proveedor: {GastoID: number, EstatusPresupuestoID: number, Fecha: string, CuentaID: number, CategoriaID: number | string, SubcategoriaID: number | string, ConceptoID: number | string }): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}UpdateGastoEstatus/`;
+    return this.http.put(url, proveedor);
+  }
+
+  getEstatus(): Observable<Estatus[]> {
+    return this.http.get<Estatus[]>(`${this.myAppUrl}${this.MyApiUrl}GetEstatus`);
+  }
   
 }

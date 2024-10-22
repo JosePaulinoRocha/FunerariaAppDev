@@ -1,0 +1,158 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Presupuesto Mensual</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content>
+
+  <ion-button expand="block" (click)="asignarDatos()" style="margin: 16px;">
+    <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+    Crear Gasto
+  </ion-button>
+
+  <div class="search-container">
+    <ion-item>
+      <ion-label>Buscar por:</ion-label>
+      <ion-select [(ngModel)]="selectedFields" multiple="true" placeholder="Seleccionar campo">
+        <ion-select-option *ngFor="let field of searchFields" [value]="field.value">{{ field.label }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <div *ngFor="let field of selectedFields">
+      <ion-item *ngIf="!isDateField(field)">
+        <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
+        <ion-input [(ngModel)]="searchValues[field]"></ion-input>
+      </ion-item>
+    
+      <div *ngIf="isDateField(field)">
+        <ion-item>
+          <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
+          <input type="date" [value]="getStartDate(field)" (change)="onStartDateChange($event, field)">
+        </ion-item>
+        <ion-item>
+          <ion-label>{{ getFieldLabel(field) }} Hasta:</ion-label>
+          <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
+        </ion-item>
+      </div>
+      
+    </div>
+
+    <div style="display: flex; margin-top: 1rem;">
+
+      <ion-button (click)="applySearch()">Buscar</ion-button>
+      <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
+
+
+      <!-- <select style="margin-left: 1rem;" class="select-custom" [(ngModel)]="modoFiltro" (change)="setModoFiltro(modoFiltro)">
+        <option value="gastosSemestrales">Gastos Semestrales (Datos)</option>
+        <option value="presupuestoMensual">Presupuesto Mensual</option>
+      </select> -->
+
+    </div>
+
+
+    <div style="margin-top: 1rem;" class="button-group">
+      <button (click)="setFilter('extraordinario')" [disabled]="filtroSeleccionado === 'extraordinario'">Extraordinario</button>
+      <!-- <button (click)="setFilter('asignados')" [disabled]="filtroSeleccionado === 'asignados'">Asignados</button>
+      <button (click)="setFilter('noAsignados')" [disabled]="filtroSeleccionado === 'noAsignados'">No asignados</button> -->
+    </div>
+
+    <!-- Mostrar los botones de subfiltro solo si el modo es Asignar Cuenta -->
+    <!-- <div *ngIf="modoFiltro === 'asignarCuenta'" style="margin-top: 1rem;" class="button-group">
+      <button (click)="setFilterCuenta('semanal')" [disabled]="filtroAsignarCuenta === 'semanal'">Semanal</button>
+      <button (click)="setFilterCuenta('periodico')" [disabled]="filtroAsignarCuenta === 'periodico'">Periódico</button>
+      <button (click)="setFilterCuenta('extraordinario')" [disabled]="filtroAsignarCuenta === 'extraordinario'">Extraordinario</button>
+    </div> -->
+
+
+  </div>
+
+  
+  <div class="table-container">
+    <table class="table">
+      <thead class="header-row">
+        <tr class="color_header_tabla">
+          <th>ID</th>
+          <th *ngIf="isAdmin">Editar</th>
+          <th>Fecha Gasto</th>
+          <th><span style="margin-left: 10rem;"></span>Concepto Gasto<span style="margin-left: 10rem;"></span></th>
+          <th>Monto</th>
+          <th><span style="margin-left: 2rem;"></span>Proveedor<span style="margin-left: 2rem;"></span></th>
+          <th><span style="margin-left: 4rem;"></span>Segmento<span style="margin-left: 4rem;"></span></th>
+          <th *ngIf="isAdmin">Estatus</th>
+          <th style="background-color: greenyellow; color: black;"><span style="margin-left: 2rem;"></span>Estatus<span style="margin-left: 2rem;"></span></th>
+          <th style="background-color: greenyellow; color: black;"><span style="margin-left: 4rem;"></span>Cuenta<span style="margin-left: 4rem;"></span></th>
+          <th style="background-color: greenyellow; color: black;"><span style="margin-left: 2rem;"></span>TipoCuenta<span style="margin-left: 2rem;"></span></th>
+          <th style="background-color: greenyellow; color: black;"><span style="margin-left: 4rem;"></span>RFC<span style="margin-left: 4rem;"></span></th>
+          <th style="background-color: greenyellow; color: black;"><span style="margin-left: 2rem;"></span>Fecha<span style="margin-left: 2rem;"></span></th>
+          <th style="background-color: greenyellow; color: black;"><span style="margin-left: 8rem;"></span>Categoria<span style="margin-left: 8rem;"></span></th>
+          <th style="background-color: greenyellow; color: black;"><span style="margin-left: 6rem;"></span>Subcategoria<span style="margin-left: 6rem;"></span></th>
+          <th style="background-color: greenyellow; color: black;"><span style="margin-left: 10rem;"></span>Concepto<span style="margin-left: 10rem;"></span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let gastos of paginatedPresupuesto" class="data-row">
+          <td>{{ gastos.GastoID }}</td>
+          <td *ngIf="isAdmin">
+            <ion-icon 
+              name="create-outline" 
+              (click)="asignarDatos(gastos)"
+              [style.cursor]="'pointer'"
+              [style.color]="'blue'"
+              aria-label="Editar">
+            </ion-icon>
+          </td>
+          <td>{{ gastos.FechaPreautorizada }}</td>
+          <td>{{ gastos.Concepto }}</td>
+          <td>{{ gastos.Monto }}</td>
+          <td>{{ gastos.NombreProveedor }}</td>
+          <td>{{ gastos.NombreSegmento }}</td>
+          <td *ngIf="isAdmin">
+            <ion-icon 
+              name="create-outline" 
+              (click)="asignarEstatus(gastos)"
+              [style.cursor]="'pointer'"
+              [style.color]="'blue'"
+              aria-label="Editar">
+            </ion-icon>
+          </td>
+          <td style="background-color: yellow;">{{ gastos.Estatus }}</td>
+          <td style="background-color: yellow;">{{ gastos.NombreCuenta }}</td>
+          <td style="background-color: yellow;">{{ gastos.TipoCuenta }}</td>
+          <td style="background-color: yellow;">{{ gastos.RFC }}</td>
+          <td style="background-color: yellow;">{{ gastos.Fecha }}</td>
+          <td style="background-color: yellow;">{{ gastos.NombreCategoria }}</td>
+          <td style="background-color: yellow;">{{ gastos.NombreSubcategoria }}</td>
+          <td style="background-color: yellow;">{{ gastos.NombreConcepto }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <ion-footer style="margin-bottom: 4rem;" class="margin_footer">
+    <ion-toolbar>
+
+      <ion-buttons slot="start">
+        <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+        <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
+      </ion-buttons>
+      <div class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </div>
+
+      <ion-select interface="popover" slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
+        <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">
+          {{ option }}
+        </ion-select-option>
+      </ion-select>
+
+    </ion-toolbar>
+  </ion-footer>
+
+</ion-content>
