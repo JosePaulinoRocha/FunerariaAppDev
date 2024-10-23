@@ -28,6 +28,14 @@ export class IngresosArchivoServices {
     
     return this.http.post(url, datos, { headers });
   }
+
+
+  importarEgresosArchivo(datos: any[]): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}importarEgresosArchivo/`;
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    
+    return this.http.post(url, datos, { headers });
+  }
   
   
 }

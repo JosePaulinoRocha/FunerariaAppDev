@@ -105,3 +105,113 @@ const getOrCreateCuenta = async (con: any, cuenta: string, rfc: string, tipoCuen
         throw error; // Lanza el error para que se maneje en el bloque try/catch principal
     }
 };
+
+
+
+export const ImportarEgresosArchivo = async (req: Request, res: Response) => {
+    const con = await connect();
+    await con.beginTransaction();
+
+    try {
+        const egresosData = req.body; // Suponemos que es un array de egresos
+        console.log("Datos recibidos para importación:", egresosData);
+
+        for (const egreso of egresosData) {
+            console.log("Procesando egreso:", egreso);
+
+            // 1. Verificar o crear SegmentoID, CategoriaID, SubcategoriaID y ConceptoID
+            const SegmentoID = egreso.Segmento ? await getOrCreateId(con, 'segmentos', egreso.Segmento) : null;
+            const CategoriaID = egreso.Categoria ? await getOrCreateId(con, 'categorias', egreso.Categoria) : null;
+            const SubcategoriaID = egreso.Subcategoria ? await getOrCreateId(con, 'subcategorias', egreso.Subcategoria) : null;
+            const ConceptoID = egreso.Concepto ? await getOrCreateId(con, 'conceptos', egreso.Concepto) : null;
+
+            // 2. Verificar o crear CuentaID sin RFC
+            const TipoCuentaID = egreso.Cuenta.toLowerCase().includes('caja chica') ? 1 : 2;
+            const CuentaID = egreso.Cuenta ? await getOrCreateCuentaEgreso(con, egreso.Cuenta, TipoCuentaID) : null;
+
+            // 3. Calcular el saldo nuevo basado en los ingresos y egresos no reconciliados
+            const nuevoMonto = egreso.Monto;
+
+            const saldoFinal = await calcularSaldoCuenta(con, CuentaID, nuevoMonto, false); // Es egreso
+            console.log(`Nuevo saldo calculado: ${saldoFinal}`);
+
+            // 4. Insertar el registro en la tabla ingresos (TipoIngreso = 1 para egreso)
+            const insertEgresoQuery = `
+                INSERT INTO ingresos (SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, CuentaID, Monto, TipoIngreso, Descripcion, Fecha, Saldo)
+                VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+            `;
+
+            // 5. Ejecutar la inserción del egreso con el saldo actualizado
+            await con.query(insertEgresoQuery, [
+                SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, CuentaID, nuevoMonto, egreso.Descripcion, egreso.Fecha, saldoFinal
+            ]);
+            console.log("Egreso insertado correctamente");
+        }
+
+        await con.commit();
+        res.status(200).json({ message: 'Egresos importados exitosamente' });
+    } catch (error) {
+        await con.rollback();
+        const err = error as Error;
+        res.status(500).json({ error: 'Error al procesar la importación', detalle: err.message });
+    } finally {
+        con.end();
+    }
+};
+
+// Función para calcular el saldo, utilizando la lógica del endpoint de alta de ingresos
+const calcularSaldoCuenta = async (con: any, CuentaID: number, nuevoMonto: number, esIngreso: boolean) => {
+    const saldoReconciliadoQuery = `
+        SELECT Saldo FROM reconciliaciones 
+        WHERE CuentaID = ? 
+        ORDER BY ReconciliacionID DESC LIMIT 1
+    `;
+    const [saldoReconciliado]: any = await con.query(saldoReconciliadoQuery, [CuentaID]);
+    let saldoInicial = saldoReconciliado.length > 0 ? parseFloat(saldoReconciliado[0].Saldo) : 0;
+
+    if (isNaN(saldoInicial)) saldoInicial = 0;
+
+    // Obtener ingresos y egresos no reconciliados
+    const ingresosEgresosQuery = `
+        SELECT Monto, TipoIngreso FROM ingresos
+        WHERE CuentaID = ? AND Reconciliado = 0
+        ORDER BY IngresoID
+    `;
+    const [ingresosEgresos]: any = await con.query(ingresosEgresosQuery, [CuentaID]);
+
+    let totalIngresos = 0;
+    let totalEgresos = 0;
+
+    ingresosEgresos.forEach((registro: any) => {
+        const monto = parseFloat(registro.Monto);
+        if (!isNaN(monto)) {
+            const tipoIngreso = registro.TipoIngreso[0]; // 0 es ingreso, 1 es egreso
+            if (tipoIngreso === 1) { // Egresos
+                totalEgresos += monto;
+            } else { // Ingresos
+                totalIngresos += monto;
+            }
+        }
+    });
+
+    // Incluir el monto del nuevo registro en el cálculo del saldo
+    const saldoFinal = saldoInicial + totalIngresos - totalEgresos + (esIngreso ? nuevoMonto : -nuevoMonto);
+    return isNaN(saldoFinal) ? 0 : saldoFinal;
+};
+
+
+
+// Función para verificar o crear registros en la tabla de cuentas
+const getOrCreateCuentaEgreso = async (con: any, cuenta: string, tipoCuentaID: number) => {
+    const query = `SELECT CuentaID FROM cuentas WHERE LOWER(NombreCuenta) = LOWER(?) LIMIT 1`;
+    const [result] = await con.query(query, [cuenta]);
+
+    if (result.length > 0) {
+        return result[0].CuentaID;
+    } else {
+        const insertQuery = `INSERT INTO cuentas (NombreCuenta, TipoCuentaID) VALUES (?, ?)`;
+        const [insertResult] = await con.query(insertQuery, [cuenta, tipoCuentaID]);
+        return insertResult.insertId;
+    }
+};
+

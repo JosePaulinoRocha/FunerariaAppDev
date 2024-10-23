@@ -58,7 +58,17 @@
       style="display: none" 
       id="fileInput" 
     />
-    <ion-button style="margin-left: 2rem;" color="danger" (click)="triggerFileInput()">Importar Excel</ion-button>
+    <ion-button style="margin-left: 2rem;" color="danger" (click)="triggerFileInput()">Importar Ingresos</ion-button>
+
+
+    <input 
+    type="file" 
+    accept=".xlsx, .xls" 
+    (change)="onFileChangeEgresos($event)" 
+    style="display: none" 
+    id="fileInputEgresos" 
+    />
+    <ion-button style="margin-left: 2rem;" color="success" (click)="triggerFileInputEgresos()">Importar Egresos</ion-button>
 
 
     <div style="margin-top: 1rem;" class="button-group">

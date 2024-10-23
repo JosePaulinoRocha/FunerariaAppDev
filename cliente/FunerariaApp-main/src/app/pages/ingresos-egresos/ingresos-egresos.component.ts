@@ -73,6 +73,8 @@ interface Income {
 })
 export class IngresosEgresosComponent implements OnInit {
 
+  readonly BATCH_SIZE = 100;
+
   selectedIncomes: number[] = []; // Almacena los IDs seleccionados
   selectAll: boolean = false;     // Controla si todos los registros están seleccionados
 
@@ -269,6 +271,10 @@ export class IngresosEgresosComponent implements OnInit {
     fileInput.click();
   }
 
+  triggerFileInputEgresos() {
+    const fileInput = document.getElementById('fileInputEgresos') as HTMLInputElement;
+    fileInput.click();
+  }
 
   onFileChange(event: any) {
     const file = event.target.files[0];
@@ -288,6 +294,34 @@ export class IngresosEgresosComponent implements OnInit {
         
         // Aquí manejamos los datos extraídos del Excel
         this.processExcelData(jsonData);
+      };
+  
+      fileReader.readAsArrayBuffer(file);
+    }
+
+    event.target.value = '';
+
+  }
+
+
+  onFileChangeEgresos(event: any) {
+    const file = event.target.files[0];
+    
+    if (file) {
+      const fileReader = new FileReader();
+      
+      fileReader.onload = (e: any) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+  
+        // Asumimos que el primer sheet es el correcto
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+  
+        // Convertir los datos a formato JSON
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        
+        // Aquí manejamos los datos extraídos del Excel
+        this.processExcelDataEgresos(jsonData);
       };
   
       fileReader.readAsArrayBuffer(file);
@@ -329,7 +363,83 @@ export class IngresosEgresosComponent implements OnInit {
     );
 
   }
+
+
+  processExcelDataEgresos(data: any[]) {
+    // Asumiendo que la primera fila tiene los encabezados
+    const headers = data[0];
+    
+    // Procesar el resto de las filas
+    const rows = data.slice(1);
   
+    const processedData = rows.map((row) => ({
+      Fecha: this.excelDateToJSDate(row[0]) || '',
+      Segmento: row[1] || '',
+      Categoria: row[2] || '',
+      Subcategoria: row[3] || '',
+      Concepto: row[4] || '',
+      Descripcion: row[5] || '',
+      Monto: row[7] || 0,
+      Cuenta: row[8] || '',
+    }));
+  
+    console.log("Datos procesados de egresos:", processedData);
+    
+    // Enviar registros en batches
+    this.sendEgresosInBatches(processedData);
+  }
+
+  
+  
+  sendEgresosInBatches(registros: any[]) {
+    const totalRegistros = registros.length;
+    let offset = 0;
+  
+    const sendNextBatch = () => {
+      // Obtener el batch actual de registros
+      const batch = registros.slice(offset, offset + this.BATCH_SIZE);
+      
+      // Si no hay más registros, finalizar
+      if (batch.length === 0) {
+        console.log('Todos los registros han sido importados.');
+        this.isLoading = false;
+        this.loadIngresos(); // Actualizar la tabla al finalizar la importación
+        return;
+      }
+  
+      // Enviar el batch al endpoint
+      this.ingresosArchivoServices.importarEgresosArchivo(batch).subscribe(
+        () => {
+          console.log(`Batch de ${batch.length} registros importados correctamente`);
+          offset += this.BATCH_SIZE; // Incrementar el offset para el siguiente batch
+          sendNextBatch(); // Llamar de nuevo para enviar el siguiente batch
+        },
+        (error: any) => {
+          console.error('Error al importar el batch de registros', error);
+          this.isLoading = false; // Finaliza el indicador de carga en caso de error
+        }
+      );
+    };
+  
+    // Iniciar el proceso de envío
+    this.isLoading = true;
+    sendNextBatch();
+  }
+
+  
+  
+  excelDateToJSDate(serial: number): string {
+    const utc_days = Math.floor(serial - 25569) + 1; // Número base de días de Excel
+    const date_info = utc_days * 86400; // Convertir días a segundos
+    const date = new Date(date_info * 1000); // Crear la fecha en milisegundos
+  
+    // Formatear la fecha a "yyyy-mm-dd" o al formato que necesites
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  }
 
   exportEgresos() {
 
