@@ -13,6 +13,7 @@ export interface Presupuesto {
     UltimaFecha: string;
     FrecuenciaDictaminada: number;
     MontoDictaminado: number;
+    CuentaID: number;
     NombreCuenta: string;
     DiaLimite: number;
     [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
@@ -49,4 +50,9 @@ export interface Gastos {
   export interface Estatus {
     EstatusPresupuestoID: number;
     Nombre: string;
+  }
+
+  export interface PasoUsuario {
+    UserID: number;
+    NumeroPaso: number;
   }

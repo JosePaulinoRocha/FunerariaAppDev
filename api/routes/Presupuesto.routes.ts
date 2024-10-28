@@ -1,10 +1,14 @@
 import { Router } from 'express';
 import { authenticateJWT } from '../middlewares/authMiddleware';
-import { ObtenerPresupuesto, updatePresupuesto, updatePresupuestoCuenta, ObtenerPresupuestoMensual, PostGastos, PutGastos, ObtenerEstatusGasto, updateGastoEstatus } from '../controllers/Presupuesto.controller';
+import { ObtenerPresupuesto, updatePresupuesto, updatePresupuestoCuenta, ObtenerPresupuestoMensual, PostGastos, PutGastos, ObtenerEstatusGasto, updateGastoEstatus, ObtenerPasoUsuario, InsertPasoUsuario } from '../controllers/Presupuesto.controller';
 
 const router = Router();
 
 router.get('/GetPresupuesto', authenticateJWT, ObtenerPresupuesto);
+
+router.get('/GetPasoUsuario/:userId', authenticateJWT, ObtenerPasoUsuario);
+
+router.post('/InsertPasoUsuario', authenticateJWT, InsertPasoUsuario);
 
 router.get('/GetPresupuestoMensual', authenticateJWT, ObtenerPresupuestoMensual);
 

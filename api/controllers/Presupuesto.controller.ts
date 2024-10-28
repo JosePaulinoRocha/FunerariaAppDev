@@ -20,6 +20,54 @@ export const ObtenerPresupuesto = async (req: Request, res: Response) => {
     }
 };
 
+export const ObtenerPasoUsuario = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    const userId = req.params.userId; // Obtener el userId de los parámetros de la ruta
+    try {
+        con = await connect();
+        // Modificar la consulta para que solo devuelva registros para el userId específico
+        let query = 'SELECT * FROM paso_usuario_presupuesto WHERE UserID = ?';
+        const proveedores = (await con.query(query, [userId]))[0] as any[]; // Usar un parámetro para evitar inyecciones SQL
+        result = proveedores;
+    } catch (error) {
+        console.log('Error en paso usuario');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+export const InsertPasoUsuario = async (req: Request, res: Response) => {
+    let con;
+    try {
+        con = await connect();
+        const { userId, numeroPaso } = req.body; // Obtener los datos del cuerpo de la solicitud
+
+        // Preparar la consulta para insertar o actualizar
+        const query = `
+            INSERT INTO paso_usuario_presupuesto (UserID, NumeroPaso) 
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE NumeroPaso = ?`;
+        
+        await con.query(query, [userId, numeroPaso, numeroPaso]);
+
+        return res.status(201).json({ message: 'Paso del usuario insertado o actualizado correctamente.' });
+    } catch (error) {
+        console.log('Error al insertar o actualizar el paso del usuario');
+        console.log(error);
+        return res.status(500).json({ error: 'Error al insertar o actualizar el paso del usuario' });
+    } finally {
+        await con?.end();
+    }
+};
+
+
+
+
 export const ObtenerEstatusGasto = async (req: Request, res: Response) => {
     let con;
     let result;

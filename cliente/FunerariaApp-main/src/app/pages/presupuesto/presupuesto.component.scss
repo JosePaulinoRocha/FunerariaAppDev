@@ -124,3 +124,138 @@
   border-color: #007bff;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
+
+
+.animated-button {
+  background-color: #4285f4;
+  color: white;
+  transition: transform 0.3s ease-in-out;
+}
+
+.animated-button:hover {
+  transform: scale(1.05);
+  background-color: #357ae8;
+}
+
+
+/* Contenedor principal de los cards en 2 columnas para una apariencia más ordenada */
+.step-cards-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+/* Estilo principal del card */
+.main-card {
+  background: linear-gradient(135deg, #FFFFFF, #FFFFFF);
+  color: #000000;
+  border-radius: 15px;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.main-card:hover {
+  transform: scale(1.05);
+}
+
+/* Título del sub-card en cada paso */
+.sub-card-title {
+  background: linear-gradient(135deg, #ff6b6b, #5f27cd);
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
+}
+
+/* Texto dentro de cada card */
+.card-text {
+  font-size: 1rem;
+  padding: 5px 0;
+}
+
+/* Botón "Siguiente" personalizado */
+.next-button {
+  margin-top: 20px;
+  background: linear-gradient(135deg, #ff7e5f, #feb47b);
+  color: #fff;
+  border-radius: 10px;
+  font-weight: bold;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.next-button:hover {
+  background: linear-gradient(135deg, #ff9f43, #ff6b6b);
+}
+
+
+.button-container {
+  grid-column: span 2; /* Hace que el botón ocupe ambas columnas */
+  text-align: center;
+}
+
+
+/* Estilo del radio button */
+.radio-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+}
+
+.radio-container input[type="radio"] {
+  opacity: 0;
+}
+
+.radio-container label {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #0054E9;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.radio-container label:after {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #764ba2;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.radio-container input[type="radio"]:checked + label {
+  background-color: #764ba2;
+}
+
+.radio-container input[type="radio"]:checked + label:after {
+  opacity: 1;
+}
+
+ion-button {
+  transition: background-color 0.3s;
+}
+
+ion-button:hover {
+  background-color: darkred; // Cambia a un color más oscuro al pasar el mouse
+}
+
+
+.animated-button {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.animated-button:hover {
+  background-color: #d32f2f; /* Cambia el color de fondo al pasar el mouse */
+  transform: scale(1.05); /* Agranda el botón un poco */
+}

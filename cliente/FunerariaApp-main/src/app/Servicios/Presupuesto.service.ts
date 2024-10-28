@@ -1,4 +1,4 @@
-import { Presupuesto, Gastos, Estatus } from '../Modelos/Presupuesto';
+import { Presupuesto, Gastos, Estatus, PasoUsuario } from '../Modelos/Presupuesto';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -26,6 +26,16 @@ export class PresupuestoServices {
   getPresupuesto(): Observable<Presupuesto[]> {
     return this.http.get<Presupuesto[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlCombinaciones}`);
   }
+
+  getPasoUsuario(userId: number): Observable<PasoUsuario[]> {
+    return this.http.get<PasoUsuario[]>(`${this.myAppUrl}${this.MyApiUrl}GetPasoUsuario/${userId}`);
+  }
+
+  insertPasoUsuario(userId: number, numeroPaso: number): Observable<any> {
+    const body = { userId, numeroPaso }; // Cuerpo de la solicitud con los datos a insertar
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}InsertPasoUsuario`, body);
+  }
+  
 
   getGastoMensual(): Observable<Gastos[]> {
     return this.http.get<Gastos[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoMensual/`);

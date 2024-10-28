@@ -16,7 +16,7 @@ export async function connect() {
         host: 'localhost',
         user: 'root',
         password: '',
-        database: 'funeraria_db',
+        database: 'systemab_funeraria_db',
         timezone: 'local',
     });
 }

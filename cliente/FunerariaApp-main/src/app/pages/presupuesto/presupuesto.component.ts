@@ -7,6 +7,7 @@ import { PresupuestoServices } from 'src/app/Servicios/Presupuesto.service';
 import { PresupuestoModalComponent } from './modal/presupuesto-modal.component';
 import { PresupuestoCuentaModalComponent } from './modal-cuenta/presupuesto-cuenta-modal.component';
 import { Router } from '@angular/router'
+import { trigger, state, style, animate, transition } from '@angular/animations';
 
 
 
@@ -25,12 +26,16 @@ interface Presupuesto {
   UltimaFecha: string;
   FrecuenciaDictaminada: number;
   MontoDictaminado: number;
+  CuentaID: number;
   NombreCuenta: string;
   DiaLimite: number;
   [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
 }
 
-
+ interface PasoUsuario {
+  UserID: number;
+  NumeroPaso: number;
+}
 
 @Component({
   selector: 'app-presupuesto',
@@ -38,10 +43,118 @@ interface Presupuesto {
   styleUrls: ['./presupuesto.component.scss'],
   standalone: true,
   imports: [IonicModule, FormsModule, CommonModule, HttpClientModule],
+  animations: [
+    trigger('buttonAnimation', [
+      state('void', style({ opacity: 0 })),
+      transition(':enter', [
+        animate('0.5s ease-in', style({ opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('0.5s ease-out', style({ opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class PresupuestoComponent  implements OnInit {
 
+  currentStep: number = 0;
+  totalSteps: number = 4;
+
+  selectedCardIndex: number = 0;
+
+  showInitialCard = true;
+  showStepCards = false;
+  showTable = false;
+
+
+  nextStep() {
+    // Asegúrate de avanzar solo si no estás en el último paso
+    if (this.currentStep < this.totalSteps - 1) {
+      // Obtener el userId desde el storage
+      const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+      if (user && user.userId) {
+        const userId = user.userId;
+  
+        // Llamar a la función para insertar el paso del usuario
+        this._presupuestoServ.insertPasoUsuario(userId, this.currentStep + 1).subscribe(
+          () => {
+            // Avanza al siguiente paso
+            this.currentStep++;
+  
+            // Actualiza el valor seleccionado según el paso
+            this.selectedCardIndex = this.currentStep; // Esto establece el índice del card seleccionado
+  
+            // Llama a onRadioChange para aplicar los cambios
+            this.onRadioChange(null); // Pasar `null` porque no necesitas el evento en este caso
+          },
+          (error) => {
+            this.presentAlert('Error al insertar el paso del usuario');
+          }
+        );
+      }
+    }
+  }
+  
+
+  steps = [
+    {
+      title: '1. Dictaminar monto y frecuencia de egresos semestrales',
+      totalLabel: 'egresos sin dictaminar',
+      total: 15,
+      assignedLabel: 'Egresos dictaminados',
+      assigned: 5,
+    },
+    {
+      title: '2. Asignar cuentas a egresos semanales',
+      totalLabel: 'cuentas sin asignar',
+      total: 20,
+      assignedLabel: 'Cuentas asignadas',
+      assigned: 12,
+    },
+    {
+      title: '3. Asignar cuentas y día límite a egresos periódicos',
+      totalLabel: 'egresos sin cuenta y día límite',
+      total: 25,
+      assignedLabel: 'Cuentas con día límite asignado',
+      assigned: 18,
+    },
+    {
+      title: '4. Asignar cuenta a egresos extraordinarios',
+      totalLabel: 'cuentas extraordinarias sin asignar',
+      total: 10,
+      assignedLabel: 'Cuentas asignadas',
+      assigned: 7,
+    }
+  ];
+
+  getStepTitle(step: number): string {
+    switch (step) {
+      case 0:
+        return '1. Dictaminar monto y frecuencia de egresos semestrales';
+      case 1:
+        return '2. Asignar cuentas a egresos semanales';
+      case 2:
+        return '3. Asignar cuentas y día límite a egresos periódicos';
+      case 3:
+        return '4. Asignar cuenta a egresos extraordinarios';
+      default:
+        return '';
+    }
+  }
+  
+
+  showStepCard() {
+    this.showInitialCard = false;
+    this.showStepCards = true;
+  }
+
+  goToTable() {
+    this.showStepCards = false;
+    this.showTable = true;
+  }
+
   presupuesto: Presupuesto[] = [];
+  pasoUsuario: PasoUsuario[] = [];
   paginatedPresupuesto: Presupuesto[] = [];
   currentPage: number = 1;
   itemsPerPageOptions: number[] = [10, 20, 50, 100, 200, 500, 1000, 2000];
@@ -102,11 +215,89 @@ export class PresupuestoComponent  implements OnInit {
   ngOnInit() {
     this.loadPresupuesto();
     this.checkAdminStatus();
+
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    if (user && user.userId) {
+      console.log('User ID:', user.userId);
+      this.loadPasoUsuario(user.userId); // Pasar userId a la función
+    } else {
+      console.log('No se encontró el userId.');
+    }
+
   }
+
+  async presentAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Error',
+      message: message,
+      buttons: ['OK'],
+    });
+
+    await alert.present();
+  }
+
+
+  loadPasoUsuario(userId: number) { // Aceptar userId como parámetro
+    this._presupuestoServ.getPasoUsuario(userId).subscribe(
+      (data: PasoUsuario[]) => {
+        console.log('Esta es mi data en paso usuario: ', data);
+        this.pasoUsuario = data;
+
+        // Asigna el paso correspondiente al selectedCardIndex
+        if (data.length > 0) {
+          this.selectedCardIndex = data[0].NumeroPaso; // Ajusta el índice (si es 1-indexed en la base de datos)
+        }
+
+        this.onRadioChange(null);
+
+      },
+      (error) => {
+        this.presentAlert('Error fetching paso usuario');
+      }
+    );
+  }
+
 
   checkAdminStatus() {
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     this.isAdmin = user.isAdmin === 1;
+  }
+
+
+  onRadioChange(event: any) {
+    const selectedValue = this.selectedCardIndex; // Usa el índice del card seleccionado
+    
+    console.log("esta cambiando de card: ", selectedValue);
+    
+    // Cambiar el paso actual
+    this.currentStep = selectedValue; // Cambia al paso correspondiente
+  
+    // Cambiar valores según el paso actual
+    switch (selectedValue) {
+      case 0: // Paso 1
+        this.modoFiltro = 'dictaminar';
+        this.filtroSeleccionado = 'noAsignados';
+        break;
+      case 1: // Paso 2
+        this.modoFiltro = 'asignarCuenta';
+        this.filtroAsignarCuenta = 'semanal';
+        break;
+      case 2: // Paso 3
+        this.modoFiltro = 'asignarCuenta';
+        this.filtroAsignarCuenta = 'periodico';
+        break;
+      case 3: // Paso 4
+        this.modoFiltro = 'asignarCuenta';
+        this.filtroAsignarCuenta = 'extraordinario';
+        break;
+    }
+    
+    // Cargar la tabla con el nuevo filtro
+    this.loadPresupuesto();
+    
+    console.log('Modo Filtro:', this.modoFiltro);
+    console.log('Filtro Asignar Cuenta:', this.filtroAsignarCuenta);
+    console.log('Paso actual:', this.currentStep);
   }
 
 
@@ -117,6 +308,63 @@ export class PresupuestoComponent  implements OnInit {
         ...proveedor,
         UltimaFecha: new Date(proveedor.UltimaFecha).toISOString().split('T')[0],
       }));
+
+    // 1. Card: Egresos sin dictaminar (Monto o Frecuencia no asignados) y los ya dictaminados
+    const totalSinDictaminar = this.presupuesto.filter(presupuesto => 
+      presupuesto.MontoDictaminado === null || presupuesto.FrecuenciaDictaminada === null
+    ).length;
+    
+    const totalDictaminados = this.presupuesto.filter(presupuesto => 
+      presupuesto.MontoDictaminado !== null && presupuesto.FrecuenciaDictaminada !== null
+    ).length;
+
+    this.steps[0].total = totalSinDictaminar;
+    this.steps[0].assigned = totalDictaminados;
+
+    // 2. Card: Egresos semanales (FrecuenciaDictaminada == 7) sin cuenta y con cuenta
+    const totalSinCuentaSemanales = this.presupuesto.filter(presupuesto => 
+      
+    (presupuesto.FrecuenciaDictaminada) == 7 && 
+      (presupuesto.NombreCuenta === null && (presupuesto['CajaChica'].data?.[0] === 0))
+    ).length;
+
+    const totalConCuentaSemanales = this.presupuesto.filter(presupuesto => 
+      
+    (presupuesto.FrecuenciaDictaminada) == 7 && 
+      (presupuesto.NombreCuenta !== null || (presupuesto['CajaChica'].data?.[0] === 1))
+    ).length;
+
+    this.steps[1].total = totalSinCuentaSemanales;
+    this.steps[1].assigned = totalConCuentaSemanales;
+
+
+    // 3. Card: Egresos periódicos (FrecuenciaDictaminada entre 14 y 180 días) sin cuenta y día límite, y con cuenta y día límite
+    const totalSinCuentaDiaLimitePeriodicos = this.presupuesto.filter(presupuesto => 
+      presupuesto.FrecuenciaDictaminada >= 14 && presupuesto.FrecuenciaDictaminada <= 180 && 
+      !presupuesto.DiaLimite
+    ).length;
+    
+    const totalConCuentaDiaLimitePeriodicos = this.presupuesto.filter(presupuesto => 
+      presupuesto.FrecuenciaDictaminada >= 14 && presupuesto.FrecuenciaDictaminada <= 180 && 
+      presupuesto.DiaLimite
+    ).length;
+
+    this.steps[2].total = totalSinCuentaDiaLimitePeriodicos;
+    this.steps[2].assigned = totalConCuentaDiaLimitePeriodicos;
+
+    // 4. Card: Egresos extraordinarios (FrecuenciaDictaminada == -1) sin cuenta y con cuenta
+    const totalSinCuentaExtraordinarios = this.presupuesto.filter(presupuesto => 
+      presupuesto.FrecuenciaDictaminada == -1 && 
+      (presupuesto.NombreCuenta === null && (!presupuesto['CajaChica']?.data?.[0] || presupuesto['CajaChica']?.data?.[0] === 0))
+    ).length;
+    
+    const totalConCuentaExtraordinarios = this.presupuesto.filter(presupuesto => 
+      presupuesto.FrecuenciaDictaminada == -1 && 
+      (presupuesto.NombreCuenta !== null || (presupuesto['CajaChica']?.data?.[0] === 1))
+    ).length;
+
+    this.steps[3].total = totalSinCuentaExtraordinarios;
+    this.steps[3].assigned = totalConCuentaExtraordinarios;
       
       // Filtrar según el modo de filtro seleccionado
       if (this.modoFiltro === 'dictaminar') {
@@ -327,6 +575,7 @@ export class PresupuestoComponent  implements OnInit {
       UltimaFecha: '',
       FrecuenciaDictaminada: 0,
       MontoDictaminado: 0,
+      CuentaID: 0,
       NombreCuenta: '',
       DiaLimite: 0,
     };

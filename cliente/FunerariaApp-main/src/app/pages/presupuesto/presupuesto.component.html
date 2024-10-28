@@ -10,148 +10,221 @@
 
 <ion-content>
 
-  <div class="search-container">
-    <ion-item>
-      <ion-label>Buscar por:</ion-label>
-      <ion-select [(ngModel)]="selectedFields" multiple="true" placeholder="Seleccionar campo">
-        <ion-select-option *ngFor="let field of searchFields" [value]="field.value">{{ field.label }}</ion-select-option>
-      </ion-select>
-    </ion-item>
 
-    <div *ngFor="let field of selectedFields">
-      <ion-item *ngIf="!isDateField(field)">
-        <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
-        <ion-input [(ngModel)]="searchValues[field]"></ion-input>
-      </ion-item>
-    
-      <div *ngIf="isDateField(field)">
-        <ion-item>
-          <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
-          <input type="date" [value]="getStartDate(field)" (change)="onStartDateChange($event, field)">
-        </ion-item>
-        <ion-item>
-          <ion-label>{{ getFieldLabel(field) }} Hasta:</ion-label>
-          <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
-        </ion-item>
-      </div>
-      
+  <!-- Card con los pasos iniciales -->
+  <ion-card *ngIf="showInitialCard">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="wallet-outline" style="margin-right: 8px;"></ion-icon>
+        Presupuesto: Tareas a realizar
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item>1. Dictaminar monto y frecuencia de egresos semestrales</ion-item>
+        <ion-item>2. Asignar cuentas a egresos semanales</ion-item>
+        <ion-item>3. Asignar cuentas y día límite a egresos periódicos</ion-item>
+        <ion-item>4. Asignar cuenta a egresos extraordinarios</ion-item>
+      </ion-list>
+      <ion-button expand="block" (click)="showStepCard()">Siguiente</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+
+  <div *ngIf="showStepCards" class="step-cards-container">
+    <div class="step-card" *ngFor="let step of steps; let i = index">
+      <ion-card class="main-card">
+        <ion-card-header>
+          <ion-card-title>
+            <div class="sub-card-title">
+              {{ step.title }}
+            </div>
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p class="card-text">Total {{ step.totalLabel }}: <strong>{{ step.total }}</strong></p>
+          <p class="card-text">{{ step.assignedLabel }}: <strong>{{ step.assigned }}</strong></p>
+        </ion-card-content>
+        <div class="radio-container">
+          <input 
+            type="radio" 
+            id="selectCard{{i}}" 
+            name="selectCard" 
+            [(ngModel)]="selectedCardIndex" 
+            [value]="i" 
+            (change)="onRadioChange($event)"
+          />
+          <label for="selectCard{{i}}"></label>
+        </div>
+      </ion-card>
     </div>
-
-    <div style="display: flex; margin-top: 1rem;">
-
-      <ion-button (click)="applySearch()">Buscar</ion-button>
-      <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
-
-
-      <select style="margin-left: 1rem;" class="select-custom" [(ngModel)]="modoFiltro" (change)="setModoFiltro(modoFiltro)">
-        <option value="dictaminar">Dictaminar Monto y Frecuencia</option>
-        <option value="asignarCuenta">Asignar Cuenta</option>
-        <option value="presupuestoMensual">Presupuesto Mensual</option>
-      </select>
-
-    </div>
-
-
-    <div *ngIf="modoFiltro !== 'asignarCuenta'" style="margin-top: 1rem;" class="button-group">
-      <button (click)="setFilter('all')" [disabled]="filtroSeleccionado === 'all'">Todos</button>
-      <button (click)="setFilter('asignados')" [disabled]="filtroSeleccionado === 'asignados'">Asignados</button>
-      <button (click)="setFilter('noAsignados')" [disabled]="filtroSeleccionado === 'noAsignados'">No asignados</button>
-    </div>
-
-    <!-- Mostrar los botones de subfiltro solo si el modo es Asignar Cuenta -->
-    <div *ngIf="modoFiltro === 'asignarCuenta'" style="margin-top: 1rem;" class="button-group">
-      <button (click)="setFilterCuenta('semanal')" [disabled]="filtroAsignarCuenta === 'semanal'">Semanal</button>
-      <button (click)="setFilterCuenta('periodico')" [disabled]="filtroAsignarCuenta === 'periodico'">Periódico</button>
-      <button (click)="setFilterCuenta('extraordinario')" [disabled]="filtroAsignarCuenta === 'extraordinario'">Extraordinario</button>
-    </div>
-
-
-  </div>
-
   
-  <div class="table-container">
-    <table class="table">
-      <thead class="header-row">
-        <tr class="color_header_tabla">
-          <th>Fecha Ultimo Egreso</th>
-          <th>Segmento</th>
-          <th>Categoria</th>
-          <th>Subcategoria</th>
-          <th><span style="margin-left: 12rem;"></span>Concepto<span style="margin-left: 12rem;"></span></th>
-          <th>Monto Promedio</th>
-          <th>Piezas Promedio</th>
-          <th>Frecuencia Promedio (dias)</th>
-          <th *ngIf="isAdmin">Dictaminar</th>
-          <th style="background-color: greenyellow; color: black;">Monto Dictaminado</th>
-          <th style="background-color: greenyellow; color: black;">Frecuencia Dictaminada (dias)</th>
-          <th *ngIf="isAdmin && modoFiltro === 'asignarCuenta'">Cuenta y Dia Limite</th>
-          <th *ngIf="modoFiltro === 'asignarCuenta'" style="background-color: greenyellow; color: black;"><span style="margin-left: 2rem;"></span>Cuenta<span style="margin-left: 2rem;"></span></th>
-          <th *ngIf="modoFiltro === 'asignarCuenta' && (filtroAsignarCuenta === 'periodico')" style="background-color: greenyellow; color: black;">Día Límite</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- <tr *ngFor="let proveedor of paginatedPresupuesto" [ngClass]="{'active-row': proveedor.Estatus.data[0] === 1, 'inactive-row': proveedor.Estatus.data[0] === 0}" class="data-row"> -->
-        <tr *ngFor="let presupuesto of paginatedPresupuesto" class="data-row">
-          <td>{{ presupuesto.UltimaFecha }}</td>
-          <td>{{ presupuesto.NombreSegmento }}</td>
-          <td>{{ presupuesto.NombreCategoria }}</td>
-          <td>{{ presupuesto.NombreSubcategoria }}</td>
-          <td>{{ presupuesto.NombreConcepto }}</td>
-          <td>{{ presupuesto.PromedioMonto }}</td>
-          <td>{{ presupuesto.PromedioPiezas }}</td>
-          <td>{{ presupuesto.FrecuenciaPromedio }}</td>
-          <td *ngIf="isAdmin">
-            <ion-icon 
-              name="create-outline" 
-              (click)="asignarMonto_Frecuencia(presupuesto)"
-              [style.cursor]="'pointer'"
-              [style.color]="'blue'"
-              aria-label="Editar">
-            </ion-icon>
-          </td>
-          <td style="background-color: yellow;">{{ presupuesto.MontoDictaminado }}</td>
-          <td style="background-color: yellow;">
-            {{ presupuesto.FrecuenciaDictaminada == -1 ? 'Extra Ordinario' : presupuesto.FrecuenciaDictaminada }}
-          </td>
-          <td *ngIf="isAdmin && modoFiltro === 'asignarCuenta'">
-            <ion-icon 
-              name="create-outline" 
-              (click)="asignarCuenta_DiaLimite(presupuesto)"
-              [style.cursor]="'pointer'"
-              [style.color]="'blue'"
-              aria-label="Editar">
-            </ion-icon>
-          </td>
-          <td *ngIf="modoFiltro === 'asignarCuenta'" style="background-color: yellow;">
-            {{ presupuesto['CajaChica']?.data?.[0] === 1 ? 'Caja Chica' : presupuesto.NombreCuenta }}
-          </td>
-          <td *ngIf="modoFiltro === 'asignarCuenta' && (filtroAsignarCuenta === 'periodico')" style="background-color: yellow;">
-            {{ presupuesto.DiaLimite }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="button-container">
+      <ion-button expand="block" (click)="goToTable()" class="next-button">Siguiente</ion-button>
+    </div>
   </div>
 
 
-  <ion-footer style="margin-bottom: 4rem;" class="margin_footer">
-    <ion-toolbar>
+  <div *ngIf="showTable">
 
-      <ion-buttons slot="start">
-        <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
-        <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
-      </ion-buttons>
-      <div class="page-info">
-        Página {{ currentPage }} de {{ totalPages }}
+    <div class="search-container">
+      <ion-item>
+        <ion-label>Buscar por:</ion-label>
+        <ion-select [(ngModel)]="selectedFields" multiple="true" placeholder="Seleccionar campo">
+          <ion-select-option *ngFor="let field of searchFields" [value]="field.value">{{ field.label }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <div *ngFor="let field of selectedFields">
+        <ion-item *ngIf="!isDateField(field)">
+          <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
+          <ion-input [(ngModel)]="searchValues[field]"></ion-input>
+        </ion-item>
+      
+        <div *ngIf="isDateField(field)">
+          <ion-item>
+            <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
+            <input type="date" [value]="getStartDate(field)" (change)="onStartDateChange($event, field)">
+          </ion-item>
+          <ion-item>
+            <ion-label>{{ getFieldLabel(field) }} Hasta:</ion-label>
+            <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
+          </ion-item>
+        </div>
+        
       </div>
 
-      <ion-select interface="popover" slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
-        <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">
-          {{ option }}
-        </ion-select-option>
-      </ion-select>
+      <div style="display: flex; margin-top: 1rem;">
 
-    </ion-toolbar>
-  </ion-footer>
+        <ion-button (click)="applySearch()">Buscar</ion-button>
+        <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
+
+
+        <!-- <select style="margin-left: 1rem;" class="select-custom" [(ngModel)]="modoFiltro" (change)="setModoFiltro(modoFiltro)">
+          <option value="dictaminar">Dictaminar Monto y Frecuencia</option>
+          <option value="asignarCuenta">Asignar Cuenta</option>
+          <option value="presupuestoMensual">Presupuesto Mensual</option>
+        </select> -->
+
+        <ion-button 
+          *ngIf="currentStep < totalSteps"
+          color="danger"
+          style="margin-left: 1rem; display: flex; align-items: center;"
+          class="animated-button"
+          [disabled]="currentStep === totalSteps - 1"
+          (click)="nextStep()">
+          <span style="font-weight: bold; margin-right: 0.5rem;">Paso {{currentStep + 1}} de {{totalSteps}}: Siguiente</span>
+          <ion-icon name="chevron-forward" slot="end"></ion-icon>
+        </ion-button>
+        
+        <span style="margin-left: 1rem; align-self: center;">{{ getStepTitle(currentStep) }}</span>
+      
+
+      </div>
+
+
+      <div *ngIf="modoFiltro !== 'asignarCuenta'" style="margin-top: 1rem;" class="button-group">
+        <button (click)="setFilter('all')" [disabled]="filtroSeleccionado === 'all'">Todos</button>
+        <button (click)="setFilter('asignados')" [disabled]="filtroSeleccionado === 'asignados'">Asignados</button>
+        <button (click)="setFilter('noAsignados')" [disabled]="filtroSeleccionado === 'noAsignados'">No asignados</button>
+      </div>
+
+      <!-- Mostrar los botones de subfiltro solo si el modo es Asignar Cuenta -->
+      <!-- <div *ngIf="modoFiltro === 'asignarCuenta'" style="margin-top: 1rem;" class="button-group">
+        <button (click)="setFilterCuenta('semanal')" [disabled]="filtroAsignarCuenta === 'semanal'">Semanal</button>
+        <button (click)="setFilterCuenta('periodico')" [disabled]="filtroAsignarCuenta === 'periodico'">Periódico</button>
+        <button (click)="setFilterCuenta('extraordinario')" [disabled]="filtroAsignarCuenta === 'extraordinario'">Extraordinario</button>
+      </div> -->
+
+
+    </div>
+
+    
+    <div class="table-container">
+      <table class="table">
+        <thead class="header-row">
+          <tr class="color_header_tabla">
+            <th>Fecha Ultimo Egreso</th>
+            <th>Segmento</th>
+            <th>Categoria</th>
+            <th>Subcategoria</th>
+            <th><span style="margin-left: 12rem;"></span>Concepto<span style="margin-left: 12rem;"></span></th>
+            <th>Monto Promedio</th>
+            <th>Piezas Promedio</th>
+            <th>Frecuencia Promedio (dias)</th>
+            <th *ngIf="isAdmin">Dictaminar</th>
+            <th style="background-color: greenyellow; color: black;">Monto Dictaminado</th>
+            <th style="background-color: greenyellow; color: black;">Frecuencia Dictaminada (dias)</th>
+            <th *ngIf="isAdmin && modoFiltro === 'asignarCuenta'">Cuenta y Dia Limite</th>
+            <th *ngIf="modoFiltro === 'asignarCuenta'" style="background-color: greenyellow; color: black;"><span style="margin-left: 2rem;"></span>Cuenta<span style="margin-left: 2rem;"></span></th>
+            <th *ngIf="modoFiltro === 'asignarCuenta' && (filtroAsignarCuenta === 'periodico')" style="background-color: greenyellow; color: black;">Día Límite</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- <tr *ngFor="let proveedor of paginatedPresupuesto" [ngClass]="{'active-row': proveedor.Estatus.data[0] === 1, 'inactive-row': proveedor.Estatus.data[0] === 0}" class="data-row"> -->
+          <tr *ngFor="let presupuesto of paginatedPresupuesto" class="data-row">
+            <td>{{ presupuesto.UltimaFecha }}</td>
+            <td>{{ presupuesto.NombreSegmento }}</td>
+            <td>{{ presupuesto.NombreCategoria }}</td>
+            <td>{{ presupuesto.NombreSubcategoria }}</td>
+            <td>{{ presupuesto.NombreConcepto }}</td>
+            <td>{{ presupuesto.PromedioMonto }}</td>
+            <td>{{ presupuesto.PromedioPiezas }}</td>
+            <td>{{ presupuesto.FrecuenciaPromedio }}</td>
+            <td *ngIf="isAdmin">
+              <ion-icon 
+                name="create-outline" 
+                (click)="asignarMonto_Frecuencia(presupuesto)"
+                [style.cursor]="'pointer'"
+                [style.color]="'blue'"
+                aria-label="Editar">
+              </ion-icon>
+            </td>
+            <td style="background-color: yellow;">{{ presupuesto.MontoDictaminado }}</td>
+            <td style="background-color: yellow;">
+              {{ presupuesto.FrecuenciaDictaminada == -1 ? 'Extra Ordinario' : presupuesto.FrecuenciaDictaminada }}
+            </td>
+            <td *ngIf="isAdmin && modoFiltro === 'asignarCuenta'">
+              <ion-icon 
+                name="create-outline" 
+                (click)="asignarCuenta_DiaLimite(presupuesto)"
+                [style.cursor]="'pointer'"
+                [style.color]="'blue'"
+                aria-label="Editar">
+              </ion-icon>
+            </td>
+            <td *ngIf="modoFiltro === 'asignarCuenta'" style="background-color: yellow;">
+              {{ presupuesto['CajaChica']?.data?.[0] === 1 ? 'Caja Chica' : presupuesto.NombreCuenta }}
+            </td>
+            <td *ngIf="modoFiltro === 'asignarCuenta' && (filtroAsignarCuenta === 'periodico')" style="background-color: yellow;">
+              {{ presupuesto.DiaLimite }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <ion-footer style="margin-bottom: 4rem;" class="margin_footer">
+      <ion-toolbar>
+
+        <ion-buttons slot="start">
+          <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+          <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
+        </ion-buttons>
+        <div class="page-info">
+          Página {{ currentPage }} de {{ totalPages }}
+        </div>
+
+        <ion-select interface="popover" slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
+          <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">
+            {{ option }}
+          </ion-select-option>
+        </ion-select>
+
+      </ion-toolbar>
+    </ion-footer>
+
+  </div>
 
 </ion-content>
