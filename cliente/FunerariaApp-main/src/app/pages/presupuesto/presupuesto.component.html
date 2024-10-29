@@ -111,7 +111,6 @@
           color="danger"
           style="margin-left: 1rem; display: flex; align-items: center;"
           class="animated-button"
-          [disabled]="currentStep === totalSteps - 1"
           (click)="nextStep()">
           <span style="font-weight: bold; margin-right: 0.5rem;">Paso {{currentStep + 1}} de {{totalSteps}}: Siguiente</span>
           <ion-icon name="chevron-forward" slot="end"></ion-icon>
@@ -123,7 +122,7 @@
       </div>
 
 
-      <div *ngIf="modoFiltro !== 'asignarCuenta'" style="margin-top: 1rem;" class="button-group">
+      <div style="margin-top: 1rem;" class="button-group">
         <button (click)="setFilter('all')" [disabled]="filtroSeleccionado === 'all'">Todos</button>
         <button (click)="setFilter('asignados')" [disabled]="filtroSeleccionado === 'asignados'">Asignados</button>
         <button (click)="setFilter('noAsignados')" [disabled]="filtroSeleccionado === 'noAsignados'">No asignados</button>

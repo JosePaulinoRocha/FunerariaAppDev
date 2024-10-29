@@ -68,24 +68,34 @@ export class PresupuestoComponent  implements OnInit {
 
 
   nextStep() {
-    // Asegúrate de avanzar solo si no estás en el último paso
-    if (this.currentStep < this.totalSteps - 1) {
-      // Obtener el userId desde el storage
-      const user = JSON.parse(sessionStorage.getItem('user') || '{}');
-      if (user && user.userId) {
-        const userId = user.userId;
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    
+    if (user && user.userId) {
+      const userId = user.userId;
   
-        // Llamar a la función para insertar el paso del usuario
+      // Si estamos en el último paso
+      if (this.currentStep === this.totalSteps - 1) {
+        // Insertar el paso como 0 y redirigir a /home
+        this._presupuestoServ.insertPasoUsuario(userId, 0).subscribe(
+          () => {
+            this.router.navigate(['/home']); // Redirigir al usuario a la ruta /home
+            this.currentStep = 0; // Restablecer el paso actual a 0
+            this.showInitialCard = true;
+            this.showStepCards = false;
+            this.showTable = false;
+            this.selectedCardIndex = 0;
+          },
+          (error) => {
+            this.presentAlert('Error al actualizar el paso del usuario');
+          }
+        );
+      } else {
+        // Continuar con la lógica actual para avanzar al siguiente paso
         this._presupuestoServ.insertPasoUsuario(userId, this.currentStep + 1).subscribe(
           () => {
-            // Avanza al siguiente paso
-            this.currentStep++;
-  
-            // Actualiza el valor seleccionado según el paso
-            this.selectedCardIndex = this.currentStep; // Esto establece el índice del card seleccionado
-  
-            // Llama a onRadioChange para aplicar los cambios
-            this.onRadioChange(null); // Pasar `null` porque no necesitas el evento en este caso
+            this.currentStep++; // Avanza al siguiente paso
+            this.selectedCardIndex = this.currentStep; // Actualiza el índice del card seleccionado
+            this.onRadioChange(null); // Llama a onRadioChange para aplicar los cambios
           },
           (error) => {
             this.presentAlert('Error al insertar el paso del usuario');
@@ -105,21 +115,21 @@ export class PresupuestoComponent  implements OnInit {
       assigned: 5,
     },
     {
-      title: '2. Asignar cuentas a egresos semanales',
+      title: '2. Asignar cuenta de banco o efectivo a egresos semanales',
       totalLabel: 'cuentas sin asignar',
       total: 20,
       assignedLabel: 'Cuentas asignadas',
       assigned: 12,
     },
     {
-      title: '3. Asignar cuentas y día límite a egresos periódicos',
+      title: '3. Asignar cuenta de banco o efectivo y día límite a egresos periódicos',
       totalLabel: 'egresos sin cuenta y día límite',
       total: 25,
       assignedLabel: 'Cuentas con día límite asignado',
       assigned: 18,
     },
     {
-      title: '4. Asignar cuenta a egresos extraordinarios',
+      title: '4. Asignar cuenta de banco o efectivo a egresos extraordinarios',
       totalLabel: 'cuentas extraordinarias sin asignar',
       total: 10,
       assignedLabel: 'Cuentas asignadas',
@@ -132,11 +142,11 @@ export class PresupuestoComponent  implements OnInit {
       case 0:
         return '1. Dictaminar monto y frecuencia de egresos semestrales';
       case 1:
-        return '2. Asignar cuentas a egresos semanales';
+        return '2. Asignar cuenta de banco o efectivo a egresos semanales';
       case 2:
-        return '3. Asignar cuentas y día límite a egresos periódicos';
+        return '3. Asignar cuenta de banco o efectivo y día límite a egresos periódicos';
       case 3:
-        return '4. Asignar cuenta a egresos extraordinarios';
+        return '4. Asignar cuenta de banco o efectivo a egresos extraordinarios';
       default:
         return '';
     }
@@ -384,6 +394,18 @@ export class PresupuestoComponent  implements OnInit {
         this.presupuesto = this.presupuesto.filter(presupuesto => 
           presupuesto.MontoDictaminado !== null && presupuesto.FrecuenciaDictaminada !== null
         );
+
+          // Filtrar por tipo de cuenta según filtroSeleccionado
+          this.presupuesto = this.presupuesto.filter(presupuesto => {
+            if (this.filtroSeleccionado === 'all') {
+              return true; // Mostrar todos
+            } else if (this.filtroSeleccionado === 'asignados') {
+              return (presupuesto.NombreCuenta !== null || (presupuesto['CajaChica'].data?.[0] === 1));
+            } else if (this.filtroSeleccionado === 'noAsignados') {
+              return (presupuesto.NombreCuenta === null && (presupuesto['CajaChica'].data?.[0] === 0));
+            }
+            return false;
+          });
   
         // Aplicar subfiltros para Asignar Cuenta
         if (this.filtroAsignarCuenta === 'semanal') {
