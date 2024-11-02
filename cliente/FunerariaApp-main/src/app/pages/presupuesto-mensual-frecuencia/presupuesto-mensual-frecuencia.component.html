@@ -1,0 +1,149 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Presupuesto Mensual por frecuencia</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <div *ngIf="!showReintegracionesTable">
+
+    <div class="search-container">
+      <ion-item>
+        <ion-label>Buscar por:</ion-label>
+        <ion-select [(ngModel)]="selectedFields" multiple="true" placeholder="Seleccionar campo">
+          <ion-select-option *ngFor="let field of searchFields" [value]="field.value">{{ field.label }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <div *ngFor="let field of selectedFields">
+        <ion-item *ngIf="!isDateField(field)">
+          <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
+          <ion-input [(ngModel)]="searchValues[field]"></ion-input>
+        </ion-item>
+      
+        <div *ngIf="isDateField(field)">
+          <ion-item>
+            <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
+            <input type="date" [value]="getStartDate(field)" (change)="onStartDateChange($event, field)">
+          </ion-item>
+          <ion-item>
+            <ion-label>{{ getFieldLabel(field) }} Hasta:</ion-label>
+            <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
+          </ion-item>
+        </div>
+        
+      </div>
+
+    </div>
+
+
+    <div style="display: flex; margin-top: 1rem; margin-left: 1rem;">
+
+      <ion-button (click)="applySearch()">Buscar</ion-button>
+      <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
+
+      <ion-button 
+        *ngIf="currentStep < totalSteps"
+        color="danger"
+        style="margin-left: 1rem; display: flex; align-items: center;"
+        class="animated-button"
+        (click)="nextStep()"
+        [disabled]="isButtonDisabled"> <!-- Aquí se añade la vinculación -->
+        <span style="font-weight: bold; margin-right: 0.5rem;">Paso {{currentStep + 1}} de {{totalSteps}}: Siguiente</span>
+        <ion-icon name="chevron-forward" slot="end"></ion-icon>
+      </ion-button>
+      
+      <span style="margin-left: 1rem; align-self: center;">{{ getStepTitle(currentStep) }}</span>
+
+    </div>
+
+    <div style="margin-top: 1rem; margin-left: 1rem;" class="button-group">
+      <button (click)="setFilter('all')" [disabled]="filtroSeleccionado === 'all'">Todos</button>
+      <button (click)="setFilter('guardados')" [disabled]="filtroSeleccionado === 'guardados'">Guardados</button>
+      <button (click)="setFilter('noGuardados')" [disabled]="filtroSeleccionado === 'noGuardados'">No Guardados</button>
+    </div>
+
+    
+    <div class="table-container">
+      <table class="table">
+        <thead class="header-row">
+          <tr class="color_header_tabla">
+            <th><span style="margin-left: 2rem;"></span>Segmento<span style="margin-left: 2rem;"></span></th>
+            <th><span style="margin-left: 4rem;"></span>Categoria<span style="margin-left: 4rem;"></span></th>
+            <th><span style="margin-left: 6rem;"></span>Subcategoria<span style="margin-left: 6rem;"></span></th>
+            <th><span style="margin-left: 10;"></span>Concepto<span style="margin-left: 10;"></span></th>
+            <th>Monto Promedio</th>
+            <th>Frecuencia Promedio</th>
+            <!-- <th>Piezas promedio</th> -->
+            <th>Frecuencia dictaminada</th>
+            <th>Monto dictaminado</th>
+            <th>Cuenta bancaria / Caja chica</th>
+            <th>Fecha ultimo gasto</th>
+            <th>Dia Limite</th>
+            <th>Dias Pendientes (Vencimiento)</th>
+            <th *ngIf="isAdmin">Guardar periodo</th>
+            <th style="background-color: greenyellow; color: black;"><span style="margin-left: 12rem;"></span>Periodo en el que se vence<span style="margin-left: 12rem;"></span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let gastoMensualFrecuencia of paginatedGastos" class="data-row">
+            <td>{{ gastoMensualFrecuencia.NombreSegmento }}</td>
+            <td>{{ gastoMensualFrecuencia.NombreCategoria }}</td>
+            <td>{{ gastoMensualFrecuencia.NombreSubcategoria }}</td>
+            <td>{{ gastoMensualFrecuencia.NombreConcepto }}</td>
+            <td>{{ gastoMensualFrecuencia.PromedioMonto }}</td>
+            <td>{{ gastoMensualFrecuencia.FrecuenciaPromedio }}</td>
+            <!-- <td>{{ gastoMensualFrecuencia.PromedioPiezas }}</td> -->
+            <td>{{ gastoMensualFrecuencia.FrecuenciaDictaminada }}</td>
+            <td>{{ gastoMensualFrecuencia.MontoDictaminado }}</td>
+            <td>
+              {{ gastoMensualFrecuencia.CajaChica.data[0] === 1 ? 'Caja Chica' : gastoMensualFrecuencia.NombreCuenta }}
+            </td>
+            <td>{{ gastoMensualFrecuencia.UltimaFecha }}</td>
+            <td>{{ gastoMensualFrecuencia.DiaLimite }}</td>
+            <td>{{ gastoMensualFrecuencia.DiasPendientes }}</td>
+            <td *ngIf="isAdmin">
+              <ion-icon 
+                name="create-outline" 
+                (click)="gastoMensualFrecuencia.Guardado === 1 ? null : asignarPeriodo(gastoMensualFrecuencia)"
+                [style.cursor]="gastoMensualFrecuencia.Guardado === 1 ? 'not-allowed' : 'pointer'" 
+                [style.color]="gastoMensualFrecuencia.Guardado === 1 ? 'gray' : 'blue'" 
+                [attr.aria-label]="'Editar ' + gastoMensualFrecuencia.NombreConcepto">
+              </ion-icon>
+            </td>
+            <td [style.background-color]="gastoMensualFrecuencia.Guardado === 1 ? 'greenyellow' : 'yellow'">
+              {{ gastoMensualFrecuencia.PeriodoCongelado }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <ion-footer style="margin-bottom: 4rem;" class="margin_footer">
+      <ion-toolbar>
+
+        <ion-buttons slot="start">
+          <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+          <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
+        </ion-buttons>
+        <div class="page-info">
+          Página {{ currentPage }} de {{ totalPages }}
+        </div>
+
+        <ion-select interface="popover" slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
+          <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">
+            {{ option }}
+          </ion-select-option>
+        </ion-select>
+
+      </ion-toolbar>
+    </ion-footer>
+
+  </div>
+
+</ion-content>

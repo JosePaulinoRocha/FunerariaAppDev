@@ -1,4 +1,4 @@
-import { Presupuesto, Gastos, Estatus, PasoUsuario } from '../Modelos/Presupuesto';
+import { Presupuesto, Gastos, Estatus, PasoUsuario, Periodos } from '../Modelos/Presupuesto';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -67,5 +67,21 @@ export class PresupuestoServices {
   getEstatus(): Observable<Estatus[]> {
     return this.http.get<Estatus[]>(`${this.myAppUrl}${this.MyApiUrl}GetEstatus`);
   }
+
+
+
+  // ---------------------------cosas de gasto mensual-----------------------------------------------
+
+
+  getPeriodosCongelados(): Observable<Periodos[]> {
+    return this.http.get<Periodos[]>(`${this.myAppUrl}${this.MyApiUrl}GetPeriodosCongelados/`);
+  }
+
+  // Nuevo método para guardar los periodos congelados
+  savePeriodosCongelados(periodos: { fecha_inicio: Date; fecha_fin: Date }[]): Observable<any> {
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}InsertPeriodosCongelados`, periodos);
+  }
+
+
   
 }

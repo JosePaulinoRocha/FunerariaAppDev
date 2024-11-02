@@ -253,3 +253,10 @@ ion-button:hover {
 .congelado {
   background-color: #d4f1c4 !important;
 }
+
+
+
+.disabled-class {
+  opacity: 0.5;
+  pointer-events: none;
+}

@@ -552,3 +552,59 @@ export const updateGastoEstatus = async (req: Request, res: Response) => {
     }
 };
 
+
+
+// -----------------------------------cosas de presupuesto mensual-----------------------------
+
+
+export const ObtenerPeriodosCongelados = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM periodos_congelados';
+        const periodos = (await con.query(query))[0] as any[];
+        result = periodos;
+    } catch (error) {
+        console.log('Error en periodos');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+export const InsertPeriodosCongelados = async (req: Request, res: Response) => {
+    let con;
+    const periodos = req.body; // Arreglo de periodos a insertar
+
+    try {
+        con = await connect();
+        await con.beginTransaction();
+
+        const insertQuery = `
+            INSERT INTO periodos_congelados (FechaInicio, FechaFin) 
+            VALUES (?, ?)
+        `;
+
+        for (const periodo of periodos) {
+            await con.query(insertQuery, [periodo.fecha_inicio, periodo.fecha_fin]);
+        }
+
+        await con.commit();
+        console.log("Periodos congelados insertados exitosamente.");
+        res.status(201).json({ message: "Periodos congelados insertados correctamente" });
+    } catch (error) {
+        console.error("Error al insertar periodos congelados:", error);
+        await con?.rollback();
+        res.status(500).json({ error: "Error al insertar periodos congelados" });
+    } finally {
+        await con?.end();
+    }
+};
+
+
+
+

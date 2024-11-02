@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { PresupuestoServices } from 'src/app/Servicios/Presupuesto.service';
+import { PresupuestoMensualFrecuenciaServices } from 'src/app/Servicios/Presupuesto-mensual-frecuencia.service';
 import { PresupuestoModalComponent } from './modal/presupuesto-modal.component';
 import { PresupuestoCuentaModalComponent } from './modal-cuenta/presupuesto-cuenta-modal.component';
 import { Router } from '@angular/router'
@@ -34,7 +35,39 @@ interface Gastos {
   [key: string]: any;
 }
 
+interface Periodos {
+  PeriodoID: number;
+  FechaInicio: string;
+  FechaFin: string;
+  FechaCongelacion: string;
+  [key: string]: any;
+}
 
+interface GastoMensualPorFrecuencia {
+  SegmentoID: number;
+  NombreSegmento: string;
+  CategoriaID: number;
+  NombreCategoria: string;
+  SubcategoriaID: number;
+  NombreSubcategoria: string;
+  ConceptoID: number;
+  NombreConcepto: string;
+  MontoDictaminado: number;
+  FrecuenciaDictaminada: number;
+  CuentaID: number | null;
+  NombreCuenta: string | null;
+  CajaChica: { data: number[]; type: string; };
+  DiaLimite: number | null;
+  PromedioMonto: number | null;
+  PromedioPiezas: number | null;
+  FrecuenciaPromedio: number | null;
+  UltimaFecha: string | null;  // Fecha en formato ISO
+  FechaSiguienteGasto: string | null;  // Fecha en formato ISO
+  DiasPendientes: number | null;
+  PeriodoID: number | null;
+  PeriodoCongelado: string | null; // Rango de fecha como "YYYY-MM-DD al YYYY-MM-DD"
+  Guardado: number;
+}
 
 @Component({
   selector: 'app-presupuesto-mensual',
@@ -45,7 +78,153 @@ interface Gastos {
 })
 export class PresupuestoMensualComponent  implements OnInit {
 
+  gastoMensualFrecuencia: GastoMensualPorFrecuencia[] = [];
+
+  periodosCongelados: Periodos[] = [];
+
+  showPeriodSelector = false;
+  periodosDisponibles: Array<{label: string, start: Date, end: Date, selected: boolean, congelado: boolean}> = [];
+
+  currentStep: number = 1;
+  totalSteps: number = 4;
+
+  selectedCardIndex: number = 0;
+
+  showInitialCard = true;
+  showStepCards = false;
+  showTable = false;
+
+
+  steps = [
+    {
+      title: '1. Congelar semanas del mes',
+      totalLabel: 'Mes actual',
+      total: '',
+      assignedLabel: 'Semanas congeladas para este mes',
+      assigned: 0,
+    },
+    {
+      title: '2. Asignar presupuesto extraordinario mensual',
+      totalLabel: 'datos aun en desarrollo',
+      total: '',
+      assignedLabel: 'datos aun en desarrollo',
+      assigned: '',
+    },
+    {
+      title: '3. Asignar gastos mensuales por frecuencia',
+      totalLabel: 'datos aun en desarrollo',
+      total: 0,
+      assignedLabel: 'datos aun en desarrollo', 
+      assigned: '',
+    },
+    {
+      title: '4. Asignacion de cuentas bancarias',
+      totalLabel: 'datos aun en desarrollo',
+      total: '',
+      assignedLabel: 'datos aun en desarrollo',
+      assigned: '',
+    }
+  ];
+
+  getStepTitle(step: number): string {
+    switch (step) {
+      case 0:
+        return '1. Congelar semanas del mes';
+      case 1:
+        return '2. Asignar presupuesto extraordinario mensual';
+      case 2:
+        return '3. Asignar gastos mensuales por frecuencia';
+      case 3:
+        return '4. Asignacion de cuentas bancarias';
+      default:
+        return '';
+    }
+  }
+
+
+  showStepCard() {
+    this.showInitialCard = false;
+    this.showStepCards = true;
+  }
+
+  mostrarPeriodos() {
+
+    const selectedValue = this.selectedCardIndex;
+
+    switch (selectedValue) {
+      case 0: // Paso 1
+        this.showInitialCard = false;
+        this.showStepCards = false;
+        this.showPeriodSelector = true;
+        break;
+      case 1: // Paso 2
+        this.showInitialCard = false;
+        this.showStepCards = false;
+        this.showPeriodSelector = false;
+        this.showTable = true;
+        break;
+      case 2: // Paso 3
+        this.router.navigate(['/presupuesto-mensual-frecuencia']);
+        break;
+      case 3: // Paso 4
+        this.router.navigate(['/home']);
+        break;
+    }
+
+
+
+  }
+
+  goToTable() {
+    this.showStepCards = false;
+    this.showPeriodSelector = false;
+    this.showTable = true;
+  }
+
+
+  nextStep() {
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    
+    if (user && user.userId) {
+      const userId = user.userId;
+  
+      // Si estamos en el último paso
+      if (this.currentStep === this.totalSteps - 3) {
+        // Insertar el paso como 0 y redirigir a /home
+        // this._presupuestoServ.insertPasoUsuario(userId, 0).subscribe(
+        //   () => {
+            this.router.navigate(['/presupuesto-mensual-frecuencia']); // Redirigir al usuario a la ruta /home
+            this.currentStep = 1; // Restablecer el paso actual a 0
+            this.showInitialCard = true;
+            this.showStepCards = false;
+            this.showTable = false;
+            this.selectedCardIndex = 0;
+        //   },
+        //   (error) => {
+        //     this.presentAlert('Error al actualizar el paso del usuario');
+        //   }
+        // );
+      } else {
+        // Continuar con la lógica actual para avanzar al siguiente paso
+        // this._presupuestoServ.insertPasoUsuario(userId, this.currentStep + 1).subscribe(
+        //   () => {
+            this.currentStep++; // Avanza al siguiente paso
+            this.selectedCardIndex = this.currentStep; // Actualiza el índice del card seleccionado
+            this.onRadioChange(null); // Llama a onRadioChange para aplicar los cambios
+        //   },
+        //   (error) => {
+        //     this.presentAlert('Error al insertar el paso del usuario');
+        //   }
+        // );
+      }
+    }
+  }
+
+
+
+
   gastos: Gastos[] = [];
+  periodos: Periodos[] = [];
   paginatedPresupuesto: Gastos[] = [];
   currentPage: number = 1;
   itemsPerPageOptions: number[] = [10, 20, 50, 100, 200, 500, 1000, 2000];
@@ -53,7 +232,7 @@ export class PresupuestoMensualComponent  implements OnInit {
   totalPages: number = 0;
   isAdmin: boolean = false;
 
-  filtroSeleccionado: 'extraordinario' | 'asignados' | 'noAsignados' = 'extraordinario'; 
+  filtroSeleccionado: 'all' | 'aprobados' | 'denegados' | 'pendientes' | 'noAsignados' = 'all'; 
 
   filtroAsignarCuenta: 'semanal' | 'periodico' | 'extraordinario' | null = 'semanal';
   modoFiltro: 'gastosSemestrales' | 'presupuestoMensual' = 'presupuestoMensual';
@@ -105,13 +284,164 @@ export class PresupuestoMensualComponent  implements OnInit {
   searchValues: { [key: string]: string } = {};
   dateSearchValues: { [key: string]: { startDate: string, endDate: string } } = {};
 
-  constructor(private modalController: ModalController, private _presupuestoServ: PresupuestoServices, private alertController: AlertController, private router: Router) {}
+  constructor(private modalController: ModalController, private _presupuestoServ: PresupuestoServices, private alertController: AlertController, private router: Router, private _presupuestoMensualFrecuenciaServ: PresupuestoMensualFrecuenciaServices) {}
 
   ngOnInit() {
     this.loadGastoMensual();
+    this.loadGastosMensualesFrecuencia();
+    this.loadPeriodosCongelados();
     this.checkAdminStatus();
+    this.generarPeriodosMes();
+    this.setMesActual();
+
     this.modoFiltro === 'presupuestoMensual'
   }
+
+  loadGastosMensualesFrecuencia() {
+    this._presupuestoMensualFrecuenciaServ.getPresupuestoMensualFrecuencia().subscribe((data: GastoMensualPorFrecuencia[]) => {
+      
+      this.gastoMensualFrecuencia = data;
+  
+      // Contar registros con Guardado en 1 y 0
+      const guardados = data.filter(gasto => gasto.Guardado === 1).length;
+      const noGuardados = data.filter(gasto => gasto.Guardado === 0).length;
+  
+      // Asignar los valores de conteo al Step 3
+      this.steps[2].totalLabel = 'Total de registros';
+      this.steps[2].total = data.length;
+      this.steps[2].assignedLabel = 'Registros guardados y no guardados';
+      this.steps[2].assigned = `Guardados: ${guardados}, No Guardados: ${noGuardados}`;
+  
+      console.log("Esta es la data de gastos mensuales por frecuencia: ", this.gastoMensualFrecuencia);
+      console.log("Registros con Guardado en 1: ", guardados);
+      console.log("Registros con Guardado en 0: ", noGuardados);
+  
+    }, (error: any) => {
+      console.error('Error fetching incomes', error);
+    });
+  }
+  
+
+  // Establece el mes actual en el primer paso del card
+  setMesActual() {
+    const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+    const fechaActual = new Date();
+    const mesActual = meses[fechaActual.getMonth()];
+    this.steps[0].total = mesActual.charAt(0).toUpperCase() + mesActual.slice(1); // Capitaliza el mes actual
+  }
+
+
+  generarPeriodosMes() {
+    // Obtener la fecha actual
+    const fechaActual = new Date();
+    this.periodosDisponibles = [];
+    
+    // Función auxiliar para ajustar al próximo lunes
+    const obtenerLunes = (fecha: Date) => {
+      const dia = fecha.getDay();
+      const diferencia = dia === 0 ? -6 : 1 - dia;
+      fecha.setDate(fecha.getDate() + diferencia);
+      return fecha;
+    };
+  
+    // Obtener el primer lunes del mes actual
+    let inicioPeriodo = obtenerLunes(new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 1));
+    const finProximoMes = new Date(fechaActual.getFullYear(), fechaActual.getMonth() + 2, 0);
+  
+    const diasSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+    const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  
+    while (inicioPeriodo <= finProximoMes) {
+      const finPeriodo = new Date(inicioPeriodo);
+      finPeriodo.setDate(inicioPeriodo.getDate() + 6);
+  
+      // Construir la etiqueta de texto para el periodo
+      const label = `Periodo del ${diasSemana[inicioPeriodo.getDay()]} ${inicioPeriodo.getDate()} de ${meses[inicioPeriodo.getMonth()]} al ${diasSemana[finPeriodo.getDay()]} ${finPeriodo.getDate()} de ${meses[finPeriodo.getMonth()]} del año ${inicioPeriodo.getFullYear()}`;
+  
+      this.periodosDisponibles.push({
+        label: label,
+        start: new Date(inicioPeriodo),
+        end: new Date(finPeriodo),
+        selected: false,
+        congelado: false
+      });
+  
+      // Pasar al siguiente lunes
+      inicioPeriodo.setDate(inicioPeriodo.getDate() + 7);
+    }
+  }
+
+
+  guardarPeriodosCongelados() {
+    // Filtrar los periodos seleccionados
+    const periodosSeleccionados = this.periodosDisponibles
+      .filter(periodo => periodo.selected)
+      .map(periodo => ({
+        fecha_inicio: periodo.start,
+        fecha_fin: periodo.end
+    }));
+
+    // Lógica para guardar en la base de datos
+    console.log('Periodos congelados:', periodosSeleccionados);
+
+    this._presupuestoServ.savePeriodosCongelados(periodosSeleccionados).subscribe(
+      response => {
+        console.log('Periodos congelados guardados exitosamente:', response);
+        this.presentAlert('Los periodos seleccionados han sido congelados exitosamente.', 'Éxito');
+        this.loadPeriodosCongelados();
+        this.generarPeriodosMes();
+      },
+      error => {
+        console.error('Error al guardar los periodos congelados:', error);
+        this.presentAlert('Hubo un error al congelar los periodos. Intente nuevamente.');
+      }
+    );
+  }
+
+
+
+  async presentAlert(message: string, header: string = 'Error') {
+    const alert = await this.alertController.create({
+      header: header,
+      message: message,
+      buttons: ['OK'],
+    });
+
+    await alert.present();
+}
+
+
+
+  onRadioChange(event: any) {
+    const selectedValue = this.selectedCardIndex; // Usa el índice del card seleccionado
+    
+    console.log("esta cambiando de card: ", selectedValue);
+    
+    // Cambiar el paso actual
+    this.currentStep = selectedValue; // Cambia al paso correspondiente
+  
+    // Cambiar valores según el paso actual
+    switch (selectedValue) {
+      case 0: // Paso 1
+        break;
+      case 1: // Paso 2
+        break;
+      case 2: // Paso 3
+        // this.router.navigate(['/presupuesto-mensual-frecuencia']);
+        break;
+      case 3: // Paso 4
+        // this.router.navigate(['/home']);
+        break;
+    }
+    
+    // Cargar la tabla con el nuevo filtro
+    // this.loadPresupuesto();
+    
+    console.log('Modo Filtro:', this.modoFiltro);
+    console.log('Filtro Asignar Cuenta:', this.filtroAsignarCuenta);
+    console.log('Paso actual:', this.currentStep);
+  }
+
 
   checkAdminStatus() {
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -121,36 +451,130 @@ export class PresupuestoMensualComponent  implements OnInit {
 
   loadGastoMensual() {
     this._presupuestoServ.getGastoMensual().subscribe((data: Gastos[]) => {
-      // Transformar la fecha y asignar la data inicial
+  
+      // Ordenar y formatear los datos
+      data.sort((a, b) => b.GastoID - a.GastoID);
       this.gastos = data.map(gastos => ({
         ...gastos,
         FechaPreautorizada: new Date(gastos.FechaPreautorizada).toISOString().split('T')[0],
         Fecha: new Date(gastos.Fecha).toISOString().split('T')[0],
       }));
-      
-      // Filtrar según el modo de filtro seleccionado
-      if (this.modoFiltro === 'presupuestoMensual') {
-        // Filtrar según el filtro seleccionado para Dictaminar
-        this.gastos = this.gastos.filter(gastos => {
-          if (this.filtroSeleccionado === 'extraordinario') {
-            return true; // Mostrar todos
-          }
-          return false;
-        });
-      } else if (this.modoFiltro === 'gastosSemestrales') {
-        this.router.navigate(['/presupuesto']);
-      }
   
-      console.log("esta es la data de gastos mensuales: ", this.gastos);
+      // Contar la cantidad de registros por estatus
+      const countAprobados = this.gastos.filter(gasto => gasto.Estatus === 'Aprobado').length;
+      const countDenegados = this.gastos.filter(gasto => gasto.Estatus === 'Denegado').length;
+      const countPendientes = this.gastos.filter(gasto => gasto.Estatus === 'Pendiente').length;
+      const countNoAsignados = this.gastos.filter(gasto => gasto.Estatus === null).length;
+  
+      // Actualizar la información del paso 2 con los conteos de estatus
+      this.steps[1].totalLabel = `Total de registros: ${this.gastos.length}`;
+      this.steps[1].assignedLabel = 
+        `Aprobados: ${countAprobados}, Denegados: ${countDenegados}, Pendientes: ${countPendientes}, Sin Estatus: ${countNoAsignados}`;
+      
+      // Aplicar el filtro seleccionado
+      this.gastos = this.gastos.filter(gastos => {
+        switch (this.filtroSeleccionado) {
+          case 'all':
+            return true; // Mostrar todos
+          case 'aprobados':
+            return gastos.Estatus === 'Aprobado';
+          case 'denegados':
+            return gastos.Estatus === 'Denegado';
+          case 'pendientes':
+            return gastos.Estatus === 'Pendiente';
+          case 'noAsignados':
+            return gastos.Estatus === null;
+          default:
+            return true; // Mostrar todos por defecto
+        }
+      });
+  
+      console.log("Esta es la data de gastos mensuales: ", this.gastos);
       this.totalPages = Math.ceil(this.gastos.length / this.itemsPerPage);
       this.updatePaginated();
     }, (error) => {
-      console.error('Error fetching presupuesto', error); 
+      console.error('Error fetching presupuesto', error);
+    });
+  }
+
+
+  loadPeriodosCongelados() {
+    this._presupuestoServ.getPeriodosCongelados().subscribe(
+      (response: Periodos[]) => {
+        this.periodosCongelados = response;
+        this.marcarPeriodosCongelados();
+        this.updateSemanasCongeladas();
+        console.log("esta es la data de periodos congelados: ", this.periodosCongelados);
+      },
+      error => {
+        console.error("Error al cargar periodos congelados", error);
+      }
+    );
+  }
+
+
+  updateSemanasCongeladas() {
+    const fechaActual = new Date();
+    const mesActual = fechaActual.getMonth();
+    const añoActual = fechaActual.getFullYear();
+
+    const semanasCongeladas = this.periodosCongelados.filter((periodo) => {
+      const fechaInicio = new Date(periodo.FechaInicio);
+      const fechaFin = new Date(periodo.FechaFin);
+      return (
+        (fechaInicio.getMonth() === mesActual || fechaFin.getMonth() === mesActual) &&
+        (fechaInicio.getFullYear() === añoActual || fechaFin.getFullYear() === añoActual)
+      );
+    }).length;
+
+    this.steps[0].assigned = semanasCongeladas; // Actualiza el número de semanas congeladas
+  }
+
+
+
+  marcarPeriodosCongelados() {
+    this.periodosDisponibles.forEach(periodo => {
+      // Log para ver qué periodo se está evaluando
+      // console.log("Evaluando periodo:", periodo);
+  
+      // Busca si hay un periodo congelado que coincida con el inicio y fin del periodo disponible
+      const congelado = this.periodosCongelados.some(p => {
+        // Convierte las fechas de congelado y disponible a solo fecha (sin hora)
+        const fechaInicioCongelado = new Date(p.FechaInicio);
+        const fechaFinCongelado = new Date(p.FechaFin);
+        const fechaInicioDisponible = new Date(periodo.start);
+        const fechaFinDisponible = new Date(periodo.end);
+  
+        // Normalizar las horas a medianoche para la comparación
+        fechaInicioCongelado.setUTCHours(0, 0, 0, 0);
+        fechaFinCongelado.setUTCHours(0, 0, 0, 0);
+        fechaInicioDisponible.setUTCHours(0, 0, 0, 0);
+        fechaFinDisponible.setUTCHours(0, 0, 0, 0);
+  
+        // Log para comparar las fechas en formato legible
+        // console.log(`Comparando: Congelado [${fechaInicioCongelado.toISOString()} - ${fechaFinCongelado.toISOString()}] con Disponible [${fechaInicioDisponible.toISOString()} - ${fechaFinDisponible.toISOString()}]`);
+  
+        return fechaInicioCongelado.getTime() === fechaInicioDisponible.getTime() && fechaFinCongelado.getTime() === fechaFinDisponible.getTime();
+      });
+  
+      // console.log("Este periodo está congelado:", congelado);
+  
+      // Si el periodo está congelado, desactiva la selección y aplica el color de fondo
+      if (congelado) {
+        periodo.congelado = true;
+        periodo.selected = false;  // Asegúrate de que no se pueda seleccionar
+      } else {
+        periodo.congelado = false;
+      }
+  
+      // Log para mostrar el estado final del periodo
+      // console.log("Estado final del periodo:", periodo);
     });
   }
   
   
-  setFilter(filtro: 'extraordinario' | 'asignados' | 'noAsignados') {
+  
+  setFilter(filtro: 'all' | 'aprobados' | 'denegados' | 'pendientes' | 'noAsignados') {
     this.filtroSeleccionado = filtro;
     this.currentPage = 1;
     this.loadGastoMensual();
@@ -206,8 +630,25 @@ export class PresupuestoMensualComponent  implements OnInit {
   
     this._presupuestoServ.getGastoMensual().subscribe((data: Gastos[]) => {
       let filteredData = data;
+      
+      // Filtrar por filtroSeleccionado antes de aplicar la búsqueda
+      filteredData = filteredData.filter(gastos => {
+        switch (this.filtroSeleccionado) {
+          case 'aprobados':
+            return gastos.Estatus === 'Aprobado';
+          case 'denegados':
+            return gastos.Estatus === 'Denegado';
+          case 'pendientes':
+            return gastos.Estatus === 'Pendiente';
+          case 'noAsignados':
+            return gastos.Estatus === null;
+          case 'all':
+          default:
+            return true;
+        }
+      });
   
-      // Aplicar la búsqueda adicional
+      // Aplicar la búsqueda adicional después del filtro de estado
       this.gastos = filteredData
         .filter(gastos => this.matchesSearch(gastos))
         .map(gastos => ({
@@ -223,7 +664,6 @@ export class PresupuestoMensualComponent  implements OnInit {
       console.error('Error fetching presupuesto', error);
     });
   }
-  
   
 
   resetSearch() {
@@ -262,7 +702,7 @@ export class PresupuestoMensualComponent  implements OnInit {
   }
 
   isDateField(field: string): boolean {
-    return ['UltimaFecha'].includes(field);
+    return ['FechaPreautorizada', 'Fecha'].includes(field);
   }
 
   getFieldLabel(field: string): string {

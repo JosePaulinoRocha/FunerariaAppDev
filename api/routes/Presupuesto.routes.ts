@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateJWT } from '../middlewares/authMiddleware';
-import { ObtenerPresupuesto, updatePresupuesto, updatePresupuestoCuenta, ObtenerPresupuestoMensual, PostGastos, PutGastos, ObtenerEstatusGasto, updateGastoEstatus, ObtenerPasoUsuario, InsertPasoUsuario } from '../controllers/Presupuesto.controller';
+import { ObtenerPresupuesto, updatePresupuesto, updatePresupuestoCuenta, ObtenerPresupuestoMensual, PostGastos, PutGastos, ObtenerEstatusGasto, updateGastoEstatus, ObtenerPasoUsuario, InsertPasoUsuario, InsertPeriodosCongelados, ObtenerPeriodosCongelados } from '../controllers/Presupuesto.controller';
 
 const router = Router();
 
@@ -22,8 +22,14 @@ router.put('/UpdatePresupuestoCuenta', authenticateJWT, updatePresupuestoCuenta)
 
 router.put('/UpdateGastoEstatus', authenticateJWT, updateGastoEstatus);
 
-
 router.get('/GetEstatus', authenticateJWT, ObtenerEstatusGasto);
+
+
+// ----------------------------------cosas de presupuesto mensual--------------------------
+
+router.get('/GetPeriodosCongelados', authenticateJWT, ObtenerPeriodosCongelados);
+
+router.post('/InsertPeriodosCongelados', authenticateJWT, InsertPeriodosCongelados);
 
 
 export default router;
