@@ -13,6 +13,7 @@ import ImportarIngresosArchivo from "./routes/Importar-Ingresos-Archivo.routes"
 import Proveedores from "./routes/Proveedores.routes"
 import Presupuesto from "./routes/Presupuesto.routes"
 import PresupuestoMensualFrecuencia from "./routes/Presupuesto-Mensual-Frecuencia.routes"
+import PresupuestoMensualCuentas from "./routes/Presupuesto-Mensual-Cuentas.routes"
 import Transferencias from "./routes/Transferencias.routes"
 
 
@@ -69,6 +70,7 @@ export class App {
         this.app.use('/api/proveedores', Proveedores);
         this.app.use('/api/presupuesto', Presupuesto);
         this.app.use('/api/presupuesto-mensual-frecuencia', PresupuestoMensualFrecuencia);
+        this.app.use('/api/presupuesto-mensual-cuentas', PresupuestoMensualCuentas);
         this.app.use('/api/transferencias', Transferencias);
 
 

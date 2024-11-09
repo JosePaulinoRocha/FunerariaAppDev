@@ -69,6 +69,30 @@ interface GastoMensualPorFrecuencia {
   Guardado: number;
 }
 
+interface PresupuestoSemanal {
+  SegmentoID: number;
+  NombreSegmento: string;
+  CategoriaID: number;
+  NombreCategoria: string;
+  SubcategoriaID: number;
+  NombreSubcategoria: string;
+  ConceptoID: number;
+  NombreConcepto: string;
+  PromedioMonto: number;
+  PromedioPiezas: number;
+  FrecuenciaPromedio: number;
+  UltimaFecha: string;
+  FrecuenciaDictaminada: number;
+  MontoDictaminado: number;
+  CuentaID: number;
+  NombreCuenta: string;
+  DiaLimite: number;
+  PeriodoID: number | null;
+  PeriodoCongelado: string | null;
+  [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
+}
+
+
 @Component({
   selector: 'app-presupuesto-mensual',
   templateUrl: './presupuesto-mensual.component.html',
@@ -77,6 +101,8 @@ interface GastoMensualPorFrecuencia {
   imports: [IonicModule, FormsModule, CommonModule, HttpClientModule],
 })
 export class PresupuestoMensualComponent  implements OnInit {
+
+  presupuestoSemanal: PresupuestoSemanal[] = [];
 
   gastoMensualFrecuencia: GastoMensualPorFrecuencia[] = [];
 
@@ -119,7 +145,7 @@ export class PresupuestoMensualComponent  implements OnInit {
     },
     {
       title: '4. Asignacion de cuentas bancarias',
-      totalLabel: 'datos aun en desarrollo',
+      totalLabel: '',
       total: '',
       assignedLabel: 'datos aun en desarrollo',
       assigned: '',
@@ -167,7 +193,7 @@ export class PresupuestoMensualComponent  implements OnInit {
         this.router.navigate(['/presupuesto-mensual-frecuencia']);
         break;
       case 3: // Paso 4
-        this.router.navigate(['/home']);
+        this.router.navigate(['/presupuesto-mensual-cuentas']);
         break;
     }
 
@@ -292,9 +318,23 @@ export class PresupuestoMensualComponent  implements OnInit {
     this.loadPeriodosCongelados();
     this.checkAdminStatus();
     this.generarPeriodosMes();
+    this.loadPresupuestoSemanal();
     this.setMesActual();
 
     this.modoFiltro === 'presupuestoMensual'
+  }
+
+  loadPresupuestoSemanal() {
+    this._presupuestoServ.getPresupuestoSemanal().subscribe((data: PresupuestoSemanal[]) => {
+
+      this.presupuestoSemanal = data;
+      const cantidadRegistros = data.length;
+      this.steps[3].total = `Gastos semanales de este mes: ${cantidadRegistros}`;
+  
+      console.log("esta es la data de presupuesto semanal: ", data);
+    }, (error) => {
+      console.error('Error fetching presupuesto', error); 
+    });
   }
 
   loadGastosMensualesFrecuencia() {
@@ -311,6 +351,8 @@ export class PresupuestoMensualComponent  implements OnInit {
       this.steps[2].total = data.length;
       this.steps[2].assignedLabel = 'Registros guardados y no guardados';
       this.steps[2].assigned = `Guardados: ${guardados}, No Guardados: ${noGuardados}`;
+
+      this.steps[3].assigned = `Gastos por frecuencia guardados: ${guardados}`;
   
       console.log("Esta es la data de gastos mensuales por frecuencia: ", this.gastoMensualFrecuencia);
       console.log("Registros con Guardado en 1: ", guardados);
@@ -470,6 +512,8 @@ export class PresupuestoMensualComponent  implements OnInit {
       this.steps[1].totalLabel = `Total de registros: ${this.gastos.length}`;
       this.steps[1].assignedLabel = 
         `Aprobados: ${countAprobados}, Denegados: ${countDenegados}, Pendientes: ${countPendientes}, Sin Estatus: ${countNoAsignados}`;
+
+      this.steps[3].assignedLabel = `Gastos extraordinarios aprobados: ${countAprobados}`;
       
       // Aplicar el filtro seleccionado
       this.gastos = this.gastos.filter(gastos => {

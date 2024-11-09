@@ -106,7 +106,7 @@ export class PresupuestoMensualFrecuenciaComponent  implements OnInit {
         // Insertar el paso como 0 y redirigir a /home
         // this._presupuestoServ.insertPasoUsuario(userId, 0).subscribe(
         //   () => {
-            this.router.navigate(['/home']); // Redirigir al usuario a la ruta /home
+            this.router.navigate(['/presupuesto-mensual-cuentas']); // Redirigir al usuario a la ruta /home
             this.currentStep = 0; // Restablecer el paso actual a 0
             this.selectedCardIndex = 0;
         //   },
@@ -226,27 +226,8 @@ export class PresupuestoMensualFrecuenciaComponent  implements OnInit {
 
   ngOnInit() {
     this.loadGastosMensualesFrecuencia();
-    // this.getPresupuestoMensualFrecuenciaGuardados();
     this.checkAdminStatus();
   }
-
-
-  // getPresupuestoMensualFrecuenciaGuardados() {
-  //   this._presupuestoMensualFrecuenciaServ.getPresupuestoMensualFrecuenciaGuardados().subscribe(
-  //     (response: any[]) => {
-  //       // Formateamos UltimaFecha para mostrar solo el año, mes y día
-  //       this.gastoPresupuestoFrecuenciaGuardados = response.map((gasto) => ({
-  //         ...gasto,
-  //         UltimaFecha: gasto.UltimaFecha ? new Date(gasto.UltimaFecha).toISOString().split('T')[0] : null
-  //       }));
-  
-  //       console.log("Esta es la data de los gastos por frecuencia guardados:", this.gastoPresupuestoFrecuenciaGuardados);
-  //     },
-  //     error => {
-  //       console.error("Error al cargar periodos congelados", error);
-  //     }
-  //   );
-  // }
   
 
   async asignarPeriodo(gastoMensualFrecuencia?: GastoMensualPorFrecuencia) {

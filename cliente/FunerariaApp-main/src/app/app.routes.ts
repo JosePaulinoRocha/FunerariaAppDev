@@ -82,4 +82,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/presupuesto-mensual-frecuencia/presupuesto-mensual-frecuencia.component').then((m) => m.PresupuestoMensualFrecuenciaComponent),
     canActivate: [AuthGuard, AdminGuard],
   },
+  {
+    path: 'presupuesto-mensual-cuentas',
+    loadComponent: () => import('./pages/presupuesto-mensual-cuentas/presupuesto-mensual-cuentas.component').then((m) => m.PresupuestoMensualCuentasComponent),
+    canActivate: [AuthGuard, AdminGuard],
+  },
 ];

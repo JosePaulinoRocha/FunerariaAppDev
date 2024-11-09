@@ -1,4 +1,4 @@
-import { Presupuesto, Gastos, Estatus, PasoUsuario, Periodos } from '../Modelos/Presupuesto';
+import { Presupuesto, Gastos, Estatus, PasoUsuario, Periodos, PresupuestoMensualSemanal } from '../Modelos/Presupuesto';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -27,6 +27,10 @@ export class PresupuestoServices {
     return this.http.get<Presupuesto[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlCombinaciones}`);
   }
 
+  getPresupuestoSemanal(): Observable<PresupuestoMensualSemanal[]> {
+    return this.http.get<PresupuestoMensualSemanal[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoSemanal/`);
+  }
+
   getPasoUsuario(userId: number): Observable<PasoUsuario[]> {
     return this.http.get<PasoUsuario[]>(`${this.myAppUrl}${this.MyApiUrl}GetPasoUsuario/${userId}`);
   }
@@ -39,6 +43,10 @@ export class PresupuestoServices {
 
   getGastoMensual(): Observable<Gastos[]> {
     return this.http.get<Gastos[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoMensual/`);
+  }
+
+  getGastoMensualSemanalAprobado(): Observable<Gastos[]> {
+    return this.http.get<Gastos[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoMensualSemanalAprobado/`);
   }
 
   addGasto(gastos: any): Observable<any> {

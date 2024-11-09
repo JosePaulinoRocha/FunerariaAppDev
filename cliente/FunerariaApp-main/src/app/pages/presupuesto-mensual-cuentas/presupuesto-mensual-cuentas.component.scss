@@ -1,0 +1,371 @@
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 1.5rem;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    padding: 1.5rem;
+
+  }
+  
+  .header-row {
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .header-row th {
+    font-weight: bold;
+    text-align: center;
+    padding: 8px;
+    border: 1px solid #ddd;
+    white-space: nowrap;
+  }
+  
+  .data-row {
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .data-row td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ddd;
+  }
+  
+  .page-info {
+    display: inline-block;
+    margin-left: auto;
+    margin-right: 16px;
+    font-weight: bold;
+  }
+  
+  .margin_footer {
+    margin-left: 1rem;
+    width: 98%;
+  }
+
+  .green-text {
+    color: green;
+  }
+
+.search-container {
+  margin: 16px;
+}
+
+.search-container ion-item {
+    margin-bottom: 8px;
+}
+
+.color_header_tabla {
+ background-color: #0054E9;
+ color: #FFFFFF;
+}
+
+
+.active-row {
+  background-color: #d4edda; 
+}
+
+.inactive-row {
+  background-color: #f8d7da; 
+}
+
+
+
+.button-group button[disabled] {
+  background-color: #007bff;
+  color: white;
+}
+
+.button-group button {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-right: 5px;
+}
+
+
+
+/* Estilos para el selector */
+.select-custom {
+  width: 250px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  font-size: 16px;
+  color: #333;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Añadir un ícono de flecha hacia abajo */
+.select-custom::after {
+  content: '\25BC'; /* Símbolo de flecha hacia abajo */
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 12px;
+}
+
+/* Efecto hover */
+.select-custom:hover {
+  border-color: #888;
+}
+
+/* Efecto focus */
+.select-custom:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+
+
+/* Contenedor principal de los cards en 2 columnas para una apariencia más ordenada */
+.step-cards-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+/* Estilo principal del card */
+.main-card {
+  background: linear-gradient(135deg, #FFFFFF, #FFFFFF);
+  color: #000000;
+  border-radius: 15px;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.main-card:hover {
+  transform: scale(1.05);
+}
+
+/* Título del sub-card en cada paso */
+.sub-card-title {
+  background: linear-gradient(135deg, #ff6b6b, #5f27cd);
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
+}
+
+/* Texto dentro de cada card */
+.card-text {
+  font-size: 1rem;
+  padding: 5px 0;
+}
+
+/* Botón "Siguiente" personalizado */
+.next-button {
+  margin-top: 20px;
+  background: linear-gradient(135deg, #ff7e5f, #feb47b);
+  color: #fff;
+  border-radius: 10px;
+  font-weight: bold;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.next-button:hover {
+  background: linear-gradient(135deg, #ff9f43, #ff6b6b);
+}
+
+
+.button-container {
+  grid-column: span 2; /* Hace que el botón ocupe ambas columnas */
+  text-align: center;
+}
+
+
+/* Estilo del radio button */
+.radio-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+}
+
+.radio-container input[type="radio"] {
+  opacity: 0;
+}
+
+.radio-container label {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #0054E9;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.radio-container label:after {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #764ba2;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.radio-container input[type="radio"]:checked + label {
+  background-color: #764ba2;
+}
+
+.radio-container input[type="radio"]:checked + label:after {
+  opacity: 1;
+}
+
+ion-button {
+  transition: background-color 0.3s;
+}
+
+
+.animated-button {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.animated-button:hover {
+  background-color: #d32f2f; /* Cambia el color de fondo al pasar el mouse */
+  transform: scale(1.05); /* Agranda el botón un poco */
+}
+
+
+.congelado {
+  background-color: #d4f1c4 !important;
+}
+
+
+
+.disabled-class {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+
+
+.table-title {
+  font-size: 1.5rem;         /* Tamaño de la fuente para destacar */
+  font-weight: bold;         /* Negrita para el título */
+  text-align: center;        /* Centrar el texto */
+  margin: 1rem 0;            /* Espaciado superior e inferior */
+  padding: 0.5rem;           /* Relleno interno */
+  background-color: #f0f8ff; /* Color de fondo suave */
+  color: #333;               /* Color del texto */
+  border: 2px solid #007bff; /* Borde en color azul */
+  border-radius: 8px;        /* Bordes redondeados */
+}
+
+
+
+
+/* Botón */
+ion-button {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+
+
+/* Contenedor de bancos */
+.bancos-container {
+  padding: 10px;
+}
+
+.cuentas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Tres columnas */
+  gap: 20px; /* Espacio entre las columnas */
+}
+
+.cuenta-card {
+  border-radius: 10px; /* Bordes redondeados */
+  background-color: #d0e7f5; /* Azul claro */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra para el efecto de profundidad */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cuenta-card:hover {
+  transform: translateY(-5px); /* Efecto de hover para la tarjeta */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Sombra más profunda cuando se pasa el ratón */
+}
+
+.cuenta-card-header {
+  background-color: #aad7f0; /* Azul aún más claro */
+  color: #2a4b7f; /* Color de texto oscuro para mejor contraste */
+}
+
+.cuenta-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cuenta-table th,
+.cuenta-table td {
+  text-align: left;
+  padding: 8px;
+}
+
+.cuenta-table th {
+  background-color: #f5f5f5;
+}
+
+.total-row {
+  font-weight: bold;
+  background-color: #f0f8ff; /* Fondo claro para la fila total */
+}
+
+
+
+.cuentas-select-container {
+  ion-item {
+    background-color: #e3f2fd; /* Fondo azul claro */
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    ion-icon {
+      color: #1976d2; /* Azul más oscuro */
+      margin-right: 8px;
+    }
+
+    ion-label {
+      font-weight: bold;
+      color: #0d47a1; /* Color de texto azul */
+    }
+
+    ion-select {
+      --placeholder-opacity: 0.8;
+      color: #1976d2;
+
+      .select-text {
+        color: #0d47a1;
+      }
+
+      /* Opciones del menú desplegable */
+      ion-select-option {
+        --color: #0d47a1;
+        font-size: 1rem;
+        &:hover {
+          background-color: #bbdefb;
+        }
+      }
+    }
+  }
+}

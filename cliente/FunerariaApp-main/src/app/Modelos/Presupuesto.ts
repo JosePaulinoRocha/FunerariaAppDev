@@ -19,6 +19,28 @@ export interface Presupuesto {
     [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
   }
 
+  export interface PresupuestoMensualSemanal {
+    SegmentoID: number;
+    NombreSegmento: string;
+    CategoriaID: number;
+    NombreCategoria: string;
+    SubcategoriaID: number;
+    NombreSubcategoria: string;
+    ConceptoID: number;
+    NombreConcepto: string;
+    PromedioMonto: number;
+    PromedioPiezas: number;
+    FrecuenciaPromedio: number;
+    UltimaFecha: string;
+    FrecuenciaDictaminada: number;
+    MontoDictaminado: number;
+    CuentaID: number;
+    NombreCuenta: string;
+    DiaLimite: number;
+    PeriodoID: number | null;
+    PeriodoCongelado: string | null;
+    [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
+  }
 
 export interface Gastos {
     GastoID: number;
@@ -95,6 +117,32 @@ export interface Gastos {
   }
 
 
+  export interface GastoMensualPorFrecuenciaAprobados {
+    GastoFrecuenciaID: number;
+    SegmentoID: number;
+    NombreSegmento: string;
+    CategoriaID: number;
+    NombreCategoria: string;
+    SubcategoriaID: number;
+    NombreSubcategoria: string;
+    ConceptoID: number;
+    NombreConcepto: string;
+    MontoDictaminado: number;
+    FrecuenciaDictaminada: number;
+    CuentaID: number | null;
+    NombreCuenta: string | null;
+    CajaChica: { data: number[]; type: string; };
+    DiaLimite: number | null;
+    PromedioMonto: number | null;
+    PromedioPiezas: number | null;
+    FrecuenciaPromedio: number | null;
+    UltimaFecha: string | null;  // Fecha en formato ISO
+    FechaSiguienteGasto: string | null;  // Fecha en formato ISO
+    DiasPendientes: number | null;
+    PeriodoID: number | null;
+    PeriodoCongelado: string | null; // Rango de fecha como "YYYY-MM-DD al YYYY-MM-DD"
+    Guardado: number;
+  }
 
   export interface GastoPresupuestoFrecuenciaGuardados {
     GastoFrecuenciaID: number;

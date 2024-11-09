@@ -20,6 +20,24 @@ export const ObtenerPresupuesto = async (req: Request, res: Response) => {
     }
 };
 
+export const ObtenerPresupuestoSemanal = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM gastos_mensuales_semanales_vw';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en gastos');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
 export const ObtenerPasoUsuario = async (req: Request, res: Response) => {
     let con;
     let result;
@@ -104,6 +122,24 @@ export const ObtenerPresupuestoMensual = async (req: Request, res: Response) => 
     }
 };
 
+
+export const ObtenerPresupuestoMensualSemanalAprobado = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM gastos_presupuesto_vw WHERE EstatusPresupuestoID = 1';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en gastos_presupuesto_vw');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
 
 
 export const PostGastos = async (req: Request, res: Response) => {

@@ -1,4 +1,4 @@
-import { Presupuesto, GastoMensualPorFrecuencia, GastoPresupuestoFrecuenciaGuardados } from '../Modelos/Presupuesto';
+import { Presupuesto, GastoMensualPorFrecuencia, GastoPresupuestoFrecuenciaGuardados, GastoMensualPorFrecuenciaAprobados } from '../Modelos/Presupuesto';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -27,6 +27,9 @@ export class PresupuestoMensualFrecuenciaServices {
     return this.http.get<GastoMensualPorFrecuencia[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoMensualFrecuencia/`);
   }
 
+  getPresupuestoMensualFrecuenciaAprobados(): Observable<GastoMensualPorFrecuenciaAprobados[]> {
+    return this.http.get<GastoMensualPorFrecuenciaAprobados[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoMensualFrecuenciaAprobados/`);
+  }
 
   addGastoFrecuencia(gastoMensualFrecuencia: any): Observable<any> {
     return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}PostGastosFrecuencia`, gastoMensualFrecuencia);
