@@ -7,7 +7,7 @@ export const ObtenerPresupuestoFrecuencia = async (req: Request, res: Response) 
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM gastos_mensuales_por_frecuencia_vw';
+        let query = 'SELECT * FROM gastos_mensuales_por_frecuencia_vw WHERE FechaSiguienteGasto >= DATE_FORMAT(CURDATE(), "%Y-%m-01") AND FechaSiguienteGasto <= LAST_DAY(CURDATE())';
         const gastos = (await con.query(query))[0] as any[];
         result = gastos;
     } catch (error) {
@@ -27,6 +27,25 @@ export const ObtenerPresupuestoFrecuenciaAprobados = async (req: Request, res: R
     try {
         con = await connect();
         let query = 'SELECT * FROM gastos_mensuales_por_frecuencia_vw WHERE Guardado = 1';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en gastos frecuencia');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+export const ObtenerPresupuestoFrecuenciaAprobadosMesActual = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM gastos_mensuales_por_frecuencia_vw WHERE Guardado = 1 AND FechaSiguienteGasto >= DATE_FORMAT(CURDATE(), "%Y-%m-01") AND FechaSiguienteGasto <= LAST_DAY(CURDATE())';
         const gastos = (await con.query(query))[0] as any[];
         result = gastos;
     } catch (error) {
@@ -130,6 +149,27 @@ export const ObtenerPresupuestoFrecuenciaGuardados = async (req: Request, res: R
         result = gastos;
     } catch (error) {
         console.log('Error en gastos frecuencia');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+
+
+export const ObtenerIngresosMensualesCuentas = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM ingresos_mensuales_vw';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en ingresos mensuales');
         console.log(error);
         result = null;
     } finally {

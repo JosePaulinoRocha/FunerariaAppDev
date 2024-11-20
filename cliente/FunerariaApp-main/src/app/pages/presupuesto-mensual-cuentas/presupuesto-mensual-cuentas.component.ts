@@ -48,7 +48,7 @@ interface GastoMensualPorFrecuencia {
   FrecuenciaDictaminada: number;
   CuentaID: number | null;
   NombreCuenta: string | null;
-  CajaChica: { data: number[]; type: string; };
+  CajaChica: any;
   DiaLimite: number | null;
   PromedioMonto: number | null;
   PromedioPiezas: number | null;
@@ -117,6 +117,57 @@ interface Cuenta {
 
 
 
+interface Ingreso {
+  IngresoID: number;
+  Fecha: string | null;
+  ConceptoID: number;
+  NombreConcepto: string;
+  Descripcion: string;
+  Proveedor: string;
+  ProveedorEstatus: { data: number[]; type: string; };
+  Piezas: number;
+  CajaChica: boolean;
+  Monto: number;
+  Saldo: number;
+  Comprobante: string;
+  SegmentoID: number;
+  NombreSegmento: string;
+  CategoriaID: number;
+  NombreCategoria: string;
+  SubcategoriaID: number;
+  NombreSubcategoria: string;
+  EstatusComprobacionID: number;
+  NombreEstatus: string;
+  FechaAutorizacion: string;
+  UsuarioAutorizaID: number;
+  NombreUsuarioAutoriza: string;
+  UsuarioRecibeID: number;
+  NombreUsuarioRecibe: string;
+  FechaConciliacion: string;
+  ObservacionesDifConciliacion: string;
+  NombreCajaChica?: string;
+  RFC?: string;
+  NombreDuenoCuenta?: string;
+
+  SaldoReconciliacion: number;
+
+  TipoCuenta: string;
+
+  NombreCuenta: string;
+
+  Reconciliado: number;
+
+  TipoIngreso: { data: number[]; type: string; };
+
+  ReconciliacionID: number;
+
+  CuentaContable: number;
+
+  [key: string]: any; // Para permitir acceso dinámico
+}
+
+
+
 @Component({
   selector: 'app-presupuesto-mensual-cuentas',
   templateUrl: './presupuesto-mensual-cuentas.component.html',
@@ -130,7 +181,12 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
 
   private resumenInicialCuenta: any = null;
 
-  gastosSeleccionados: any[] = []; // Lista de gastos seleccionados
+  gastosSeleccionados: any[] = [];
+  
+  presupuestoSeleccionado: any[] = [];
+
+  presupuestoFrecuenciaSeleccionado: any[] = [];
+
 
   cuentaSeleccionada: any | null = null;
 
@@ -142,6 +198,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
   currentStep: number = 3;
   totalSteps: number = 4;
 
+  ingreso: Ingreso[] = [];
   cuenta: Cuenta[] = [];
   presupuestoSemanal: PresupuestoSemanal[] = [];
   gastos: Gastos[] = [];
@@ -153,9 +210,9 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
   currentPageSemanales: number = 1;
   currentPage: number = 1;
   currentPageExtraodrinarios: number = 1;
-  itemsPerPageSemanales: number = 10;
-  itemsPerPage: number = 10;
-  itemsPerPageExtraordinarios: number = 10;
+  itemsPerPageSemanales: number = 50;
+  itemsPerPage: number = 50;
+  itemsPerPageExtraordinarios: number = 50;
   totalPages: number = 0;
   totalPagesExtraordinario: number = 0;
   totalPagesSemanales: number = 0;
@@ -174,83 +231,162 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
   }
 
 
-  onCheckboxChange(gastos: Gastos, event: Event) {
+
+  onCheckboxChange(element: GastoMensualPorFrecuencia | PresupuestoSemanal | Gastos, event: Event) {
     const isChecked = (event.target as HTMLInputElement).checked;
-    const { CategoriaID, NombreCategoria, Monto } = gastos;
-
-    if (isChecked) {
-        // Añadir el gasto al resumen
-        this.gastosSeleccionados.push(gastos);
-    } else {
-        // Eliminar el gasto del resumen
+  
+    if ('GastoID' in element) {
+      // Caso para gastos extraordinarios
+      if (isChecked) {
+        this.gastosSeleccionados.push(element);
+      } else {
+        // Remover solo el gasto específico en vez de todos los de la misma categoría
         this.gastosSeleccionados = this.gastosSeleccionados.filter(
-            g => g.GastoID !== gastos.GastoID
+          g => g.GastoID !== element.GastoID
         );
+      }
+    } else if ('FrecuenciaDictaminada' in element) {
+      // Caso para presupuesto semanal
+      if (isChecked) {
+        const frecuencia = element.FrecuenciaDictaminada; // Ya es número, no hace falta parsearlo
+  
+        if (frecuencia == 7) {
+          this.presupuestoSeleccionado.push(element);
+        } else if (frecuencia >= 14 && frecuencia <= 180) {
+          this.presupuestoFrecuenciaSeleccionado.push(element);
+        }
+      } else {
+        // Remover solo el registro específico del presupuesto semanal utilizando también PeriodoID
+        this.presupuestoSeleccionado = this.presupuestoSeleccionado.filter(
+          p => 
+            p.SubcategoriaID !== element.SubcategoriaID ||
+            p.ConceptoID !== element.ConceptoID ||
+            p.PeriodoID !== element.PeriodoID
+        );
+        
+        // Remover solo el registro específico del presupuesto por frecuencia utilizando también PeriodoID
+        this.presupuestoFrecuenciaSeleccionado = this.presupuestoFrecuenciaSeleccionado.filter(
+          p => 
+            p.SubcategoriaID !== element.SubcategoriaID ||
+            p.ConceptoID !== element.ConceptoID ||
+            p.PeriodoID !== element.PeriodoID
+        );
+      }
     }
-
-    // Actualizar el resumen del banco seleccionado después del cambio
     this.actualizarResumenBancoSeleccionado();
   }
-
-
+  
+  
   actualizarResumenBancoSeleccionado() {
-    if (!this.cuentaSeleccionada) return;
-
-    // Clonar profundamente las categorías de los gastos seleccionados en un mapa
-    const categoriasMap: { [key: number]: { NombreCategoria: string; Presupuesto: number } } = {};
-
-    // Primero, agregar o actualizar las categorías de los gastos seleccionados
-    this.gastosSeleccionados.forEach(gasto => {
-        const { CategoriaID, NombreCategoria, Monto } = gasto;
-        const montoNumerico = parseFloat(Monto);
-
-        if (!CategoriaID) {
-            console.warn(`Gasto sin CategoriaID: ${NombreCategoria}`);
-        }
-
-        console.log(`Procesando gasto: CategoriaID = ${CategoriaID}, NombreCategoria = ${NombreCategoria}, Monto = ${Monto}`);
-
-        // Si la categoría ya existe en el mapa, sumamos el monto; si no, la creamos
-        if (categoriasMap[CategoriaID]) {
-            categoriasMap[CategoriaID].Presupuesto += montoNumerico;
-        } else {
-            categoriasMap[CategoriaID] = {
-                NombreCategoria,
-                Presupuesto: montoNumerico
-            };
-        }
-    });
-
-    // Luego, agregar las categorías del resumen inicial (sin reemplazar las ya existentes)
-    if (this.resumenInicialCuenta) {
-        this.resumenInicialCuenta.categorias.forEach((categoria: any) => {
-            console.log(`Procesando categoria inicial: CategoriaID = ${categoria.CategoriaID}, NombreCategoria = ${categoria.NombreCategoria}, Presupuesto = ${categoria.Presupuesto}`);
-
-            // Si la categoría ya existe, no la sobreescribimos, solo sumamos el presupuesto
-            if (!categoriasMap[categoria.CategoriaID]) {
-                categoriasMap[categoria.CategoriaID] = {
-                    NombreCategoria: categoria.NombreCategoria,
-                    Presupuesto: categoria.Presupuesto
-                };
-            } else {
-                // Si la categoría ya existe en el mapa, sumamos los presupuestos
-                categoriasMap[categoria.CategoriaID].Presupuesto += categoria.Presupuesto;
-            }
-        });
+    if (!this.cuentaSeleccionada) {
+      console.log("No hay cuenta seleccionada.");
+      return;
     }
-
-    // Convertir el mapa de categorías a un arreglo y asignarlo a la cuenta seleccionada
-    this.cuentaSeleccionada.categorias = Object.values(categoriasMap);
-
-    // Calcular el total del presupuesto sumando los montos de todas las categorías
-    this.cuentaSeleccionada.totalPresupuesto = this.cuentaSeleccionada.categorias.reduce(
+  
+    const categoriasMap: { [key: number]: { NombreCategoria: string; Presupuesto: number } } = {};
+  
+    // Primero agregar las categorías del resumen inicial (sin modificaciones)
+    if (this.resumenInicialCuenta && this.resumenInicialCuenta.categorias) {
+      console.log("Agregando categorías del resumen inicial.");
+      this.resumenInicialCuenta.categorias.forEach((categoria: any) => {
+        console.log(`CategoriaID: ${categoria.CategoriaID}, Nombre: ${categoria.NombreCategoria}, Presupuesto: ${categoria.Presupuesto}`);
+        if (!categoriasMap[categoria.CategoriaID]) {
+          categoriasMap[categoria.CategoriaID] = {
+            NombreCategoria: categoria.NombreCategoria,
+            Presupuesto: categoria.Presupuesto
+          };
+        } else {
+          categoriasMap[categoria.CategoriaID].Presupuesto += categoria.Presupuesto;
+        }
+      });
+    }
+  
+    // Luego agregar las categorías de gastos extraordinarios (solo si están marcadas)
+    this.gastosSeleccionados.forEach(gasto => {
+      const { CategoriaID, NombreCategoria, Monto } = gasto;
+      const montoNumerico = parseFloat(Monto);
+      console.log(`Gasto - CategoriaID: ${CategoriaID}, Nombre: ${NombreCategoria}, Monto: ${Monto}`);
+    
+      if (!CategoriaID) {
+        console.warn(`Gasto sin CategoriaID: ${NombreCategoria}`);
+      }
+  
+      if (categoriasMap[CategoriaID]) {
+        categoriasMap[CategoriaID].Presupuesto += montoNumerico;
+      } else {
+        categoriasMap[CategoriaID] = {
+          NombreCategoria,
+          Presupuesto: montoNumerico
+        };
+      }
+    });
+  
+    // Agregar categorías y presupuestos de presupuesto semanal (solo si están marcadas)
+    this.presupuestoSeleccionado.forEach(presupuesto => {
+      const { CategoriaID, NombreCategoria, MontoDictaminado } = presupuesto;
+      const montoNumerico = parseFloat(MontoDictaminado);
+      console.log(`Presupuesto Semanal - CategoriaID: ${CategoriaID}, Nombre: ${NombreCategoria}, Monto: ${MontoDictaminado}`);
+    
+      if (!CategoriaID) {
+        console.warn(`Presupuesto semanal sin CategoriaID: ${NombreCategoria}`);
+      }
+    
+      if (categoriasMap[CategoriaID]) {
+        categoriasMap[CategoriaID].Presupuesto += montoNumerico;
+      } else {
+        categoriasMap[CategoriaID] = {
+          NombreCategoria,
+          Presupuesto: montoNumerico
+        };
+      }
+    });
+  
+    // Agregar categorías y presupuestos de presupuesto por frecuencia (solo si están marcadas)
+    this.presupuestoFrecuenciaSeleccionado.forEach(presupuesto => {
+      const { CategoriaID, NombreCategoria, MontoDictaminado } = presupuesto;
+      const montoNumerico = parseFloat(MontoDictaminado);
+      console.log(`Presupuesto por Frecuencia - CategoriaID: ${CategoriaID}, Nombre: ${NombreCategoria}, Monto: ${MontoDictaminado}`);
+    
+      if (!CategoriaID) {
+        console.warn(`Presupuesto por frecuencia sin CategoriaID: ${NombreCategoria}`);
+      }
+    
+      if (categoriasMap[CategoriaID]) {
+        categoriasMap[CategoriaID].Presupuesto += montoNumerico;
+      } else {
+        categoriasMap[CategoriaID] = {
+          NombreCategoria,
+          Presupuesto: montoNumerico
+        };
+      }
+    });
+  
+    // Comprobamos si es Caja Chica
+    console.log("Este es el cuentaID temporal: ", this.cuentaIDTemporal);
+  
+    if (this.cuentaIDTemporal === 0) { // Usamos el cuentaIDTemporal guardado
+      console.log("Cuenta es Caja Chica, no modificando categorías del resumen inicial.");
+      this.cuentaSeleccionada.categorias = Object.values(categoriasMap);
+      this.cuentaSeleccionada.totalPresupuesto = this.cuentaSeleccionada.categorias.reduce(
         (total: any, categoria: any) => total + categoria.Presupuesto,
         0
+      );
+      console.log('Resumen de Caja Chica:', this.cuentaSeleccionada);
+      return; // Salir si es Caja Chica
+    }
+  
+    // Para cuentas normales, continuamos con el mismo flujo
+    this.cuentaSeleccionada.categorias = Object.values(categoriasMap);
+    this.cuentaSeleccionada.totalPresupuesto = this.cuentaSeleccionada.categorias.reduce(
+      (total: any, categoria: any) => total + categoria.Presupuesto,
+      0
     );
-
+  
     console.log('Categorías finales:', this.cuentaSeleccionada.categorias);
     console.log('Total presupuesto:', this.cuentaSeleccionada.totalPresupuesto);
   }
+  
+
 
 
   onCuentaChange() {
@@ -267,9 +403,52 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
 
   generarResumenCuentaSeleccionada(cuentaID: number) {
     console.log("Generating resumen for cuentaID:", cuentaID);
+    
+    // Verificar si es "Caja Chica" (cuentaID = 0)
+    if (cuentaID === 0) {
+        // Crear el resumen de Caja Chica directamente
+        let resumenCajaChica: {
+            NombreCuenta: string;
+            categorias: { [key: number]: { CategoriaID:number; NombreCategoria: string; Presupuesto: number } };
+            totalPresupuesto: number;
+        } = {
+            NombreCuenta: "Caja Chica",
+            categorias: {},
+            totalPresupuesto: 0
+        };
+
+        // Combinar todas las fuentes de datos
+        const dataCombinada = [...this.presupuestoSemanal, ...this.gastos, ...this.gastoMensualFrecuencia];
+        
+        // Sumar los presupuestos relacionados con Caja Chica
+        dataCombinada.forEach((item) => {
+            if (item.TipoCuenta === "Caja chica" || item.CajaChica === "1") {
+                // Sumar al resumen de Caja Chica
+                if (!resumenCajaChica.categorias[item.CategoriaID]) {
+                    resumenCajaChica.categorias[item.CategoriaID] = {
+                        CategoriaID: item.CategoriaID,
+                        NombreCategoria: item.NombreCategoria,
+                        Presupuesto: 0
+                    };
+                }
+                const monto = Number(item.Monto ?? item.MontoDictaminado) || 0;
+                resumenCajaChica.categorias[item.CategoriaID].Presupuesto += monto;
+                resumenCajaChica.totalPresupuesto += monto;
+            }
+        });
+
+        // Asignar el resumen de Caja Chica a la cuenta seleccionada
+        this.cuentaSeleccionada = {
+            ...resumenCajaChica,
+            categorias: Object.values(resumenCajaChica.categorias)
+        };
+        console.log("Resumen de Caja Chica:", this.cuentaSeleccionada);
+        return; // No continuar con el procesamiento de otras cuentas
+    }
+    
+    // Lógica para cuentas bancarias (cuando no es Caja Chica)
     const cuentasMap: { [key: string]: any } = {};
 
-    // Solo combinar los datos de las cuentas relacionadas con esta cuenta seleccionada
     const dataCombinada = [...this.presupuestoSemanal, ...this.gastos, ...this.gastoMensualFrecuencia].filter((item) => item.CuentaID === cuentaID);
 
     dataCombinada.forEach((item) => {
@@ -284,15 +463,13 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
             }
             const cuenta = cuentasMap[item.CuentaID];
 
-            // Verificamos que CategoriaID esté presente antes de seguir adelante
             if (!item.CategoriaID) {
                 console.warn(`El item no tiene CategoriaID: ${item.NombreCategoria}`);
             }
 
-            // Aseguramos que la categoría tenga un CategoriaID
             if (!cuenta.categorias[item.CategoriaID]) {
                 cuenta.categorias[item.CategoriaID] = {
-                    CategoriaID: item.CategoriaID, // Aseguramos que el CategoriaID esté aquí
+                    CategoriaID: item.CategoriaID,
                     NombreCategoria: item.NombreCategoria,
                     Presupuesto: 0
                 };
@@ -319,6 +496,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
   }
 
 
+
   toggleBancosView() {
     this.showBancosView = !this.showBancosView;
     if (this.showBancosView) {
@@ -329,41 +507,137 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
 
   generarResumenCuentasBancarias() {
     const cuentasMap: { [key: string]: any } = {};
-
-    const dataCombinada = [...this.presupuestoSemanal, ...this.gastos, ...this.gastoMensualFrecuencia];
-
-    dataCombinada.forEach((item) => {
-      if (item.CuentaID && item.NombreCuenta) {
+  
+    // Crear una entrada para Caja Chica
+    let resumenCajaChica: any = {
+      NombreCuenta: "Caja Chica",
+      egresos: {
+        categorias: {},
+        totalPresupuesto: 0,
+      },
+      ingresos: {
+        categorias: {},
+        totalPresupuesto: 0,
+      },
+    };
+  
+    // Combinar todas las fuentes de datos para egresos
+    const dataCombinadaEgresos = [...this.presupuestoSemanal, ...this.gastos, ...this.gastoMensualFrecuencia];
+  
+    // Procesar egresos
+    dataCombinadaEgresos.forEach((item) => {
+      const esCajaChica = item.TipoCuenta === "Caja chica" || item.CajaChica === "1";
+  
+      if (esCajaChica) {
+        // Sumar al resumen de egresos en Caja Chica
+        if (!resumenCajaChica.egresos.categorias[item.CategoriaID]) {
+          resumenCajaChica.egresos.categorias[item.CategoriaID] = {
+            NombreCategoria: item.NombreCategoria,
+            Presupuesto: 0,
+          };
+        }
+        const monto = Number(item.Monto ?? item.MontoDictaminado) || 0;
+        resumenCajaChica.egresos.categorias[item.CategoriaID].Presupuesto += monto;
+        resumenCajaChica.egresos.totalPresupuesto += monto;
+      } else if (item.CuentaID && item.NombreCuenta) {
+        // Continuar con cuentas bancarias para egresos
         if (!cuentasMap[item.CuentaID]) {
           cuentasMap[item.CuentaID] = {
             NombreCuenta: item.NombreCuenta,
-            categorias: {},
-            totalPresupuesto: 0
+            egresos: {
+              categorias: {},
+              totalPresupuesto: 0,
+            },
+            ingresos: {
+              categorias: {},
+              totalPresupuesto: 0,
+            },
           };
         }
         const cuenta = cuentasMap[item.CuentaID];
-
-        if (!cuenta.categorias[item.CategoriaID]) {
-          cuenta.categorias[item.CategoriaID] = {
+        if (!cuenta.egresos.categorias[item.CategoriaID]) {
+          cuenta.egresos.categorias[item.CategoriaID] = {
             NombreCategoria: item.NombreCategoria,
-            Presupuesto: 0
+            Presupuesto: 0,
           };
         }
-
-        // Convertir a número antes de sumar
-        const monto = Number('Monto' in item ? item.Monto : item.MontoDictaminado) || 0;
-
-        // Actualizar el presupuesto de la categoría y el total de la cuenta
-        cuenta.categorias[item.CategoriaID].Presupuesto += monto;
-        cuenta.totalPresupuesto += monto;
+        const monto = Number(item.Monto ?? item.MontoDictaminado) || 0;
+        cuenta.egresos.categorias[item.CategoriaID].Presupuesto += monto;
+        cuenta.egresos.totalPresupuesto += monto;
       }
     });
-
-    this.cuentasBancarias = Object.values(cuentasMap).map(cuenta => ({
-      ...cuenta,
-      categorias: Object.values(cuenta.categorias)
-    }));
+  
+    // Procesar ingresos
+    this.ingreso.forEach((item: any) => {
+      const esCajaChica = item.TipoCuentaID === 1;
+  
+      if (esCajaChica) {
+        // Sumar al resumen de ingresos en Caja Chica
+        if (!resumenCajaChica.ingresos.categorias[item.CategoriaID]) {
+          resumenCajaChica.ingresos.categorias[item.CategoriaID] = {
+            NombreCategoria: item.NombreCategoria,
+            Presupuesto: 0,
+          };
+        }
+        const monto = Number(item.Monto) || 0;
+        resumenCajaChica.ingresos.categorias[item.CategoriaID].Presupuesto += monto;
+        resumenCajaChica.ingresos.totalPresupuesto += monto;
+      } else if (item.CuentaID && item.NombreCuenta) {
+        // Continuar con cuentas bancarias para ingresos
+        if (!cuentasMap[item.CuentaID]) {
+          cuentasMap[item.CuentaID] = {
+            NombreCuenta: item.NombreCuenta,
+            egresos: {
+              categorias: {},
+              totalPresupuesto: 0,
+            },
+            ingresos: {
+              categorias: {},
+              totalPresupuesto: 0,
+            },
+          };
+        }
+        const cuenta = cuentasMap[item.CuentaID];
+        if (!cuenta.ingresos.categorias[item.CategoriaID]) {
+          cuenta.ingresos.categorias[item.CategoriaID] = {
+            NombreCategoria: item.NombreCategoria,
+            Presupuesto: 0,
+          };
+        }
+        const monto = Number(item.Monto) || 0;
+        cuenta.ingresos.categorias[item.CategoriaID].Presupuesto += monto;
+        cuenta.ingresos.totalPresupuesto += monto;
+      }
+    });
+  
+    // Insertar Caja Chica al inicio de la lista de cuentas bancarias
+    this.cuentasBancarias = [
+      {
+        ...resumenCajaChica,
+        egresos: {
+          categorias: Object.values(resumenCajaChica.egresos.categorias),
+          totalPresupuesto: resumenCajaChica.egresos.totalPresupuesto, // Agregar total aquí
+        },
+        ingresos: {
+          categorias: Object.values(resumenCajaChica.ingresos.categorias),
+          totalPresupuesto: resumenCajaChica.ingresos.totalPresupuesto, // Agregar total aquí
+        },
+      },
+      ...Object.values(cuentasMap).map((cuenta) => ({
+        ...cuenta,
+        egresos: {
+          categorias: Object.values(cuenta.egresos.categorias),
+          totalPresupuesto: cuenta.egresos.totalPresupuesto, // Agregar total aquí
+        },
+        ingresos: {
+          categorias: Object.values(cuenta.ingresos.categorias),
+          totalPresupuesto: cuenta.ingresos.totalPresupuesto, // Agregar total aquí
+        },
+      })),
+    ];
   }
+  
+  
 
   nextStep() {
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -511,18 +785,23 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
     this.loadGastoMensualExtraordinario();
     this.loadPresupuestoSemanal();
     this.loadCuentas();
+    this.loadIngresosMensualesCuentas();
   }
 
 
   loadCuentas() {
     this._ingresoServ.getCuentas().subscribe(
-      (data: Cuenta[]) => {
-        this.cuenta = data.filter(cuenta => cuenta.TipoCuentaID === 2);
-        console.log('Esta es mi data en cuentas: ', this.cuenta);
-      },
-      (error) => {
-        console.error('Error fetching cuentas', error);
-      }
+        (data: Cuenta[]) => {
+            // Filtrar solo cuentas bancarias y agregar "Caja Chica" manualmente
+            this.cuenta = [
+                { CuentaID: 0, NombreCuenta: 'Caja Chica', TipoCuentaID: 1, RFC: "" }, // RFC como cadena vacía
+                ...data.filter(cuenta => cuenta.TipoCuentaID === 2) // TipoCuentaID de cuentas bancarias
+            ];
+            console.log('Esta es mi data en cuentas:', this.cuenta);
+        },
+        (error) => {
+            console.error('Error fetching cuentas', error);
+        }
     );
   }
   
@@ -547,23 +826,31 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
 
 
   loadGastoMensualExtraordinario() {
-    this._presupuestoServ.getGastoMensualSemanalAprobado().subscribe((data: Gastos[]) => {
-  
-      // Ordenar y formatear los datos
-      data.sort((a, b) => b.GastoID - a.GastoID);
-      this.gastos = data.map(gastos => ({
-        ...gastos,
-        FechaPreautorizada: new Date(gastos.FechaPreautorizada).toISOString().split('T')[0],
-        Fecha: new Date(gastos.Fecha).toISOString().split('T')[0],
-      }));
-  
-      console.log("Esta es la data de gastos mensuales extraordinarios: ", this.gastos);
-      this.totalPagesExtraordinario = Math.ceil(this.gastos.length / this.itemsPerPage);
-      this.updatePaginatedRegistros();
+    this._presupuestoServ.getGastoMensualExtraordinarioAprobado().subscribe((data: Gastos[] | null) => {
+      
+      if (data && data.length > 0) {  // Verifica que data no sea null y tenga elementos
+        // Ordenar y formatear los datos
+        data.sort((a, b) => b.GastoID - a.GastoID);
+        this.gastos = data.map(gastos => ({
+          ...gastos,
+          FechaPreautorizada: new Date(gastos.FechaPreautorizada).toISOString().split('T')[0],
+          Fecha: new Date(gastos.Fecha).toISOString().split('T')[0],
+        }));
+    
+        console.log("Esta es la data de gastos mensuales extraordinarios: ", this.gastos);
+        this.totalPagesExtraordinario = Math.ceil(this.gastos.length / this.itemsPerPage);
+        this.updatePaginatedRegistros();
+      } else {
+        console.warn("No se encontraron gastos mensuales extraordinarios.");
+        this.gastos = [];  // Asegúrate de que `this.gastos` esté vacío si no hay datos
+        this.totalPagesExtraordinario = 0;
+        this.updatePaginatedRegistros();
+      }
     }, (error) => {
       console.error('Error fetching presupuesto', error);
     });
   }
+  
 
   checkAdminStatus() {
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -572,14 +859,21 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
 
 
   loadGastosMensualesFrecuencia() {
-    this._presupuestoMensualFrecuenciaServ.getPresupuestoMensualFrecuenciaAprobados().subscribe((data: GastoMensualPorFrecuencia[]) => {
+    this._presupuestoMensualFrecuenciaServ.getPresupuestoMensualFrecuenciaAprobadosMesActual().subscribe((data: GastoMensualPorFrecuencia[]) => {
   
-      // Formatear datos
-      this.gastoMensualFrecuencia = data.map(gasto => ({
-        ...gasto,
-        UltimaFecha: gasto.UltimaFecha ? new Date(gasto.UltimaFecha).toISOString().split('T')[0] : null,
-        PeriodoCongelado: gasto.PeriodoCongelado ? this.formatPeriodoCongelado(gasto.PeriodoCongelado) : null
-      }));
+      // Formatear los datos y aplicar la lógica para CajaChica
+      this.gastoMensualFrecuencia = data.map(gasto => {
+        // Verificar si CajaChica es "1" como string, y en ese caso poner CuentaID a null
+        if (gasto.CajaChica == 1) {
+          gasto.CuentaID = null;
+        }
+  
+        return {
+          ...gasto,
+          UltimaFecha: gasto.UltimaFecha ? new Date(gasto.UltimaFecha).toISOString().split('T')[0] : null,
+          PeriodoCongelado: gasto.PeriodoCongelado ? this.formatPeriodoCongelado(gasto.PeriodoCongelado) : null
+        };
+      });
   
       console.log("Esta es la data de gastos mensuales por frecuencia: ", this.gastoMensualFrecuencia);
       this.totalPages = Math.ceil(this.gastoMensualFrecuencia.length / this.itemsPerPage);
@@ -588,6 +882,25 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
       console.error('Error fetching incomes', error);
     });
   }
+  
+  
+  loadIngresosMensualesCuentas() {
+    this._presupuestoMensualFrecuenciaServ.loadIngresosMensualesCuentas().subscribe(
+      (data: Ingreso[]) => {
+        // Formatear las fechas en los datos obtenidos
+        this.ingreso = data.map(ingreso => ({
+          ...ingreso,
+          Fecha: ingreso.Fecha ? new Date(ingreso.Fecha).toISOString().split('T')[0] : null
+        }));
+  
+        console.log("Esta es la data de ingresos mensuales: ", this.ingreso);
+      },
+      (error) => {
+        console.error('Error fetching incomes', error);
+      }
+    );
+  }
+  
   
   
   formatPeriodoCongelado(periodo: string): string {
@@ -799,34 +1112,85 @@ applySearch() {
 
   async actualizarCuentaSeleccionada() {
     const cuentaID = this.cuentaIDTemporal ?? this.cuentaSeleccionada?.CuentaID;
-  
-    if (!cuentaID || this.gastosSeleccionados.length === 0) {
-      console.warn('Cuenta seleccionada no válida o no hay gastos seleccionados');
-      await this.presentAlert('Cuenta seleccionada no válida o no hay gastos seleccionados.');
-      return;
-    }
-  
-    this._presupuestoMensualCuentasServ.actualizarGastosSeleccionados(this.gastosSeleccionados, cuentaID)
-      .subscribe(
-        async response => {
-          console.log('Respuesta del servidor:', response);
-          this.loadGastoMensualExtraordinario();  // Recargar los datos
 
-          this.cuentaSeleccionada = null;
-          this.cuentaIDTemporal = null; 
-  
-          const alert = await this.alertController.create({
-            header: 'Éxito',
-            message: 'Se han actualizado las cuentas correctamente.',
-            buttons: ['OK']
-          });
-          await alert.present();
-        },
-        async error => {
-          console.error('Error al actualizar los gastos:', error);
-          await this.presentAlert('Error al actualizar los gastos. Por favor, inténtalo de nuevo.');
-        }
-      );
+    // Verificar si cuentaID es null o undefined, pero permitir que 0 sea válido
+    if (cuentaID == null || (this.gastosSeleccionados.length === 0 && this.presupuestoSeleccionado.length === 0 && this.presupuestoFrecuenciaSeleccionado.length === 0)) {
+        console.warn('Cuenta seleccionada no válida o no hay gastos seleccionados');
+        await this.presentAlert('Cuenta seleccionada no válida o no hay gastos seleccionados.');
+        return;
+    }
+
+    if (this.gastosSeleccionados.length > 0) {
+        this._presupuestoMensualCuentasServ.actualizarGastosSeleccionados(this.gastosSeleccionados, cuentaID)
+            .subscribe(
+                async response => {
+                    console.log('Respuesta del servidor:', response);
+                    this.loadGastoMensualExtraordinario();  // Recargar los datos
+                    this.cuentaSeleccionada = null;
+                    this.cuentaIDTemporal = null;
+
+                    const alert = await this.alertController.create({
+                        header: 'Éxito',
+                        message: 'Se han actualizado los gastos extraordinarios correctamente.',
+                        buttons: ['OK']
+                    });
+                    await alert.present();
+                },
+                async error => {
+                    console.error('Error al actualizar los gastos:', error);
+                    await this.presentAlert('Error al actualizar los gastos. Por favor, inténtalo de nuevo.');
+                }
+            );
+    }
+
+    if (this.presupuestoSeleccionado.length > 0) {
+        this._presupuestoMensualCuentasServ.actualizarCuentaDeGastosSemanales(this.presupuestoSeleccionado, cuentaID)
+            .subscribe(
+                async response => {
+                    console.log('Respuesta del servidor:', response);
+                    this.loadPresupuestoSemanal();  // Recargar los datos
+                    this.cuentaSeleccionada = null;
+                    this.cuentaIDTemporal = null;
+
+                    const alert = await this.alertController.create({
+                        header: 'Éxito',
+                        message: 'Se han actualizado los gastos semanales correctamente.',
+                        buttons: ['OK']
+                    });
+                    await alert.present();
+                },
+                async error => {
+                    console.error('Error al actualizar los gastos semanales:', error);
+                    await this.presentAlert('Error al actualizar los gastos semanales. Por favor, inténtalo de nuevo.');
+                }
+            );
+      }
+
+
+      // Actualizar los gastos con frecuencia mensual
+      if (this.presupuestoFrecuenciaSeleccionado.length > 0) {
+        this._presupuestoMensualCuentasServ.actualizarCuentaDeGastosFrecuencia(this.presupuestoFrecuenciaSeleccionado, cuentaID)
+          .subscribe(
+            async response => {
+              console.log('Respuesta del servidor:', response);
+              this.loadGastosMensualesFrecuencia();  // Recargar los datos
+              this.cuentaSeleccionada = null;
+              this.cuentaIDTemporal = null;
+    
+              const alert = await this.alertController.create({
+                header: 'Éxito',
+                message: 'Se han actualizado los gastos con frecuencia mensual correctamente.',
+                buttons: ['OK']
+              });
+              await alert.present();
+            },
+            async error => {
+              console.error('Error al actualizar los gastos con frecuencia mensual:', error);
+              await this.presentAlert('Error al actualizar los gastos con frecuencia mensual. Por favor, inténtalo de nuevo.');
+            }
+          );
+      }
+      
   }
   
   

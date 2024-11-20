@@ -32,8 +32,22 @@ export class PresupuestoMensualCuentasServices {
         cuentaID
     };
     return this.http.put(url, body);
-}
+  }
 
+
+  actualizarCuentaDeGastosSemanales(gastosSeleccionados: any[], cuentaID: number): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}ActualizarCuentaDeGastosSemanales`;
+    const body = { gastosSeleccionados, cuentaID };
+    return this.http.put(url, body);
+  }
+
+
+  // Función para actualizar los gastos con frecuencia mensual
+  actualizarCuentaDeGastosFrecuencia(gastosSeleccionados: any[], cuentaID: number): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}ActualizarCuentaDeGastosFrecuencia`;
+    const body = { gastosSeleccionados, cuentaID };
+    return this.http.put(url, body);
+  }
 
   
 }

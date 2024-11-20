@@ -45,8 +45,8 @@ export class PresupuestoServices {
     return this.http.get<Gastos[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoMensual/`);
   }
 
-  getGastoMensualSemanalAprobado(): Observable<Gastos[]> {
-    return this.http.get<Gastos[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoMensualSemanalAprobado/`);
+  getGastoMensualExtraordinarioAprobado(): Observable<Gastos[]> {
+    return this.http.get<Gastos[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoMensualExtraordinarioAprobado/`);
   }
 
   addGasto(gastos: any): Observable<any> {

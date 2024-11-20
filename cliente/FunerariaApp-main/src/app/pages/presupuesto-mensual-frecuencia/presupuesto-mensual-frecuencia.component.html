@@ -101,7 +101,7 @@
             <td>{{ gastoMensualFrecuencia.FrecuenciaDictaminada }}</td>
             <td>{{ gastoMensualFrecuencia.MontoDictaminado }}</td>
             <td>
-              {{ gastoMensualFrecuencia.CajaChica.data[0] === 1 ? 'Caja Chica' : gastoMensualFrecuencia.NombreCuenta }}
+              {{ gastoMensualFrecuencia.CajaChica == 1 ? 'Caja Chica' : gastoMensualFrecuencia.NombreCuenta }}
             </td>
             <td>{{ gastoMensualFrecuencia.UltimaFecha }}</td>
             <td>{{ gastoMensualFrecuencia.DiaLimite }}</td>

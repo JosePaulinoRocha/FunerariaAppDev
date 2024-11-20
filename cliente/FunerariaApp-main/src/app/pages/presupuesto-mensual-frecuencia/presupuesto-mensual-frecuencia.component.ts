@@ -21,7 +21,7 @@ interface GastoMensualPorFrecuencia {
   FrecuenciaDictaminada: number;
   CuentaID: number | null;
   NombreCuenta: string | null;
-  CajaChica: { data: number[]; type: string; };
+  CajaChica: any;
   DiaLimite: number | null;
   PromedioMonto: number | null;
   PromedioPiezas: number | null;

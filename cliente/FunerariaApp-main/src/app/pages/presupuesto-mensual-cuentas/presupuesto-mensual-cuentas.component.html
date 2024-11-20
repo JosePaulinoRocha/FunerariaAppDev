@@ -82,26 +82,53 @@
           <ion-card-title>{{ cuenta.NombreCuenta }}</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <table class="cuenta-table">
-            <thead>
-              <tr>
-                <th>Categoria</th>
-                <th>Presupuesto</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let categoria of cuenta.categorias">
-                <td>{{ categoria.NombreCategoria }}</td>
-                <td>{{ categoria.Presupuesto | currency }}</td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr class="total-row">
-                <td>Total</td>
-                <td>{{ cuenta.totalPresupuesto | currency }}</td>
-              </tr>
-            </tfoot>
-          </table>
+          <div>
+            <!-- Egresos -->
+            <h3>Egresos</h3>
+            <table class="cuenta-table">
+              <thead>
+                <tr>
+                  <th>Categoría</th>
+                  <th>Presupuesto</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let categoria of cuenta.egresos.categorias">
+                  <td>{{ categoria.NombreCategoria }}</td>
+                  <td>{{ categoria.Presupuesto | currency }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td>Total Egresos</td>
+                  <td>{{ cuenta.egresos.totalPresupuesto | currency }}</td>
+                </tr>
+              </tfoot>
+            </table>
+      
+            <!-- Ingresos -->
+            <h3 style="margin-top: 2rem;">Ingresos</h3>
+            <table class="cuenta-table">
+              <thead>
+                <tr>
+                  <th>Categoría</th>
+                  <th>Presupuesto</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let categoria of cuenta.ingresos.categorias">
+                  <td>{{ categoria.NombreCategoria }}</td>
+                  <td>{{ categoria.Presupuesto | currency }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td>Total Ingresos</td>
+                  <td>{{ cuenta.ingresos.totalPresupuesto | currency }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </ion-card-content>
       </ion-card>
     </div>
@@ -172,6 +199,7 @@
       <table class="table">
         <thead class="header-row">
           <tr class="color_header_tabla">
+            <th></th>
             <th>Fecha Ultimo Egreso</th>
             <th>Segmento</th>
             <th>Categoria</th>
@@ -187,6 +215,13 @@
         </thead>
         <tbody>
           <tr *ngFor="let presupuesto of paginatedPresupuestoSemanal" class="data-row">
+            <td>
+              <input 
+                type="checkbox" 
+                [disabled]="!cuentaSeleccionada || presupuesto.CuentaID == cuentaIDTemporal || (presupuesto['CajaChica'] == 1 && cuentaIDTemporal == 0)" 
+                (change)="onCheckboxChange(presupuesto, $event)" 
+              />
+            </td>
             <td>{{ presupuesto.UltimaFecha }}</td>
             <td>{{ presupuesto.NombreSegmento }}</td>
             <td>{{ presupuesto.NombreCategoria }}</td>
@@ -202,7 +237,7 @@
               {{ presupuesto.PeriodoCongelado }}
             </td>
             <td style="background-color: yellow;">
-              {{ presupuesto['CajaChica']?.data?.[0] === 1 ? 'Caja Chica' : presupuesto.NombreCuenta }}
+              {{ presupuesto.CuentaID === null ? 'Caja Chica' : presupuesto.NombreCuenta }}
             </td>
           </tr>
         </tbody>
@@ -301,10 +336,11 @@
       <table class="table">
         <thead class="header-row">
           <tr class="color_header_tabla">
+            <th></th>
             <th><span style="margin-left: 2rem;"></span>Segmento<span style="margin-left: 2rem;"></span></th>
             <th><span style="margin-left: 4rem;"></span>Categoria<span style="margin-left: 4rem;"></span></th>
             <th><span style="margin-left: 6rem;"></span>Subcategoria<span style="margin-left: 6rem;"></span></th>
-            <th><span style="margin-left: 10;"></span>Concepto<span style="margin-left: 10;"></span></th>
+            <th><span style="margin-left: 10rem;"></span>Concepto<span style="margin-left: 10rem;"></span></th>
             <th>Monto Promedio</th>
             <th>Frecuencia Promedio</th>
             <!-- <th>Piezas promedio</th> -->
@@ -319,6 +355,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let gastoMensualFrecuencia of paginatedGastos" class="data-row">
+            <td>
+              <input 
+                type="checkbox" 
+                [disabled]="!cuentaSeleccionada || gastoMensualFrecuencia.CuentaID == cuentaIDTemporal || (gastoMensualFrecuencia.CajaChica == 1 && cuentaIDTemporal == 0)"
+                (change)="onCheckboxChange(gastoMensualFrecuencia, $event)" />
+            </td>
             <td>{{ gastoMensualFrecuencia.NombreSegmento }}</td>
             <td>{{ gastoMensualFrecuencia.NombreCategoria }}</td>
             <td>{{ gastoMensualFrecuencia.NombreSubcategoria }}</td>
@@ -328,7 +370,7 @@
             <td>{{ gastoMensualFrecuencia.FrecuenciaDictaminada }}</td>
             <td>{{ gastoMensualFrecuencia.MontoDictaminado }}</td>
             <td>
-              {{ gastoMensualFrecuencia.CajaChica.data[0] === 1 ? 'Caja Chica' : gastoMensualFrecuencia.NombreCuenta }}
+              {{ gastoMensualFrecuencia.CuentaID == null ? 'Caja Chica' : gastoMensualFrecuencia.NombreCuenta }}
             </td>
             <td>{{ gastoMensualFrecuencia.UltimaFecha }}</td>
             <td>{{ gastoMensualFrecuencia.DiaLimite }}</td>
@@ -449,7 +491,11 @@
         <tbody>
           <tr *ngFor="let gastos of paginatedPresupuestoExtraordinario" class="data-row">
             <td>
-              <input type="checkbox" (change)="onCheckboxChange(gastos, $event)" />
+              <input 
+                type="checkbox" 
+                [disabled]="!cuentaSeleccionada || gastos.CuentaID == cuentaIDTemporal || cuentaIDTemporal == 0" 
+                (change)="onCheckboxChange(gastos, $event)" 
+              />
             </td>
             <td>{{ gastos.GastoID }}</td>
             <td>{{ gastos.FechaPreautorizada }}</td>

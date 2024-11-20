@@ -123,12 +123,12 @@ export const ObtenerPresupuestoMensual = async (req: Request, res: Response) => 
 };
 
 
-export const ObtenerPresupuestoMensualSemanalAprobado = async (req: Request, res: Response) => {
+export const ObtenerPresupuestoMensualExtraordinarioAprobado = async (req: Request, res: Response) => {
     let con;
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM gastos_presupuesto_vw WHERE EstatusPresupuestoID = 1';
+        let query = 'SELECT * FROM gastos_presupuesto_vw WHERE EstatusPresupuestoID = 1 AND Fecha >= DATE_FORMAT(CURDATE(), "%Y-%m-01") AND Fecha <= LAST_DAY(CURDATE())';
         const gastos = (await con.query(query))[0] as any[];
         result = gastos;
     } catch (error) {
