@@ -167,6 +167,30 @@ interface Ingreso {
 }
 
 
+interface Semana {
+  semana: number;
+  inicio: Date;
+  fin: Date;
+}
+
+interface CategoriaResumen {
+  NombreCategoria: string;
+  Presupuesto: number;
+}
+
+interface CuentaResumen {
+  NombreCuenta: string;
+  egresos: {
+    categorias: CategoriaResumen[];
+    totalPresupuesto: number;
+  };
+  ingresos: {
+    semanas: { [semana: number]: CategoriaResumen[] };
+    totalPresupuesto: number;
+  };
+}
+
+
 
 @Component({
   selector: 'app-presupuesto-mensual-cuentas',
@@ -176,6 +200,36 @@ interface Ingreso {
   imports: [IonicModule, FormsModule, CommonModule, HttpClientModule],
 })
 export class PresupuestoMensualCuentasComponent  implements OnInit {
+
+  semanasMesActual: Semana[] = []; // O el tipo adecuado
+
+  egresosPorSemanas: {
+    cuentas: { [key: string]: { 
+      NombreCuenta: string; 
+      categorias: { [categoriaKey: number]: CategoriaResumen }; 
+      totalPresupuesto: number; 
+    }},
+    semanas: { [semanaId: number]: { 
+      [cuentaKey: string]: { 
+        categorias: { [categoriaKey: number]: CategoriaResumen }; 
+        totalPresupuesto: number; 
+      } 
+    }},
+    totalPresupuesto: number;
+  } = { cuentas: {}, semanas: {}, totalPresupuesto: 0 };
+
+
+
+  getKeys(obj: any): string[] {
+    // Verificar si el objeto es válido antes de llamar a Object.keys
+    if (obj && typeof obj === 'object') {
+      return Object.keys(obj);
+    } else {
+      return []; // Si obj es null o no es un objeto, devolver un arreglo vacío
+    }
+  }
+  
+  
 
   cuentaIDTemporal: number | null = null;
 
@@ -422,7 +476,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
         
         // Sumar los presupuestos relacionados con Caja Chica
         dataCombinada.forEach((item) => {
-            if (item.TipoCuenta === "Caja chica" || item.CajaChica === "1") {
+            if (item.TipoCuenta == "Caja chica" || item.CajaChica == "1") {
                 // Sumar al resumen de Caja Chica
                 if (!resumenCajaChica.categorias[item.CategoriaID]) {
                     resumenCajaChica.categorias[item.CategoriaID] = {
@@ -504,137 +558,224 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
     }
   }
 
-
+  normalizarFecha(fecha: Date): Date {
+    // Crear una nueva fecha en UTC solo con año, mes y día
+    return new Date(Date.UTC(fecha.getUTCFullYear(), fecha.getUTCMonth(), fecha.getUTCDate()));
+  }
+  
   generarResumenCuentasBancarias() {
     const cuentasMap: { [key: string]: any } = {};
-  
-    // Crear una entrada para Caja Chica
-    let resumenCajaChica: any = {
+    const resumenCajaChica: any = {
       NombreCuenta: "Caja Chica",
       egresos: {
         categorias: {},
         totalPresupuesto: 0,
+        semanas: {},
       },
       ingresos: {
-        categorias: {},
+        semanas: {},
         totalPresupuesto: 0,
       },
     };
   
+    const fechaActual = new Date();
+    const semanas: Semana[] = this.dividirMesEnSemanas(fechaActual.getFullYear(), fechaActual.getMonth());
+  
+    console.log("Semanas generadas:", semanas.map(semana =>
+      `Semana ${semana.semana}: Inicio ${this.normalizarFecha(semana.inicio).toISOString().split('T')[0]} - Fin ${this.normalizarFecha(semana.fin).toISOString().split('T')[0]}`
+    ));
+  
     // Combinar todas las fuentes de datos para egresos
     const dataCombinadaEgresos = [...this.presupuestoSemanal, ...this.gastos, ...this.gastoMensualFrecuencia];
   
-    // Procesar egresos
+    // Procesar egresos combinados
     dataCombinadaEgresos.forEach((item) => {
       const esCajaChica = item.TipoCuenta === "Caja chica" || item.CajaChica === "1";
+      const monto = Number(item.Monto ?? item.MontoDictaminado) || 0;
   
-      if (esCajaChica) {
-        // Sumar al resumen de egresos en Caja Chica
-        if (!resumenCajaChica.egresos.categorias[item.CategoriaID]) {
-          resumenCajaChica.egresos.categorias[item.CategoriaID] = {
+      const targetResumen = esCajaChica
+        ? resumenCajaChica
+        : (item.CuentaID && cuentasMap[item.CuentaID])
+          ? cuentasMap[item.CuentaID]
+          : (item.CuentaID && item.NombreCuenta)
+            ? cuentasMap[item.CuentaID] = {
+              NombreCuenta: item.NombreCuenta,
+              egresos: {
+                categorias: {},
+                totalPresupuesto: 0,
+                semanas: {},
+              },
+              ingresos: {
+                semanas: {},
+                totalPresupuesto: 0,
+              },
+            }
+            : null;
+  
+      if (targetResumen) {
+        // Procesar categorías de egresos
+        if (!targetResumen.egresos.categorias[item.CategoriaID]) {
+          targetResumen.egresos.categorias[item.CategoriaID] = {
             NombreCategoria: item.NombreCategoria,
             Presupuesto: 0,
           };
         }
-        const monto = Number(item.Monto ?? item.MontoDictaminado) || 0;
-        resumenCajaChica.egresos.categorias[item.CategoriaID].Presupuesto += monto;
-        resumenCajaChica.egresos.totalPresupuesto += monto;
-      } else if (item.CuentaID && item.NombreCuenta) {
-        // Continuar con cuentas bancarias para egresos
-        if (!cuentasMap[item.CuentaID]) {
-          cuentasMap[item.CuentaID] = {
-            NombreCuenta: item.NombreCuenta,
-            egresos: {
-              categorias: {},
-              totalPresupuesto: 0,
-            },
-            ingresos: {
-              categorias: {},
-              totalPresupuesto: 0,
-            },
-          };
+        targetResumen.egresos.categorias[item.CategoriaID].Presupuesto += monto;
+        targetResumen.egresos.totalPresupuesto += monto;
+  
+        // Asignar a semanas según frecuencia o fecha
+        const fecha = item.Fecha ? this.normalizarFecha(new Date(item.Fecha)) : null;
+        const semana = semanas.find(
+          (s) =>
+            (fecha && fecha >= this.normalizarFecha(s.inicio) && fecha <= this.normalizarFecha(s.fin)) ||
+            (item['PeriodoCongeladoOriginal'] && this.pertenecePeriodoASemana(item['PeriodoCongeladoOriginal'], s))
+        );
+  
+        if (semana) {
+          const semanaId = semana.semana;
+          if (!targetResumen.egresos.semanas[semanaId]) {
+            targetResumen.egresos.semanas[semanaId] = [];
+          }
+  
+          const categoriaSemana = targetResumen.egresos.semanas[semanaId].find(
+            (c: any) => c.NombreCategoria === item.NombreCategoria
+          );
+  
+          if (categoriaSemana) {
+            categoriaSemana.Presupuesto += monto;
+          } else {
+            targetResumen.egresos.semanas[semanaId].push({
+              NombreCategoria: item.NombreCategoria,
+              Presupuesto: monto,
+            });
+          }
         }
-        const cuenta = cuentasMap[item.CuentaID];
-        if (!cuenta.egresos.categorias[item.CategoriaID]) {
-          cuenta.egresos.categorias[item.CategoriaID] = {
-            NombreCategoria: item.NombreCategoria,
-            Presupuesto: 0,
-          };
-        }
-        const monto = Number(item.Monto ?? item.MontoDictaminado) || 0;
-        cuenta.egresos.categorias[item.CategoriaID].Presupuesto += monto;
-        cuenta.egresos.totalPresupuesto += monto;
       }
     });
   
     // Procesar ingresos
     this.ingreso.forEach((item: any) => {
-      const esCajaChica = item.TipoCuentaID === 1;
+      const esCajaChica = item.TipoCuentaID == 1;
+      const cuenta = esCajaChica ? resumenCajaChica : cuentasMap[item.CuentaID] || {
+        NombreCuenta: item.NombreCuenta,
+        egresos: {
+          categorias: {},
+          totalPresupuesto: 0,
+          semanas: {},
+        },
+        ingresos: {
+          semanas: {},
+          totalPresupuesto: 0,
+        },
+      };
   
-      if (esCajaChica) {
-        // Sumar al resumen de ingresos en Caja Chica
-        if (!resumenCajaChica.ingresos.categorias[item.CategoriaID]) {
-          resumenCajaChica.ingresos.categorias[item.CategoriaID] = {
+      if (!cuentasMap[item.CuentaID] && !esCajaChica) {
+        cuentasMap[item.CuentaID] = cuenta;
+      }
+  
+      const monto = Number(item.Monto) || 0;
+      cuenta.ingresos.totalPresupuesto += monto;
+  
+      const fechaIngreso = new Date(item.Fecha);
+      const semana = semanas.find(
+        (s) =>
+          this.normalizarFecha(fechaIngreso) >= this.normalizarFecha(s.inicio) &&
+          this.normalizarFecha(fechaIngreso) <= this.normalizarFecha(s.fin)
+      );
+  
+      if (semana) {
+        const semanaId = semana.semana;
+        if (!cuenta.ingresos.semanas[semanaId]) {
+          cuenta.ingresos.semanas[semanaId] = [];
+        }
+  
+        const categoria = cuenta.ingresos.semanas[semanaId].find(
+          (c: any) => c.NombreCategoria === item.NombreCategoria
+        );
+  
+        if (categoria) {
+          categoria.Presupuesto += monto;
+        } else {
+          cuenta.ingresos.semanas[semanaId].push({
             NombreCategoria: item.NombreCategoria,
-            Presupuesto: 0,
-          };
+            Presupuesto: monto,
+          });
         }
-        const monto = Number(item.Monto) || 0;
-        resumenCajaChica.ingresos.categorias[item.CategoriaID].Presupuesto += monto;
-        resumenCajaChica.ingresos.totalPresupuesto += monto;
-      } else if (item.CuentaID && item.NombreCuenta) {
-        // Continuar con cuentas bancarias para ingresos
-        if (!cuentasMap[item.CuentaID]) {
-          cuentasMap[item.CuentaID] = {
-            NombreCuenta: item.NombreCuenta,
-            egresos: {
-              categorias: {},
-              totalPresupuesto: 0,
-            },
-            ingresos: {
-              categorias: {},
-              totalPresupuesto: 0,
-            },
-          };
-        }
-        const cuenta = cuentasMap[item.CuentaID];
-        if (!cuenta.ingresos.categorias[item.CategoriaID]) {
-          cuenta.ingresos.categorias[item.CategoriaID] = {
-            NombreCategoria: item.NombreCategoria,
-            Presupuesto: 0,
-          };
-        }
-        const monto = Number(item.Monto) || 0;
-        cuenta.ingresos.categorias[item.CategoriaID].Presupuesto += monto;
-        cuenta.ingresos.totalPresupuesto += monto;
       }
     });
   
-    // Insertar Caja Chica al inicio de la lista de cuentas bancarias
+    // Insertar Caja Chica y cuentas bancarias
     this.cuentasBancarias = [
       {
         ...resumenCajaChica,
         egresos: {
           categorias: Object.values(resumenCajaChica.egresos.categorias),
-          totalPresupuesto: resumenCajaChica.egresos.totalPresupuesto, // Agregar total aquí
+          totalPresupuesto: resumenCajaChica.egresos.totalPresupuesto,
+          semanas: resumenCajaChica.egresos.semanas,
         },
         ingresos: {
-          categorias: Object.values(resumenCajaChica.ingresos.categorias),
-          totalPresupuesto: resumenCajaChica.ingresos.totalPresupuesto, // Agregar total aquí
+          semanas: resumenCajaChica.ingresos.semanas,
+          totalPresupuesto: resumenCajaChica.ingresos.totalPresupuesto,
         },
       },
       ...Object.values(cuentasMap).map((cuenta) => ({
         ...cuenta,
         egresos: {
           categorias: Object.values(cuenta.egresos.categorias),
-          totalPresupuesto: cuenta.egresos.totalPresupuesto, // Agregar total aquí
+          totalPresupuesto: cuenta.egresos.totalPresupuesto,
+          semanas: cuenta.egresos.semanas,
         },
         ingresos: {
-          categorias: Object.values(cuenta.ingresos.categorias),
-          totalPresupuesto: cuenta.ingresos.totalPresupuesto, // Agregar total aquí
+          semanas: cuenta.ingresos.semanas,
+          totalPresupuesto: cuenta.ingresos.totalPresupuesto,
         },
       })),
     ];
+  
+    console.log('Resumen de cuentas bancarias:', this.cuentasBancarias);
+  }
+  
+  // Nueva función para verificar si un período pertenece a una semana
+  pertenecePeriodoASemana(periodo: string, semana: Semana): boolean {
+    const [fechaInicio, fechaFin] = periodo.split(' al ').map(fecha => this.normalizarFecha(new Date(fecha)));
+    return (
+      fechaInicio >= this.normalizarFecha(semana.inicio) &&
+      fechaFin <= this.normalizarFecha(semana.fin)
+    );
+  }
+  
+  
+  dividirMesEnSemanas(anio: number, mes: number): { semana: number; inicio: Date; fin: Date }[] {
+    const semanas = [];
+    let fechaInicio = new Date(anio, mes, 1); // Primer día del mes
+    const ultimoDiaDelMes = new Date(anio, mes + 1, 0); // Último día del mes
+    let semana = 1;
+  
+    // Ajustar al lunes más cercano (si el primer día no es lunes)
+    if (fechaInicio.getDay() !== 1) {
+      const ajuste = fechaInicio.getDay() === 0 ? -6 : 1 - fechaInicio.getDay();
+      fechaInicio.setDate(fechaInicio.getDate() + ajuste);
+    }
+  
+    while (fechaInicio <= ultimoDiaDelMes) {
+      const fechaFin = new Date(fechaInicio);
+      fechaFin.setDate(fechaInicio.getDate() + 6); // Avanzar 6 días para completar la semana
+  
+      // Limitar el rango de la semana al final del mes
+      // if (fechaFin > ultimoDiaDelMes) {
+      //   fechaFin.setTime(ultimoDiaDelMes.getTime());
+      // }
+  
+      semanas.push({ semana, inicio: new Date(fechaInicio), fin: new Date(fechaFin) });
+      semana++;
+  
+      // Avanzar al inicio de la siguiente semana
+      fechaInicio.setDate(fechaInicio.getDate() + 7);
+    }
+  
+    console.log('Semanas generadas:', semanas.map(s =>
+      `Semana ${s.semana}: Inicio ${s.inicio.toISOString()} - Fin ${s.fin.toISOString()}`));
+    return semanas;
   }
   
   
@@ -780,6 +921,8 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
 
 
   ngOnInit() {
+    const today = new Date();
+    this.generateWeeksForMonth(today.getFullYear(), today.getMonth());
     this.loadGastosMensualesFrecuencia();
     this.checkAdminStatus();
     this.loadGastoMensualExtraordinario();
@@ -795,7 +938,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
             // Filtrar solo cuentas bancarias y agregar "Caja Chica" manualmente
             this.cuenta = [
                 { CuentaID: 0, NombreCuenta: 'Caja Chica', TipoCuentaID: 1, RFC: "" }, // RFC como cadena vacía
-                ...data.filter(cuenta => cuenta.TipoCuentaID === 2) // TipoCuentaID de cuentas bancarias
+                ...data.filter(cuenta => cuenta.TipoCuentaID == 2) // TipoCuentaID de cuentas bancarias
             ];
             console.log('Esta es mi data en cuentas:', this.cuenta);
         },
@@ -813,6 +956,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
       this.presupuestoSemanal = data.map(presupuestoSemanal => ({
         ...presupuestoSemanal,
         UltimaFecha: new Date(presupuestoSemanal.UltimaFecha).toISOString().split('T')[0],
+        PeriodoCongeladoOriginal: presupuestoSemanal.PeriodoCongelado, // Mantener el valor original del periodo congelado
         PeriodoCongelado: presupuestoSemanal.PeriodoCongelado ? this.formatPeriodoCongelado(presupuestoSemanal.PeriodoCongelado) : null
       }));
   
@@ -859,29 +1003,188 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
 
 
   loadGastosMensualesFrecuencia() {
-    this._presupuestoMensualFrecuenciaServ.getPresupuestoMensualFrecuenciaAprobadosMesActual().subscribe((data: GastoMensualPorFrecuencia[]) => {
+    this._presupuestoMensualFrecuenciaServ.getPresupuestoMensualFrecuenciaAprobadosMesActual().subscribe(
+      (data: GastoMensualPorFrecuencia[]) => {
+        this.gastoMensualFrecuencia = data.map(gasto => {
+          if (gasto.CajaChica == 1) {
+            gasto.CuentaID = null; // Si es Caja Chica, asignar CuentaID a null
+          }
   
-      // Formatear los datos y aplicar la lógica para CajaChica
-      this.gastoMensualFrecuencia = data.map(gasto => {
-        // Verificar si CajaChica es "1" como string, y en ese caso poner CuentaID a null
-        if (gasto.CajaChica == 1) {
-          gasto.CuentaID = null;
-        }
+          return {
+            ...gasto,
+            UltimaFecha: gasto.UltimaFecha ? new Date(gasto.UltimaFecha).toISOString().split('T')[0] : null,
+            PeriodoCongeladoOriginal: gasto.PeriodoCongelado, // Mantener el valor original del periodo congelado
+            PeriodoCongelado: gasto.PeriodoCongelado ? this.formatPeriodoCongelado(gasto.PeriodoCongelado) : null, // Formatear el periodo
+          };
+        });
   
-        return {
-          ...gasto,
-          UltimaFecha: gasto.UltimaFecha ? new Date(gasto.UltimaFecha).toISOString().split('T')[0] : null,
-          PeriodoCongelado: gasto.PeriodoCongelado ? this.formatPeriodoCongelado(gasto.PeriodoCongelado) : null
+        console.log("esta es la data de gastos por frecuencia: ", this.gastoMensualFrecuencia);
+        this.totalPages = Math.ceil(this.gastoMensualFrecuencia.length / this.itemsPerPage);
+        this.updatePaginatedGastos();
+        this.organizarEgresosPorSemanas(); // Organizar los egresos por semanas
+      },
+      error => {
+        console.error('Error fetching incomes', error);
+      }
+    );
+  }
+  
+
+
+  organizarEgresosPorSemanas(): void {
+    this.egresosPorSemanas = {
+      cuentas: {},
+      semanas: {},
+      totalPresupuesto: 0,
+    };
+  
+    this.gastoMensualFrecuencia.forEach((gasto) => {
+      if (!gasto['PeriodoCongeladoOriginal']) {
+        console.warn('PeriodoCongeladoOriginal no está definido para el gasto:', gasto);
+        return;
+      }
+  
+      const [fechaInicio, fechaFin] = gasto['PeriodoCongeladoOriginal'].split(' al ');
+      if (!fechaInicio || !fechaFin) {
+        console.warn('PeriodoCongeladoOriginal tiene un formato incorrecto:', gasto['PeriodoCongeladoOriginal']);
+        return;
+      }
+  
+      // Obtener el ID de la semana correspondiente
+      const semanaId = this.getSemanaFromPeriodo(fechaInicio.trim(), fechaFin.trim());
+      // console.log('Semana ID:', semanaId);
+  
+      if (semanaId === -1) {
+        console.warn('El rango de fechas no encaja en ninguna semana:', fechaInicio, fechaFin);
+        return;
+      }
+  
+      const cuentaKey = gasto.CajaChica === '1' ? 'CajaChica' : gasto.CuentaID;
+      if (cuentaKey === null) {
+        console.warn('El gasto no tiene una cuenta válida:', gasto);
+        return;
+      }
+  
+      // Crear la cuenta si no existe en el objeto egresosPorSemanas
+      if (!this.egresosPorSemanas.cuentas[cuentaKey]) {
+        this.egresosPorSemanas.cuentas[cuentaKey] = {
+          NombreCuenta: cuentaKey === 'CajaChica' ? 'Caja Chica' : gasto.NombreCuenta || 'Cuenta Desconocida',
+          categorias: {},
+          totalPresupuesto: 0,
         };
+      }
+  
+      // Crear la semana si no existe
+      if (!this.egresosPorSemanas.semanas[semanaId]) {
+        this.egresosPorSemanas.semanas[semanaId] = {};
+      }
+  
+      // Crear la cuenta en la semana si no existe
+      if (!this.egresosPorSemanas.semanas[semanaId][cuentaKey]) {
+        this.egresosPorSemanas.semanas[semanaId][cuentaKey] = {
+          categorias: {},
+          totalPresupuesto: 0,
+        };
+      }
+  
+      const categoriaKey = gasto.CategoriaID;
+      const monto = parseFloat(String(gasto.MontoDictaminado)) || 0;
+      const cuenta = this.egresosPorSemanas.cuentas[cuentaKey];
+      const semana = this.egresosPorSemanas.semanas[semanaId][cuentaKey];
+  
+      // Crear la categoría si no existe
+      if (!cuenta.categorias[categoriaKey]) {
+        cuenta.categorias[categoriaKey] = {
+          NombreCategoria: gasto.NombreCategoria || 'Categoría Desconocida',
+          Presupuesto: 0,
+        };
+      }
+  
+      if (!semana.categorias[categoriaKey]) {
+        semana.categorias[categoriaKey] = {
+          NombreCategoria: gasto.NombreCategoria || 'Categoría Desconocida',
+          Presupuesto: 0,
+        };
+      }
+  
+      // Acumular los montos en la categoría y en la cuenta
+      cuenta.categorias[categoriaKey].Presupuesto += monto;
+      semana.categorias[categoriaKey].Presupuesto += monto;
+      cuenta.totalPresupuesto += monto;
+      semana.totalPresupuesto += monto;
+      this.egresosPorSemanas.totalPresupuesto += monto;
+    });
+  
+    // console.log('Egresos organizados por semanas: ', this.egresosPorSemanas);
+  }
+  
+
+
+  getSemanaFromPeriodo(fechaInicio: string, fechaFin: string): number {
+    const inicio = new Date(fechaInicio).getTime();
+    const fin = new Date(fechaFin).getTime();
+    const semanasGeneradas = this.semanasMesActual; // Este array debe contener las semanas generadas
+  
+    if (!semanasGeneradas || semanasGeneradas.length === 0) {
+      console.error("semanasMesActual no está definido o no tiene semanas.");
+      return -1;
+    }
+  
+    for (let i = 0; i < semanasGeneradas.length; i++) {
+      const inicioSemana = new Date(semanasGeneradas[i].inicio).getTime();
+      const finSemana = new Date(semanasGeneradas[i].fin).getTime();
+  
+      // Comparar el rango del gasto con el rango de la semana
+      if ((inicio >= inicioSemana && inicio <= finSemana) || (fin >= inicioSemana && fin <= finSemana)) {
+        return i + 1; // Semana 1, 2, ..., 5
+      }
+    }
+  
+    return -1; // Si no encaja en ninguna semana
+  }
+  
+  
+  
+
+  generateWeeksForMonth(year: number, month: number): void {
+    // Crear el rango de fechas para el mes
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0); // Último día del mes
+  
+    const weeks: Semana[] = [];
+    let currentStart = startDate;
+    let currentEnd = new Date(currentStart);
+    currentEnd.setDate(currentStart.getDate() + 6); // Semana de 7 días
+  
+    // Mientras la fecha final de la semana esté dentro del mes
+    while (currentEnd <= endDate) {
+      weeks.push({
+        semana: weeks.length + 1,
+        inicio: new Date(currentStart),
+        fin: new Date(currentEnd),
       });
   
-      console.log("Esta es la data de gastos mensuales por frecuencia: ", this.gastoMensualFrecuencia);
-      this.totalPages = Math.ceil(this.gastoMensualFrecuencia.length / this.itemsPerPage);
-      this.updatePaginatedGastos();
-    }, (error) => {
-      console.error('Error fetching incomes', error);
-    });
+      // Avanzar a la siguiente semana
+      currentStart = new Date(currentEnd);
+      currentStart.setDate(currentStart.getDate() + 1);
+      currentEnd = new Date(currentStart);
+      currentEnd.setDate(currentStart.getDate() + 6);
+    }
+  
+    // Si queda un fragmento de semana al final
+    if (currentStart <= endDate) {
+      weeks.push({
+        semana: weeks.length + 1,
+        inicio: new Date(currentStart),
+        fin: new Date(endDate),
+      });
+    }
+  
+    // Asignar las semanas generadas al arreglo
+    this.semanasMesActual = weeks;
+    console.log('Semanas generadas para el mes actual:', this.semanasMesActual);
   }
+  
   
   
   loadIngresosMensualesCuentas() {

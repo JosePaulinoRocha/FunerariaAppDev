@@ -74,7 +74,7 @@
     {{ showBancosView ? 'Ver todos los gastos' : 'Ver todos los bancos' }}
   </ion-button>
 
-  <!-- Interfaz de cuentas bancarias -->
+  
   <div *ngIf="showBancosView" class="bancos-container">
     <div class="cuentas-grid">
       <ion-card *ngFor="let cuenta of cuentasBancarias" class="cuenta-card">
@@ -82,57 +82,68 @@
           <ion-card-title>{{ cuenta.NombreCuenta }}</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <div>
-            <!-- Egresos -->
-            <h3>Egresos</h3>
-            <table class="cuenta-table">
-              <thead>
-                <tr>
-                  <th>Categoría</th>
-                  <th>Presupuesto</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let categoria of cuenta.egresos.categorias">
-                  <td>{{ categoria.NombreCategoria }}</td>
-                  <td>{{ categoria.Presupuesto | currency }}</td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr class="total-row">
-                  <td>Total Egresos</td>
-                  <td>{{ cuenta.egresos.totalPresupuesto | currency }}</td>
-                </tr>
-              </tfoot>
-            </table>
-      
-            <!-- Ingresos -->
-            <h3 style="margin-top: 2rem;">Ingresos</h3>
-            <table class="cuenta-table">
-              <thead>
-                <tr>
-                  <th>Categoría</th>
-                  <th>Presupuesto</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let categoria of cuenta.ingresos.categorias">
-                  <td>{{ categoria.NombreCategoria }}</td>
-                  <td>{{ categoria.Presupuesto | currency }}</td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr class="total-row">
-                  <td>Total Ingresos</td>
-                  <td>{{ cuenta.ingresos.totalPresupuesto | currency }}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+          <!-- Egresos -->
+          <h3>Egresos</h3>
+          <table class="cuenta-table">
+            <thead>
+              <tr>
+                <th>Semana</th>
+                <th>Categoría</th>
+                <th>Presupuesto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let semanaId of getKeys(cuenta.egresos.semanas)">
+                <ng-container *ngFor="let categoria of cuenta.egresos.semanas[semanaId]">
+                  <tr>
+                    <td>Semana {{ semanaId }}</td>
+                    <td>{{ categoria.NombreCategoria }}</td>
+                    <td>{{ categoria.Presupuesto | currency }}</td>
+                  </tr>
+                </ng-container>
+              </ng-container>
+            </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td colspan="2">Total Egresos</td>
+                <td>{{ cuenta.egresos.totalPresupuesto | currency }}</td>
+              </tr>
+            </tfoot>
+          </table>
+  
+          <!-- Ingresos -->
+          <h3 style="margin-top: 2rem;">Ingresos</h3>
+          <table class="cuenta-table">
+            <thead>
+              <tr>
+                <th>Semana</th>
+                <th>Categoría</th>
+                <th>Presupuesto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let semanaId of getKeys(cuenta.ingresos.semanas)">
+                <ng-container *ngFor="let categoria of cuenta.ingresos.semanas[semanaId]">
+                  <tr>
+                    <td>Semana {{ semanaId }}</td>
+                    <td>{{ categoria.NombreCategoria }}</td>
+                    <td>{{ categoria.Presupuesto | currency }}</td>
+                  </tr>
+                </ng-container>
+              </ng-container>
+            </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td colspan="2">Total Ingresos</td>
+                <td>{{ cuenta.ingresos.totalPresupuesto | currency }}</td>
+              </tr>
+            </tfoot>
+          </table>
         </ion-card-content>
       </ion-card>
     </div>
   </div>
+
 
   
   <div *ngIf="!showBancosView">
