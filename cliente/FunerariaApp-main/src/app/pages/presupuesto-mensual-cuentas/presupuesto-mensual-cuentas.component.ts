@@ -571,21 +571,18 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
         categorias: {},
         totalPresupuesto: 0,
         semanas: {},
+        totalesSemanas: {},
       },
       ingresos: {
         semanas: {},
         totalPresupuesto: 0,
+        totalesSemanas: {},
       },
     };
   
     const fechaActual = new Date();
     const semanas: Semana[] = this.dividirMesEnSemanas(fechaActual.getFullYear(), fechaActual.getMonth());
   
-    console.log("Semanas generadas:", semanas.map(semana =>
-      `Semana ${semana.semana}: Inicio ${this.normalizarFecha(semana.inicio).toISOString().split('T')[0]} - Fin ${this.normalizarFecha(semana.fin).toISOString().split('T')[0]}`
-    ));
-  
-    // Combinar todas las fuentes de datos para egresos
     const dataCombinadaEgresos = [...this.presupuestoSemanal, ...this.gastos, ...this.gastoMensualFrecuencia];
   
     // Procesar egresos combinados
@@ -604,16 +601,17 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
                 categorias: {},
                 totalPresupuesto: 0,
                 semanas: {},
+                totalesSemanas: {},
               },
               ingresos: {
                 semanas: {},
                 totalPresupuesto: 0,
+                totalesSemanas: {},
               },
             }
             : null;
   
       if (targetResumen) {
-        // Procesar categorías de egresos
         if (!targetResumen.egresos.categorias[item.CategoriaID]) {
           targetResumen.egresos.categorias[item.CategoriaID] = {
             NombreCategoria: item.NombreCategoria,
@@ -623,7 +621,6 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
         targetResumen.egresos.categorias[item.CategoriaID].Presupuesto += monto;
         targetResumen.egresos.totalPresupuesto += monto;
   
-        // Asignar a semanas según frecuencia o fecha
         const fecha = item.Fecha ? this.normalizarFecha(new Date(item.Fecha)) : null;
         const semana = semanas.find(
           (s) =>
@@ -635,6 +632,9 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
           const semanaId = semana.semana;
           if (!targetResumen.egresos.semanas[semanaId]) {
             targetResumen.egresos.semanas[semanaId] = [];
+          }
+          if (!targetResumen.egresos.totalesSemanas[semanaId]) {
+            targetResumen.egresos.totalesSemanas[semanaId] = 0;
           }
   
           const categoriaSemana = targetResumen.egresos.semanas[semanaId].find(
@@ -649,11 +649,12 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
               Presupuesto: monto,
             });
           }
+          targetResumen.egresos.totalesSemanas[semanaId] += monto;
         }
       }
     });
   
-    // Procesar ingresos
+    // Procesar ingresos (similar lógica para totales semanales)
     this.ingreso.forEach((item: any) => {
       const esCajaChica = item.TipoCuentaID == 1;
       const cuenta = esCajaChica ? resumenCajaChica : cuentasMap[item.CuentaID] || {
@@ -662,10 +663,12 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
           categorias: {},
           totalPresupuesto: 0,
           semanas: {},
+          totalesSemanas: {},
         },
         ingresos: {
           semanas: {},
           totalPresupuesto: 0,
+          totalesSemanas: {},
         },
       };
   
@@ -688,6 +691,9 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
         if (!cuenta.ingresos.semanas[semanaId]) {
           cuenta.ingresos.semanas[semanaId] = [];
         }
+        if (!cuenta.ingresos.totalesSemanas[semanaId]) {
+          cuenta.ingresos.totalesSemanas[semanaId] = 0;
+        }
   
         const categoria = cuenta.ingresos.semanas[semanaId].find(
           (c: any) => c.NombreCategoria === item.NombreCategoria
@@ -701,10 +707,10 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
             Presupuesto: monto,
           });
         }
+        cuenta.ingresos.totalesSemanas[semanaId] += monto;
       }
     });
   
-    // Insertar Caja Chica y cuentas bancarias
     this.cuentasBancarias = [
       {
         ...resumenCajaChica,
@@ -712,10 +718,12 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
           categorias: Object.values(resumenCajaChica.egresos.categorias),
           totalPresupuesto: resumenCajaChica.egresos.totalPresupuesto,
           semanas: resumenCajaChica.egresos.semanas,
+          totalesSemanas: resumenCajaChica.egresos.totalesSemanas,
         },
         ingresos: {
           semanas: resumenCajaChica.ingresos.semanas,
           totalPresupuesto: resumenCajaChica.ingresos.totalPresupuesto,
+          totalesSemanas: resumenCajaChica.ingresos.totalesSemanas,
         },
       },
       ...Object.values(cuentasMap).map((cuenta) => ({
@@ -724,16 +732,23 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
           categorias: Object.values(cuenta.egresos.categorias),
           totalPresupuesto: cuenta.egresos.totalPresupuesto,
           semanas: cuenta.egresos.semanas,
+          totalesSemanas: cuenta.egresos.totalesSemanas,
         },
         ingresos: {
           semanas: cuenta.ingresos.semanas,
           totalPresupuesto: cuenta.ingresos.totalPresupuesto,
+          totalesSemanas: cuenta.ingresos.totalesSemanas,
         },
       })),
     ];
   
     console.log('Resumen de cuentas bancarias:', this.cuentasBancarias);
   }
+
+  getTotalSemana(categoriasSemana: any[]): number {
+    return categoriasSemana.reduce((total, categoria) => total + (categoria.Presupuesto || 0), 0);
+  }
+
   
   // Nueva función para verificar si un período pertenece a una semana
   pertenecePeriodoASemana(periodo: string, semana: Semana): boolean {

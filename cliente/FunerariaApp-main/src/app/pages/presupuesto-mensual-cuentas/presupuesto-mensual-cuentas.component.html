@@ -101,11 +101,16 @@
                     <td>{{ categoria.Presupuesto | currency }}</td>
                   </tr>
                 </ng-container>
+                <!-- Total por semana -->
+                <tr class="total-row">
+                  <td colspan="2">Total Semana {{ semanaId }}</td>
+                  <td>{{ getTotalSemana(cuenta.egresos.semanas[semanaId]) | currency }}</td>
+                </tr>
               </ng-container>
             </tbody>
             <tfoot>
               <tr class="total-row">
-                <td colspan="2">Total Egresos</td>
+                <td colspan="2">Total Mensual Egresos</td>
                 <td>{{ cuenta.egresos.totalPresupuesto | currency }}</td>
               </tr>
             </tfoot>
@@ -130,11 +135,16 @@
                     <td>{{ categoria.Presupuesto | currency }}</td>
                   </tr>
                 </ng-container>
+                <!-- Total por semana -->
+                <tr class="total-row">
+                  <td colspan="2">Total Semana {{ semanaId }}</td>
+                  <td>{{ getTotalSemana(cuenta.ingresos.semanas[semanaId]) | currency }}</td>
+                </tr>
               </ng-container>
             </tbody>
             <tfoot>
               <tr class="total-row">
-                <td colspan="2">Total Ingresos</td>
+                <td colspan="2">Total Mensual Ingresos</td>
                 <td>{{ cuenta.ingresos.totalPresupuesto | currency }}</td>
               </tr>
             </tfoot>

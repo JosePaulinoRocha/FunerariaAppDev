@@ -26,28 +26,40 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Si hay un usuario en sessionStorage, redirigir a home
     if (this.authService.isLoggedIn()) {
+      this.redirectToDefaultRoute();
+    }
+  }
+  
+  private redirectToDefaultRoute() {
+    if (this.isMobile()) {
+      this.router.navigate(['/proyeccion']);
+    } else {
       this.router.navigate(['/home']);
     }
+  }
+  
+
+  private isMobile(): boolean {
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
   }
 
   login() {
     if (this.loginForm.invalid) {
       return;
     }
-
+  
     const { email, password } = this.loginForm.value;
     this.authService.login(email, password).subscribe(
       (response) => {
         if (response.success) {
-          this.authService.setSession(response);
-          this.authService.loggedInSubject.next(true); // Actualizar el estado de loggedIn
-          this.authService.isAdminSubject.next(this.authService.isAdmin()); // Actualizar el estado de admin
-          this.router.navigate(['/home']);
-          // setTimeout(() => {
-          //   window.location.reload();
-          // }, 100);
+          this.authService.setSession(response); // Guarda la sesión
+          this.authService.loggedInSubject.next(true); // Actualiza el estado de loggedIn
+          this.authService.isAdminSubject.next(this.authService.isAdmin()); // Actualiza el estado de admin
+  
+          // Redirige según el dispositivo
+          this.redirectToDefaultRoute();
         } else {
           alert('Usuario o contraseña incorrectos');
         }
@@ -57,4 +69,6 @@ export class LoginComponent implements OnInit {
       }
     );
   }
+
+
 }

@@ -87,4 +87,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/presupuesto-mensual-cuentas/presupuesto-mensual-cuentas.component').then((m) => m.PresupuestoMensualCuentasComponent),
     canActivate: [AuthGuard, AdminGuard],
   },
+  {
+    path: 'proyeccion',
+    loadComponent: () => import('./pages/proyeccion/proyeccion.component').then((m) => m.ProyeccionComponent),
+    canActivate: [AuthGuard],
+  },
 ];
