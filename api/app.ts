@@ -15,6 +15,8 @@ import Presupuesto from "./routes/Presupuesto.routes"
 import PresupuestoMensualFrecuencia from "./routes/Presupuesto-Mensual-Frecuencia.routes"
 import PresupuestoMensualCuentas from "./routes/Presupuesto-Mensual-Cuentas.routes"
 import Transferencias from "./routes/Transferencias.routes"
+import Proyeccion from "./routes/Proyeccion.routes"
+
 
 
 const dir = '../../cliente/DirectoriCliente/';
@@ -72,6 +74,7 @@ export class App {
         this.app.use('/api/presupuesto-mensual-frecuencia', PresupuestoMensualFrecuencia);
         this.app.use('/api/presupuesto-mensual-cuentas', PresupuestoMensualCuentas);
         this.app.use('/api/transferencias', Transferencias);
+        this.app.use('/api/proyeccion', Proyeccion);
 
 
         this.app.get('*',function (req,res){

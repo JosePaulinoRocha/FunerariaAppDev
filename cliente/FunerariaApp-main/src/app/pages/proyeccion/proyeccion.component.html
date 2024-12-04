@@ -18,19 +18,19 @@
     <div class="data-row">
       <div class="data-item">
         <div class="data-label">Actual</div>
-        <div class="data-value">$120,000</div>
+        <div class="data-value">{{ egresoActual | currency }}</div> <!-- Aquí usamos la variable egresoActual -->
       </div>
       <div class="data-item">
         <div class="data-label">Forecast</div>
-        <div class="data-value">$150,000</div>
+        <div class="data-value">${{ totalEgresos | number }}</div>
       </div>
       <div class="data-item">
         <div class="data-label">Absolute</div>
-        <div class="data-value">-$30,000</div>
+        <div class="data-value">{{ (egresoActual - 150000) | currency }}</div> <!-- Cálculo dinámico -->
       </div>
       <div class="data-item">
         <div class="data-label">Percentage</div>
-        <div class="data-value">-20%</div>
+        <div class="data-value">{{ percentageEgreso | number: '1.0-2' }}%</div> <!-- Cálculo dinámico -->
       </div>
     </div>
 
@@ -41,19 +41,19 @@
     <div class="data-row">
       <div class="data-item">
         <div class="data-label">Actual</div>
-        <div class="data-value">$200,000</div>
+        <div class="data-value">{{ ingresoActual | currency }}</div> <!-- Aquí usamos la variable ingresoActual -->
       </div>
       <div class="data-item">
         <div class="data-label">Forecast</div>
-        <div class="data-value">$220,000</div>
+        <div class="data-value">{{ ingresoPasado | currency }}</div>
       </div>
       <div class="data-item">
         <div class="data-label">Absolute</div>
-        <div class="data-value">-$20,000</div>
+        <div class="data-value">{{ (ingresoActual - ingresoPasado) | currency }}</div> <!-- Cálculo dinámico -->
       </div>
       <div class="data-item">
         <div class="data-label">Percentage</div>
-        <div class="data-value">+10%</div>
+        <div class="data-value">{{ ((ingresoActual - ingresoPasado) / ingresoPasado * 100) | number: '1.0-2' }}%</div>
       </div>
     </div>
 
@@ -64,34 +64,31 @@
     <div class="data-row">
       <div class="data-item">
         <div class="data-label">Actual</div>
-        <div class="data-value">$80,000</div>
+        <div class="data-value">{{ (ingresoActual - egresoActual) | currency }}</div> <!-- Utilidad neta actual -->
       </div>
       <div class="data-item">
         <div class="data-label">Forecast</div>
-        <div class="data-value">$70,000</div>
+        <div class="data-value">{{ (ingresoPasado - totalEgresos) | currency }}</div>
       </div>
       <div class="data-item">
         <div class="data-label">Absolute</div>
-        <div class="data-value">$10,000</div>
+        <div class="data-value">{{ ((ingresoActual - egresoActual) - (ingresoPasado - totalEgresos)) | currency }}</div> <!-- Cálculo dinámico -->
       </div>
       <div class="data-item">
         <div class="data-label">Percentage</div>
-        <div class="data-value">+5%</div>
+        <div class="data-value">{{ (((ingresoActual - egresoActual) - (ingresoPasado - totalEgresos)) / (ingresoPasado - totalEgresos) * 100) | number: '1.0-2' }}%</div> <!-- Cálculo dinámico -->
       </div>
     </div>
-
 
     <h2 class="chart-title">Revenue: Actual vs Esperado</h2>
     <div class="chart-container">
       <canvas id="barChartRevenue"></canvas>
     </div>
 
-
     <h2 class="chart-title">Break Down of Costs</h2>
     <div class="chart-container">
       <canvas id="barChartBreakdown"></canvas>
     </div>
-
 
   </div>
 </ion-content>
