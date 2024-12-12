@@ -1,0 +1,40 @@
+.change-password-modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  
+    .form-container {
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      background: #ffffff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+  
+      ion-item {
+        margin-bottom: 15px;
+        --background: #f4f4f4;
+        --border-radius: 8px;
+      }
+  
+      ion-label {
+        font-weight: bold;
+        color: #333;
+      }
+  
+      ion-button {
+        margin-top: 10px;
+        --border-radius: 8px;
+      }
+  
+      .error {
+        color: #f53d3d;
+        font-size: 0.9rem;
+        text-align: center;
+        margin-top: 10px;
+      }
+    }
+  }
+  

@@ -11,10 +11,53 @@
   <div class="content-container">
     <h1 class="page-title">Proyección</h1>
 
-    <h2 class="chart-title">Egresos: Actual vs Planeado</h2>
-    <div class="chart-container">
-      <canvas id="barChartEgresos"></canvas>
+    <!-- Botones para alternar entre gráficos -->
+    <div style="margin-top: 4rem;" class="toggle-buttons">
+      <ion-button
+        fill="solid"
+        color="primary"
+        [disabled]="activeEgresoChart === 'actualVsPlaneado'"
+        (click)="toggleEgresoChart('actualVsPlaneado')">
+        Actual vs Planeado
+      </ion-button>
+      <ion-button
+        fill="solid"
+        color="primary"
+        [disabled]="activeEgresoChart === 'porSegmento'"
+        (click)="toggleEgresoChart('porSegmento')">
+        Por Segmentos
+      </ion-button>
+      <ion-button
+        fill="solid"
+        color="primary"
+        [disabled]="activeEgresoChart === 'porSemana'"
+        (click)="toggleEgresoChart('porSemana')">
+        Por Semana
+      </ion-button>
     </div>
+
+    <!-- Gráficas de Egresos -->
+    <div [class.hidden]="activeEgresoChart !== 'actualVsPlaneado'">
+      <h2 class="chart-title">Egresos: Actual vs Planeado</h2>
+      <div class="chart-container">
+        <canvas id="barChartEgresos"></canvas>
+      </div>
+    </div>
+
+    <div [class.hidden]="activeEgresoChart !== 'porSegmento'">
+      <h2 class="chart-title">Egresos del mes por segmento</h2>
+      <div class="chart-container">
+        <canvas id="egresosMensualesChart"></canvas>
+      </div>
+    </div>
+
+    <div [class.hidden]="activeEgresoChart !== 'porSemana'">
+      <h2 class="chart-title">Egresos del mes por semana</h2>
+      <div class="chart-container">
+        <canvas id="egresosSemanalesChart"></canvas>
+      </div>
+    </div>
+    
     <div class="data-row">
       <div class="data-item">
         <div class="data-label">Actual</div>
@@ -34,10 +77,54 @@
       </div>
     </div>
 
-    <h2 class="chart-title">Ingresos: Actual vs Planeado</h2>
-    <div class="chart-container">
-      <canvas id="barChartIngresos"></canvas>
+
+    <!-- Botones para alternar entre gráficos de Ingresos -->
+    <div style="margin-top: 4rem;" class="toggle-buttons">
+      <ion-button
+        fill="solid"
+        color="primary"
+        [disabled]="activeIngresoChart === 'actualVsPlaneado'"
+        (click)="toggleIngresoChart('actualVsPlaneado')">
+        Actual vs Planeado
+      </ion-button>
+      <ion-button
+        fill="solid"
+        color="primary"
+        [disabled]="activeIngresoChart === 'porSegmento'"
+        (click)="toggleIngresoChart('porSegmento')">
+        Por Segmentos
+      </ion-button>
+      <ion-button
+        fill="solid"
+        color="primary"
+        [disabled]="activeIngresoChart === 'porSemana'"
+        (click)="toggleIngresoChart('porSemana')">
+        Por Semana
+      </ion-button>
     </div>
+
+    <!-- Gráficas de Ingresos -->
+    <div [class.hidden]="activeIngresoChart !== 'actualVsPlaneado'">
+      <h2 class="chart-title">Ingresos: Actual vs Planeado</h2>
+      <div class="chart-container">
+        <canvas id="barChartIngresos"></canvas>
+      </div>
+    </div>
+
+    <div [class.hidden]="activeIngresoChart !== 'porSegmento'">
+      <h2 class="chart-title">Ingresos del mes por segmento</h2>
+      <div class="chart-container">
+        <canvas id="ingresosMensualesChart"></canvas>
+      </div>
+    </div>
+
+    <div [class.hidden]="activeIngresoChart !== 'porSemana'">
+      <h2 class="chart-title">Ingresos del mes por semana</h2>
+      <div class="chart-container">
+        <canvas id="ingresosSemanalesChart"></canvas>
+      </div>
+    </div>
+
     <div class="data-row">
       <div class="data-item">
         <div class="data-label">Actual</div>
@@ -57,10 +144,56 @@
       </div>
     </div>
 
-    <h2 class="chart-title">Utilidad Neta: Actual vs Planeado</h2>
-    <div class="chart-container">
-      <canvas id="barChartNetProfit"></canvas>
+
+
+    <!-- Botones para alternar entre gráficos de Utilidad Neta -->
+    <div style="margin-top: 4rem;" class="toggle-buttons">
+      <ion-button
+        fill="solid"
+        color="primary"
+        [disabled]="activeUtilidadChart === 'actualVsPlaneado'"
+        (click)="toggleUtilidadChart('actualVsPlaneado')">
+        Actual vs Planeado
+      </ion-button>
+      <ion-button
+        fill="solid"
+        color="primary"
+        [disabled]="activeUtilidadChart === 'ultimosMeses'"
+        (click)="toggleUtilidadChart('ultimosMeses')">
+        Últimos 20 meses
+      </ion-button>
+      <ion-button
+        fill="solid"
+        color="primary"
+        [disabled]="activeUtilidadChart === 'porSemana'"
+        (click)="toggleUtilidadChart('porSemana')">
+        Por Semana
+      </ion-button>
     </div>
+
+
+    <!-- Gráficas de Utilidad Neta -->
+    <div [class.hidden]="activeUtilidadChart !== 'actualVsPlaneado'">
+      <h2 class="chart-title">Utilidad Neta: Actual vs Planeado</h2>
+      <div class="chart-container">
+        <canvas id="barChartNetProfit"></canvas>
+      </div>
+    </div>
+
+    <div [class.hidden]="activeUtilidadChart !== 'ultimosMeses'">
+      <h2 class="chart-title">Utilidad Neta: Últimos 20 meses</h2>
+      <div class="chart-container">
+        <canvas id="utilidadesNetasChart"></canvas>
+      </div>
+    </div>
+
+    <div [class.hidden]="activeUtilidadChart !== 'porSemana'">
+      <h2 class="chart-title">Utilidad Neta Semanal: Mes actual</h2>
+      <div class="chart-container">
+        <canvas id="utilidadNetaSemanalesChart"></canvas>
+      </div>
+    </div>
+
     <div class="data-row">
       <div class="data-item">
         <div class="data-label">Actual</div>
@@ -80,14 +213,24 @@
       </div>
     </div>
 
-    <h2 class="chart-title">Revenue: Actual vs Esperado</h2>
+    <h2 style="margin-top: 2rem;" class="chart-title">Ingresos: Ultimos 20 meses</h2>
     <div class="chart-container">
       <canvas id="barChartRevenue"></canvas>
     </div>
 
-    <h2 class="chart-title">Break Down of Costs</h2>
+    <h2 style="margin-top: 2rem;" class="chart-title">Egresos: Últimos 20 meses</h2>
+    <div class="chart-container">
+      <canvas id="barChartEgresosMensuales"></canvas>
+    </div>
+
+    <h2 style="margin-top: 2rem;" class="chart-title">Egreso por Categoria Unificada</h2>
     <div class="chart-container">
       <canvas id="barChartBreakdown"></canvas>
+    </div>
+
+    <h2 style="margin-top: 2rem;" class="chart-title">Ingreso por Categoria Unificada</h2>
+    <div class="chart-container">
+      <canvas id="barChartIngresosSemanales"></canvas>
     </div>
 
   </div>

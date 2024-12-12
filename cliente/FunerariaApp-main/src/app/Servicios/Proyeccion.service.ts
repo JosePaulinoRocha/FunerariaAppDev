@@ -40,8 +40,36 @@ export class ProyeccionServices {
     return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosActuales/`);
   }
 
+  getEgresosMensuales(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensuales/`);
+  }
+
+  EgresosMensualSemanales(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensualSemanales/`);
+  }
+
+  IngresosMensualSemanales(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosMensualSemanales/`);
+  }
+
+  getEgresosMensualSegmentos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensualSegmentos/`);
+  }
+
+  getIngresosMensualSegmentos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosMensualSegmentos/`);
+  }
+
+  getUtilidadesNetasMensuales(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetUtilidadesNetasMensuales/`);
+  }
+
   getEgresosPorCategoriaMensuales(): Observable<any[]> {
     return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosPorCategoriaMensuales/`);
+  }
+
+  getIngresosPorCategoriaMensuales(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosPorCategoriaMensuales/`);
   }
   
 }

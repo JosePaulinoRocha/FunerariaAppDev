@@ -128,3 +128,26 @@ export const ObtenerRoles = async (req: Request, res: Response) => {
       return res.json(result);
   }
 };
+
+
+
+export const UpdatePassword = async (req: Request, res: Response) => {
+  const { userId, newPassword } = req.body;
+  let con;
+  try {
+    con = await connect();
+
+    // Actualizar contraseña y establecer CambioContra a 1
+    const query = 'UPDATE usuarios SET password = ?, CambioContra = 1 WHERE userId = ?';
+    await con.query(query, [newPassword, userId]);
+
+    return res.json({ success: true, message: 'Contraseña actualizada correctamente y cambio registrado.' });
+  } catch (error) {
+    console.log('Error al actualizar contraseña:', error);
+    return res.status(500).json({ success: false, message: 'Error al actualizar la contraseña.' });
+  } finally {
+    await con?.end();
+  }
+};
+
+

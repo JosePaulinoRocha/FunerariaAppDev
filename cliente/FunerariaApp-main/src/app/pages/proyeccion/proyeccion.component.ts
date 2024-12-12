@@ -17,6 +17,11 @@ import { PresupuestoMensualFrecuenciaServices } from 'src/app/Servicios/Presupue
   imports: [IonicModule, FormsModule, CommonModule, HttpClientModule],
 })
 export class ProyeccionComponent implements OnInit, OnDestroy {
+  activeEgresoChart: string = 'actualVsPlaneado';
+  activeIngresoChart: string = 'actualVsPlaneado'; 
+  activeUtilidadChart: string = 'actualVsPlaneado'; 
+  ingresosSemanales: any[] = [];
+  egresosSemanales: any[] = [];
   egresoActual: number = 0;
   egresoPasado: number = 0;
   ingresoActual: number = 0;
@@ -49,10 +54,18 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     this.loadIngresoActual();
     this.loadIngresoPasado();
     this.loadIngresosMensuales();
+    this.loadEgresosMensuales();
     this.loadEgresosPorCategoria();
     this.loadPresupuestoSemanal();
     this.loadGastosMensualesFrecuencia();
     this.loadGastoMensualExtraordinario();
+    this.loadUtilidadesNetasMensuales();
+    this.loadEgresosMensualesSegmentos();
+    this.loadIngresosMensualesSegmentos();
+    this.loadEgresosMensualSemanales();
+    this.loadIngresosMensualSemanales();
+    this.loadIngresosPorCategoria();
+
   }
   
   ngOnChanges() {
@@ -79,16 +92,70 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     this.charts = {};
   }
 
+  toggleEgresoChart(chart: string) {
+    this.activeEgresoChart = chart;
+  }
+
+  toggleIngresoChart(chart: string) {
+    this.activeIngresoChart = chart;
+  }
+  
+  toggleUtilidadChart(chart: string) {
+    this.activeUtilidadChart = chart;
+  }
+
+  loadEgresosMensualesSegmentos() {
+    this._proyeccionServ.getEgresosMensualSegmentos().subscribe(
+      (data: any[]) => {
+        console.log("Datos de egresos mensual por segmentos:", data);
+        this.createEgresosMensualesChart(data);
+      },
+      (error) => console.error('Error fetching egresos mensuales:', error)
+    );
+  }
+
+
+  loadIngresosMensualesSegmentos() {
+    this._proyeccionServ.getIngresosMensualSegmentos().subscribe(
+      (data: any[]) => {
+        console.log('Datos de ingresos mensual por segmentos:', data);
+        this.createIngresosMensualesChart(data); // Pasamos los datos directamente
+      },
+      (error) => console.error('Error fetching ingresos mensuales:', error)
+    );
+  }
+
+
+  loadUtilidadesNetasMensuales() {
+    this._proyeccionServ.getUtilidadesNetasMensuales().subscribe(
+      (data: any[]) => {
+        console.log("Datos de utilidades netas mensuales:", data);
+
+        // Extraemos los datos para la gráfica
+        const labels = data.map(item => `${item.Mes} ${item.Anio}`);
+        const values = data.map(item => parseFloat(item.UtilidadNeta));
+
+        // Creamos la gráfica
+        this.createUtilidadesNetasChart(labels, values);
+      },
+      (error) => console.error('Error fetching utilidades netas mensuales:', error)
+    );
+  }
+
   private loadEgresoActual() {
     this._proyeccionServ.getEgresoMensual().subscribe(
       (data: any[]) => {
         this.egresoActual = data.length > 0 && data[0].EgresoActual
           ? parseFloat(data[0].EgresoActual)
-          : 0;
+          : 0; // Establece en 0 si no hay resultados
         this.updateEgresosChart();
-        this.calculatePercentage();  // Llamar al método para calcular el porcentaje
+        this.calculatePercentage();
       },
-      (error) => console.error('Error fetching egreso mensual:', error)
+      (error) => {
+        console.error('Error fetching egreso mensual:', error);
+        this.egresoActual = 0; // Valor por defecto en caso de error
+        this.updateEgresosChart();
+      }
     );
   }
   
@@ -97,13 +164,16 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       (data: any[]) => {
         this.egresoPasado = data.length > 0 && data[0].EgresoMesPasado
           ? parseFloat(data[0].EgresoMesPasado)
-          : 0;
-        console.log("este es el egreso del mes pasado: ", this.egresoPasado);
-        this.calculatePercentage();  // Llamar al método para calcular el porcentaje
+          : 0; // Establece en 0 si no hay resultados
+        this.calculatePercentage();
       },
-      (error) => console.error('Error fetching egreso mensual:', error)
+      (error) => {
+        console.error('Error fetching egreso mensual pasado:', error);
+        this.egresoPasado = 0; // Valor por defecto en caso de error
+      }
     );
   }
+  
   
   private calculatePercentage() {
     console.log('Egreso actual:', this.egresoActual);
@@ -124,18 +194,14 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       (data: any[]) => {
         this.ingresoActual = data.length > 0 && data[0].IngresoActual
           ? parseFloat(data[0].IngresoActual)
-          : 0;
-        // Solo inicializar el gráfico si ambos ingresos están disponibles
-        if (this.ingresoPasado) {
-          this.initializeChart(
-            'barChartIngresos',
-            'Ingresos ($)',
-            [this.ingresoActual, this.ingresoPasado, this.ingresoActual - this.ingresoPasado],
-            ['#42A5F5', '#66BB6A', '#FFA726']
-          );
-        }
+          : 0; // Valor predeterminado
+        this.updateIngresosChart(); // Aseguramos que el gráfico se actualice
       },
-      (error) => console.error('Error fetching ingreso mensual:', error)
+      (error) => {
+        console.error('Error fetching ingreso mensual:', error);
+        this.ingresoActual = 0; // Valor predeterminado en caso de error
+        this.updateIngresosChart(); // Aseguramos que el gráfico se actualice
+      }
     );
   }
   
@@ -144,20 +210,28 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       (data: any[]) => {
         this.ingresoPasado = data.length > 0 && data[0].IngresoMesPasado
           ? parseFloat(data[0].IngresoMesPasado)
-          : 0;
-        console.log("este es el ingreso del mes pasado: ", this.ingresoPasado);
-        // Solo inicializar el gráfico si ambos ingresos están disponibles
-        if (this.ingresoActual) {
-          this.initializeChart(
-            'barChartIngresos',
-            'Ingresos ($)',
-            [this.ingresoActual, this.ingresoPasado, this.ingresoActual - this.ingresoPasado],
-            ['#42A5F5', '#66BB6A', '#FFA726']
-          );
-        }
+          : 0; // Valor predeterminado
+        this.updateIngresosChart(); // Aseguramos que el gráfico se actualice
       },
-      (error) => console.error('Error fetching egreso mensual:', error)
+      (error) => {
+        console.error('Error fetching ingreso mensual pasado:', error);
+        this.ingresoPasado = 0; // Valor predeterminado en caso de error
+        this.updateIngresosChart(); // Aseguramos que el gráfico se actualice
+      }
     );
+  }
+
+  
+  private updateIngresosChart() {
+    // Aseguramos que la gráfica se renderice solo cuando ambos ingresos estén definidos
+    if (this.ingresoActual !== undefined && this.ingresoPasado !== undefined) {
+      this.initializeChart(
+        'barChartIngresos',
+        'Ingresos ($)',
+        [this.ingresoActual, this.ingresoPasado, this.ingresoActual - this.ingresoPasado],
+        ['#42A5F5', '#66BB6A', '#FFA726']
+      );
+    }
   }
 
 
@@ -177,6 +251,42 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     );
   }
 
+  loadEgresosMensuales() {
+    this._proyeccionServ.getEgresosMensuales().subscribe(
+      (data: any[]) => {
+        const reversedData = data.reverse();
+        console.log("Datos invertidos de egresos:", reversedData);
+  
+        // Actualiza la gráfica con los datos invertidos
+        this.updateEgresosMensualesChart(reversedData);
+      },
+      (error) => console.error('Error fetching egresos mensuales:', error)
+    );
+  }
+
+  loadEgresosMensualSemanales() {
+    this._proyeccionServ.EgresosMensualSemanales().subscribe(
+      (data: any[]) => {
+        console.log("Datos de egresos semanales:", data);
+        this.createEgresosSemanalesChart(data); // Llamar a la función para crear la gráfica
+        this.egresosSemanales = data; // Almacenar los datos de egresos
+        this.createUtilidadNetaChart(); // Crear la gráfica de utilidad neta después de obtener los datos
+      },
+      (error) => console.error('Error fetching egresos mensuales:', error)
+    );
+  }
+  
+  loadIngresosMensualSemanales() {
+    this._proyeccionServ.IngresosMensualSemanales().subscribe(
+      (data: any[]) => {
+        console.log("Datos de ingresos semanales:", data);
+        this.createIngresosSemanalesChart(data); // Llamar a la función para crear la gráfica
+        this.ingresosSemanales = data; // Almacenar los datos de ingresos
+        this.createUtilidadNetaChart(); // Crear la gráfica de utilidad neta después de obtener los datos
+      },
+      (error) => console.error('Error fetching ingresos mensuales:', error)
+    );
+  }
 
   loadEgresosPorCategoria() {
     this._proyeccionServ.getEgresosPorCategoriaMensuales().subscribe(
@@ -194,6 +304,23 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     );
   }
 
+  loadIngresosPorCategoria() {
+    this._proyeccionServ.getIngresosPorCategoriaMensuales().subscribe(
+      (data: any[]) => {
+        console.log("Esta es la data de ingresos por categoria mensuales:", data);
+  
+        // Procesar datos para el gráfico
+        const ingresosData = {
+          labels: data.map(item => item.NombreCategoria), // Categorías
+          data: data.map(item => parseFloat(item.TotalIngresos)) // Montos de ingresos
+        };
+  
+        // Ahora que los datos están listos, inicializamos el gráfico
+        this.initializeIngresosChart(ingresosData);
+      },
+      (error) => console.error('Error fetching ingresos por categoría mensuales:', error)
+    );
+  }
 
   private loadPresupuestoSemanal() {
     this._presupuestoServ.getPresupuestoSemanal().subscribe(
@@ -241,25 +368,23 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   private updateEgresosChart() {
     if (this.isSemanalLoaded && this.isFrecuenciaLoaded && this.isExtraordinarioLoaded) {
       this.totalEgresos =
-        this.egresosPlaneadosSemanalesTotales +
-        this.egresosPlaneadosFrecuenciaTotales +
-        this.egresosPlaneadosExtraordinariosTotales;
+        (this.egresosPlaneadosSemanalesTotales || 0) +
+        (this.egresosPlaneadosFrecuenciaTotales || 0) +
+        (this.egresosPlaneadosExtraordinariosTotales || 0);
   
-      // Verificar si todos los datos para la utilidad neta están disponibles
-      if (this.ingresoActual && this.egresoActual && this.totalEgresos !== undefined) {
-        this.initializeNetProfitChart(); // Inicializar gráfico de utilidad neta
-      }
+      // Asegúrate de que la gráfica de utilidad neta siempre se inicialice
+      this.initializeNetProfitChart();
   
-      // Llamar a la inicialización del gráfico de egresos
       this.initializeChart(
         'barChartEgresos',
         'Egresos ($)',
-        [this.egresoActual, this.totalEgresos, this.egresoActual - this.totalEgresos],
+        [this.egresoActual || 0, this.totalEgresos, (this.egresoActual || 0) - (this.totalEgresos || 0)],
         ['#FF6384', '#36A2EB', '#FFCE56']
       );
     }
     this.calculatePercentage();
   }
+  
   
 
   private initializeChart(
@@ -373,6 +498,56 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       options,
     });
   }
+
+
+  private updateEgresosMensualesChart(data: any[]) {
+    const labels = data.map(item => `${item.Mes} ${item.Anio}`);
+    const egresos = data.map(item => parseFloat(item.IngresoTotal)); // Asegúrate de que el campo sea el correcto.
+  
+    // Destruir el gráfico existente si ya está definido
+    if (this.charts['barChartEgresosMensuales']) {
+      this.charts['barChartEgresosMensuales'].destroy();
+    }
+  
+    this.charts['barChartEgresosMensuales'] = new Chart('barChartEgresosMensuales', {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Egresos ($)',
+            data: egresos,
+            backgroundColor: '#EF5350', // Rojo claro
+            borderColor: '#D32F2F', // Rojo oscuro
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function (value) {
+                return `$${value.toLocaleString()}`;
+              },
+            },
+          },
+        },
+      },
+    });
+  }
   
 
   private initializeNetProfitChart() {
@@ -383,20 +558,10 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       return;
     }
   
-    // Calcular la utilidad neta
-    const utilidadNetaActual = this.ingresoActual - this.egresoActual;  // Utilidad neta actual
-    const utilidadNetaEsperada = this.ingresoPasado - this.totalEgresos; // Utilidad neta esperada (con los egresos totales)
-    const diferenciaUtilidadNeta = utilidadNetaActual - utilidadNetaEsperada; // Diferencia entre las dos
-  
-    console.log('Utilidad neta actual:', utilidadNetaActual);
-    console.log('Utilidad neta esperada:', utilidadNetaEsperada);
-    console.log('Diferencia de utilidad neta:', diferenciaUtilidadNeta);
-  
-    // Asegúrate de que no haya valores inesperados
-    if (isNaN(utilidadNetaActual) || isNaN(utilidadNetaEsperada) || isNaN(diferenciaUtilidadNeta)) {
-      console.error('Error en los cálculos de la utilidad neta.');
-      return;
-    }
+    // Calcular la utilidad neta con valores predeterminados
+    const utilidadNetaActual = (this.ingresoActual || 0) - (this.egresoActual || 0);
+    const utilidadNetaEsperada = (this.ingresoPasado || 0) - (this.totalEgresos || 0);
+    const diferenciaUtilidadNeta = utilidadNetaActual - utilidadNetaEsperada;
   
     const data: ChartConfiguration['data'] = {
       labels: ['Actual', 'Forecast', 'Diferencia'],
@@ -420,7 +585,6 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       },
     };
   
-    // Destruir el gráfico existente si ya fue creado previamente
     if (this.charts['barChartNetProfit']) {
       this.charts['barChartNetProfit'].destroy();
     }
@@ -489,5 +653,399 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     });
   }
 
+
+  private createUtilidadesNetasChart(labels: string[], values: number[]) {
+    const chartId = 'utilidadesNetasChart';
+    const canvas = document.getElementById(chartId) as HTMLCanvasElement;
+
+    if (this.charts[chartId]) {
+      this.charts[chartId].destroy(); // Elimina el gráfico anterior si existe
+    }
+
+    this.charts[chartId] = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Utilidades Netas ($)',
+            data: values,
+            borderColor: '#4CAF50',
+            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Utilidad Neta ($)',
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Meses',
+            },
+          },
+        },
+      },
+    });
+  }
+
+
+  private createEgresosMensualesChart(data: any[]) {
+    const chartId = 'egresosMensualesChart';
+    const canvas = document.getElementById(chartId) as HTMLCanvasElement;
+  
+    // Procesar los datos
+    const labels = data.map((item) => item.NombreSegmento);
+    const values = data.map((item) => parseFloat(item.EgresoActual));
+  
+    // Verificar y destruir el gráfico existente
+    if (this.charts[chartId]) {
+      this.charts[chartId].destroy();
+    }
+  
+    // Crear el gráfico
+    this.charts[chartId] = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Egresos Actuales ($)',
+            data: values,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Egresos ($)',
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Segmentos',
+            },
+          },
+        },
+      },
+    });
+  }
+
+
+  private createIngresosMensualesChart(data: any[]) {
+    const chartId = 'ingresosMensualesChart';
+    const canvas = document.getElementById(chartId) as HTMLCanvasElement;
+  
+    // Procesar los datos
+    const labels = data.map((item) => item.NombreSegmento);
+    const values = data.map((item) => parseFloat(item.IngresoActual));
+  
+    // Verificar y destruir el gráfico existente
+    if (this.charts[chartId]) {
+      this.charts[chartId].destroy();
+    }
+  
+    // Crear el gráfico
+    this.charts[chartId] = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Ingresos Actuales ($)',
+            data: values,
+            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Ingresos ($)',
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Segmentos',
+            },
+          },
+        },
+      },
+    });
+  }
+
+
+  private createEgresosSemanalesChart(data: any[]) {
+    const chartId = 'egresosSemanalesChart';
+    const canvas = document.getElementById(chartId) as HTMLCanvasElement;
+  
+    // Procesar los datos: extraemos los rangos de fechas y los montos
+    const labels = data.map(item => `${item.inicio_semana} - ${item.fin_semana}`);
+    const values = data.map(item => parseFloat(item.total_monto));
+  
+    // Verificar y destruir el gráfico existente
+    if (this.charts[chartId]) {
+      this.charts[chartId].destroy();
+    }
+  
+    // Crear el gráfico
+    this.charts[chartId] = new Chart(canvas, {
+      type: 'bar', // Usamos barras, pero puedes elegir otro tipo si es necesario
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Egresos Semanales ($)',
+            data: values,
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Monto de Egresos ($)',
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Semanas',
+            },
+          },
+        },
+      },
+    });
+  }
+
+
+  private createIngresosSemanalesChart(data: any[]) {
+    const chartId = 'ingresosSemanalesChart';
+    const canvas = document.getElementById(chartId) as HTMLCanvasElement;
+  
+    // Procesar los datos: extraemos los rangos de fechas y los montos
+    const labels = data.map(item => `${item.inicio_semana} - ${item.fin_semana}`);
+    const values = data.map(item => parseFloat(item.total_monto));
+  
+    // Verificar y destruir el gráfico existente
+    if (this.charts[chartId]) {
+      this.charts[chartId].destroy();
+    }
+  
+    // Crear el gráfico
+    this.charts[chartId] = new Chart(canvas, {
+      type: 'bar', // Usamos barras, pero puedes elegir otro tipo si es necesario
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Ingresos Semanales ($)',
+            data: values,
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Monto de Ingresos ($)',
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Semanas',
+            },
+          },
+        },
+      },
+    });
+  }
+  
+
+  // Función para calcular la utilidad neta y crear la gráfica
+  createUtilidadNetaChart() {
+    if (this.ingresosSemanales.length && this.egresosSemanales.length) {
+      const chartId = 'utilidadNetaSemanalesChart';
+      const canvas = document.getElementById(chartId) as HTMLCanvasElement;
+
+      // Asegurarse de que las semanas coincidan en ambas consultas
+      const labels = this.ingresosSemanales.map(item => `${item.inicio_semana} - ${item.fin_semana}`);
+      const ingresosValues = this.ingresosSemanales.map(item => parseFloat(item.total_monto));
+      const egresosValues = this.egresosSemanales.map(item => parseFloat(item.total_monto));
+
+      // Calcular la utilidad neta
+      const utilidadNetaValues = ingresosValues.map((ingreso, index) => ingreso - egresosValues[index]);
+
+      // Verificar y destruir el gráfico existente
+      if (this.charts[chartId]) {
+        this.charts[chartId].destroy();
+      }
+
+      // Crear la gráfica
+      this.charts[chartId] = new Chart(canvas, {
+        type: 'line', // Usamos una gráfica de líneas
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Utilidad Neta Semanal ($)',
+              data: utilidadNetaValues,
+              borderColor: 'rgba(255, 99, 132, 1)', // Color de la línea
+              backgroundColor: 'rgba(255, 99, 132, 0.5)', // Color de fondo
+              fill: true, // Rellenar el área debajo de la línea
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Utilidad Neta ($)',
+              },
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Semanas',
+              },
+            },
+          },
+        },
+      });
+    }
+  }
+
+
+  // Función para inicializar la gráfica de ingresos por categoría
+  private initializeIngresosChart(ingresosData: { labels: string[]; data: number[] }) {
+    const canvas = document.getElementById('barChartIngresosSemanales') as HTMLCanvasElement;
+
+    if (!canvas) {
+      console.warn('Canvas for Ingresos Chart not found.');
+      return;
+    }
+
+    const data: ChartConfiguration['data'] = {
+      labels: ingresosData.labels, // Usamos las categorías desde los datos
+      datasets: [
+        {
+          label: 'Ingresos ($)',
+          data: ingresosData.data, // Usamos los montos desde los datos
+          backgroundColor: '#66BB6A', // Color de los ingresos (puedes cambiarlo)
+          borderRadius: 5,
+        },
+      ],
+    };
+
+    const options: ChartOptions = {
+      responsive: true,
+      indexAxis: 'y', // Gráfico horizontal
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+        },
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+        },
+        y: {
+          ticks: {
+            autoSkip: false,
+            maxRotation: 0,
+            minRotation: 0,
+          },
+        },
+      },
+    };
+
+    // Destruir el gráfico existente si ya fue creado previamente
+    if (this.charts['barChartIngresosSemanales']) {
+      this.charts['barChartIngresosSemanales'].destroy();
+    }
+
+    // Crear el gráfico
+    this.charts['barChartIngresosSemanales'] = new Chart(canvas, {
+      type: 'bar',
+      data,
+      options,
+    });
+  }
 
 }

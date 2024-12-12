@@ -56,3 +56,21 @@
   font-weight: bold;
   color: #007bff;
 }
+
+
+.toggle-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.chart-title {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+
+.hidden {
+  display: none;
+}

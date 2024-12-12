@@ -78,6 +78,118 @@ export const ObtenerIngresoActual = async (req: Request, res: Response) => {
 };
 
 
+export const ObtenerEgresosMensuales = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM egresos_totales_vw';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en egreso actual');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+export const ObtenerEgresosMensualSemanales = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM egresos_mes_actual_semanales_vw';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en egreso actual');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+export const ObtenerIngresosMensualSemanales = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM ingresos_mes_actual_semanales_vw';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en egreso actual');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+export const ObtenerEgresoMensualSegmentos = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM egreso_actual_por_segmento_vw';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en egreso actual');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+export const ObtenerIngresoMensualSegmentos = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM ingreso_actual_por_segmento_vw';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en egreso actual');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+export const ObtenerUtilidadesNetasMensuales = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM utilidades_netas_mensuales_vw';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en egreso actual');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
 export const ObtenerIngresosMensuales = async (req: Request, res: Response) => {
     let con;
     let result;
@@ -107,6 +219,26 @@ export const ObtenerEgresosPorCategoriaMensuales = async (req: Request, res: Res
         result = gastos;
     } catch (error) {
         console.log('Error en egreso mensual por categoria');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+
+export const ObtenerIngresosPorCategoriaMensuales = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM vista_ingresos_por_categoria';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en ingreso mensual por categoria');
         console.log(error);
         result = null;
     } finally {
