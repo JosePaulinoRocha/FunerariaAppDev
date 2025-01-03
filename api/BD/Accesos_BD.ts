@@ -24,7 +24,7 @@ import mysql from 'mysql2/promise';
 
 export async function connect() {
     return mysql.createConnection({
-        host: '66.179.189.37',
+        host: 'systemabmxlifuneraria.com',
         user: 'root',
         password: 'wWi8aiDa',
         database: 'systemab_funeraria_db',
