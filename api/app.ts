@@ -64,7 +64,7 @@ export class App {
 
         // Fallback para aplicaciones SPA
         this.app.get('*', (req, res) => {
-            res.sendFile(path.resolve(__dirname, '../../cliente/DirectoriCliente/index.html'));
+            res.sendFile(path.resolve(__dirname, '../../cliente/DirectoriCliente'));
         });
     }
 
