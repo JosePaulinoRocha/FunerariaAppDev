@@ -78,7 +78,7 @@ export class App {
 
 
         this.app.get('*',function (req,res){
-            res.sendfile(path.join(dir, 'index.html'));
+            res.sendFile(path.join(dir, 'index.html'));
         });
     }
 
