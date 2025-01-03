@@ -1,4 +1,4 @@
 export const environmentProd = {
   production: false,
-  endpoint: 'https://systemabmxlifuneraria.com'
+  endpoint: 'https://systemabmxlifuneraria.com:3080'
 };
