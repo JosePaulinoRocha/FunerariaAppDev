@@ -30,7 +30,7 @@ export class LoginComponent implements OnInit {
       this.redirectToDefaultRoute();
     }
   }
-  
+
   private redirectToDefaultRoute() {
     if (this.isMobile()) {
       this.router.navigate(['/proyeccion']);
@@ -38,7 +38,7 @@ export class LoginComponent implements OnInit {
       this.router.navigate(['/home']);
     }
   }
-  
+
 
   private isMobile(): boolean {
     const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
@@ -49,15 +49,16 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.invalid) {
       return;
     }
-  
+
     const { email, password } = this.loginForm.value;
     this.authService.login(email, password).subscribe(
       (response) => {
+        console.log(response)
         if (response.success) {
           this.authService.setSession(response); // Guarda la sesión
           this.authService.loggedInSubject.next(true); // Actualiza el estado de loggedIn
           this.authService.isAdminSubject.next(this.authService.isAdmin()); // Actualiza el estado de admin
-  
+
           // Redirige según el dispositivo
           this.redirectToDefaultRoute();
         } else {
