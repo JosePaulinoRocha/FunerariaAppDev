@@ -23,7 +23,7 @@
         <ion-label style="margin-right: 1rem;">{{ getFieldLabel(field) }}:</ion-label>
         <ion-input [(ngModel)]="searchValues[field]"></ion-input>
       </ion-item>
-    
+
       <div *ngIf="isDateField(field)">
         <ion-item>
           <ion-label>{{ getFieldLabel(field) }} Desde:</ion-label>
@@ -34,15 +34,15 @@
           <input type="date" [value]="getEndDate(field)" (change)="onEndDateChange($event, field)">
         </ion-item>
       </div>
-      
+
     </div>
 
     <ion-button (click)="applySearch()">Buscar</ion-button>
 
     <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
-    
 
-    <ion-button style="margin-left: 4rem;" color="warning" 
+
+    <ion-button style="margin-left: 4rem;" color="warning"
       [disabled]="selectedIncomes.length === 0"
       (click)="openAssignAccountsModal()">Asignar Cuentas
     </ion-button>
@@ -51,22 +51,22 @@
 
 
     <!-- Botón para importar archivo de Excel -->
-    <input 
-      type="file" 
-      accept=".xlsx, .xls" 
-      (change)="onFileChange($event)" 
-      style="display: none" 
-      id="fileInput" 
+    <input
+      type="file"
+      accept=".xlsx, .xls"
+      (change)="onFileChange($event)"
+      style="display: none"
+      id="fileInput"
     />
     <ion-button style="margin-left: 2rem;" color="danger" (click)="triggerFileInput()">Importar Ingresos</ion-button>
 
 
-    <input 
-    type="file" 
-    accept=".xlsx, .xls" 
-    (change)="onFileChangeEgresos($event)" 
-    style="display: none" 
-    id="fileInputEgresos" 
+    <input
+    type="file"
+    accept=".xlsx, .xls"
+    (change)="onFileChangeEgresos($event)"
+    style="display: none"
+    id="fileInputEgresos"
     />
     <ion-button style="margin-left: 2rem;" color="success" (click)="triggerFileInputEgresos()">Importar Egresos</ion-button>
 
@@ -74,16 +74,18 @@
     <div style="margin-top: 1rem;" class="button-group">
       <button (click)="setFilter('all')" [disabled]="filtroSeleccionado === 'all'">Todos</button>
       <button (click)="setFilter('ingresos')" [disabled]="filtroSeleccionado === 'ingresos'">Ingresos</button>
+      <button (click)="setFilter('ingresosSinCuenta')" [disabled]="filtroSeleccionado === 'ingresosSinCuenta'">Ingresos sin cuenta</button>
+      <button (click)="setFilter('ingresosConCuenta')" [disabled]="filtroSeleccionado === 'ingresosConCuenta'">Ingresos con cuenta</button>
       <button (click)="setFilter('egresos')" [disabled]="filtroSeleccionado === 'egresos'">Egresos</button>
       <button (click)="setFilter('cuentaContable')" [disabled]="filtroSeleccionado === 'cuentaContable'">Imports con cuenta y combinacion</button>
       <button (click)="setFilter('sinCuentaContable')" [disabled]="filtroSeleccionado === 'sinCuentaContable'">Imports sin cuenta o combinacion</button>
       <button (click)="setFilter('reconciliados')" [disabled]="filtroSeleccionado === 'reconciliados'">Reconciliados</button>
     </div>
 
-    
+
   </div>
 
-  
+
   <div class="table-container">
     <table class="table">
       <thead class="header-row">
@@ -123,13 +125,13 @@
       </thead>
       <tbody style="font-size: 12px;">
 
-        <tr *ngFor="let income of paginatedIncomes" 
+        <tr *ngFor="let income of paginatedIncomes"
           [ngClass]="{
             'yellow-background': !income.NombreCuenta && income.Reconciliado === 0,
-            'aquamarine-background': income.NombreCuenta && income.Reconciliado === 0, 
+            'aquamarine-background': income.NombreCuenta && income.Reconciliado === 0,
             'green-text': income['CuentaContable'] !== null && income['CuentaContable'] !== undefined && income['SegmentoID'] && income['CategoriaID'] && income['SubcategoriaID'] && income['ConceptoID'] && income['CuentaID'] && income['CuentaContable'] !== 0,
             'red-text': income['CuentaContable'] !== null && income['CuentaContable'] !== undefined && (!income['SegmentoID'] || !income['CategoriaID'] || !income['SubcategoriaID'] || !income['ConceptoID'] || !income['CuentaID'] || income['CuentaContable'] === 0)
-          }" 
+          }"
           class="data-row">
 
           <td>
@@ -137,16 +139,16 @@
           </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.IngresoID }}</td>
           <td *ngIf="isAdmin">
-            <ion-icon 
+            <ion-icon
               style="color: green; cursor: pointer;"
-              name="key-sharp" 
+              name="key-sharp"
               (click)="asignarCuenta(income.IngresoID)"
               aria-label="Asignar Cuenta">
             </ion-icon>
           </td>
           <td *ngIf="isAdmin">
-            <ion-icon 
-              name="git-compare" 
+            <ion-icon
+              name="git-compare"
               (click)="editarCombinacion(income.IngresoID)"
               [style.cursor]="'pointer'"
               [style.color]="'blue'"
@@ -163,11 +165,11 @@
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null" *ngIf="!mostrarIngresos">{{ income.Proveedor }}</td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null" *ngIf="!mostrarIngresos">
             <ng-container *ngIf="income.ProveedorEstatus">
-              <span [ngClass]="(income.ProveedorEstatus.data && income.ProveedorEstatus.data.length > 0) ? 
-                               (income.ProveedorEstatus.data[0] === 0 ? 'text-red' : 
+              <span [ngClass]="(income.ProveedorEstatus.data && income.ProveedorEstatus.data.length > 0) ?
+                               (income.ProveedorEstatus.data[0] === 0 ? 'text-red' :
                                 income.ProveedorEstatus.data[0] === 1 ? 'text-green' : '') : ''">
-                {{ (income.ProveedorEstatus.data && income.ProveedorEstatus.data.length > 0) ? 
-                   (income.ProveedorEstatus.data[0] === 0 ? 'Proveedor no autorizado' : 
+                {{ (income.ProveedorEstatus.data && income.ProveedorEstatus.data.length > 0) ?
+                   (income.ProveedorEstatus.data[0] === 0 ? 'Proveedor no autorizado' :
                     income.ProveedorEstatus.data[0] === 1 ? 'Proveedor autorizado' : '') : '' }}
               </span>
             </ng-container>
@@ -183,9 +185,9 @@
             {{ income.Reconciliado === 0 ? income.Saldo : income.SaldoReconciliacion }}
           </td>
           <td *ngIf="!mostrarIngresos">
-            <ion-button 
-              *ngIf="!income.TipoIngreso.data.includes(0)" 
-              [color]="income.Comprobante ? 'warning' : 'primary'" 
+            <ion-button
+              *ngIf="!income.TipoIngreso.data.includes(0)"
+              [color]="income.Comprobante ? 'warning' : 'primary'"
               (click)="handleButtonClick(income.Comprobante, income.IngresoID)">
               {{ income.Comprobante ? 'Descargar' : 'Subir' }}
             </ion-button>
@@ -209,7 +211,7 @@
       </tbody>
     </table>
   </div>
-  
+
   <ion-footer style="margin-bottom: 4rem;" class="margin_footer">
     <ion-toolbar>
 
@@ -229,7 +231,7 @@
 
     </ion-toolbar>
   </ion-footer>
-  
+
 </ion-content>
 
 

@@ -13,6 +13,11 @@ export class IngresosServices {
   private myAppUrl: string;
   private MyApiUrl: string;
   private MyApiUrlIngreso: string;
+
+  private MyApiUrlIngresoPorFiltro: string;
+
+  private MyApiUrlIngresoOptimizado: string;
+
   private MyApiUrlIngresoPost: string;
   private MyApiUrlIngresoPostComprobante: string;
   private MyApiUrlIngresoUpdate: string;
@@ -44,6 +49,11 @@ export class IngresosServices {
     this.myAppUrl = environment.endpoint;
     this.MyApiUrl = 'api/ingresos/';
     this.MyApiUrlIngreso = 'GetIngresos/';
+
+    this.MyApiUrlIngresoPorFiltro = 'GetIngresosPorFiltro/';
+
+    this.MyApiUrlIngresoOptimizado = 'GetIngresosOptimizado/';
+
     this.MyApiUrlIngresoPost = 'PostIngresos/';
     this.MyApiUrlIngresoPostComprobante = 'PostIngresosComprobante/';
 
@@ -78,6 +88,19 @@ export class IngresosServices {
     return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngreso}`);
   }
 
+  getIngresosPorFiltro(filtro: string): Observable<Ingreso[]> {
+    return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPorFiltro}${filtro}`);
+  }
+
+  getIngresosNoReconciliados(): Observable<Ingreso[]> {
+    return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosNoReconciliados`);
+}
+
+
+  getIngresosOptimizado(): Observable<Ingreso[]> {
+    return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoOptimizado}`);
+  }
+
   addIngreso(incomeData: any): Observable<any> {
     return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPost}`, incomeData);
   }
@@ -85,7 +108,7 @@ export class IngresosServices {
 
   uploadComprobante(ingresoID: number, formData: FormData): Observable<any> {
     return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPostComprobante}${ingresoID}`, formData);
-  } 
+  }
 
 
   UpdateIngresos(incomeData: any): Observable<any> {

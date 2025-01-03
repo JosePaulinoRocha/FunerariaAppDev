@@ -85,11 +85,11 @@ export class IngresosEgresosComponent implements OnInit {
   paginatedIncomes: Income[] = [];
   currentPage: number = 1;
   itemsPerPageOptions: number[] = [10, 20, 50, 100, 200, 500, 1000, 2000];
-  itemsPerPage: number = 10; 
+  itemsPerPage: number = 10;
   totalPages: number = 0;
   isAdmin: boolean = false;
   mostrarIngresos: boolean = true;
-  filtroSeleccionado: 'all' | 'ingresos' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados' = 'all'; 
+  filtroSeleccionado: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados' = 'ingresosSinCuenta';
 
 
   // Función para seleccionar o deseleccionar todos los ingresos
@@ -117,7 +117,7 @@ export class IngresosEgresosComponent implements OnInit {
     }
   }
 
-    
+
 
   getStartDate(field: string): string {
     return this.dateSearchValues[field]?.startDate || '';
@@ -178,9 +178,9 @@ export class IngresosEgresosComponent implements OnInit {
   async openAssignAccountsModal() {
     // Obtener los IDs de todos los ingresos filtrados y paginados (no solo los de la página actual)
     const selectedIncomeIDs = this.selectedIncomes;
-  
+
     console.log("estos son los ID's :", selectedIncomeIDs);
-    
+
     // Abrir el modal para asignar cuentas
     const modal = await this.modalController.create({
       component: IngresosEgresosCuentaModalComponent,
@@ -189,23 +189,23 @@ export class IngresosEgresosComponent implements OnInit {
         bulkAssignment: true  // Indicamos que es una asignación masiva
       }
     });
-  
+
     modal.onDidDismiss().then((data) => {
       if (data.data?.success) {
-        this.loadIngresos(); 
+        this.loadIngresos();
 
         // Vaciar el arreglo de IDs después de la asignación
         this.selectedIncomes = [];
-        
+
       }
     });
-  
+
     await modal.present();
   }
-  
+
 
   async asignarCuenta(ingresoID: number) {
-    const ingreso = this.incomes.find(i => i.IngresoID === ingresoID); 
+    const ingreso = this.incomes.find(i => i.IngresoID === ingresoID);
     const modal = await this.modalController.create({
       component: IngresosEgresosCuentaModalComponent,
       componentProps: {
@@ -213,10 +213,10 @@ export class IngresosEgresosComponent implements OnInit {
         bulkAssignment: false  // Indicamos que es una asignación individual
       }
     });
-    
+
     modal.onDidDismiss().then((data) => {
       if (data.data?.success) {
-        this.loadIngresos(); 
+        this.loadIngresos();
       }
     });
 
@@ -224,7 +224,7 @@ export class IngresosEgresosComponent implements OnInit {
   }
 
   async asignarCuentaContable(ingresoID: number) {
-    const ingreso = this.incomes.find(i => i.IngresoID === ingresoID); 
+    const ingreso = this.incomes.find(i => i.IngresoID === ingresoID);
     const modal = await this.modalController.create({
       component: IngresosArchivoModalComponent,
       componentProps: {
@@ -232,10 +232,10 @@ export class IngresosEgresosComponent implements OnInit {
         bulkAssignment: false  // Indicamos que es una asignación individual
       }
     });
-    
+
     modal.onDidDismiss().then((data) => {
       if (data.data?.success) {
-        this.loadIngresos(); 
+        this.loadIngresos();
       }
     });
 
@@ -243,20 +243,20 @@ export class IngresosEgresosComponent implements OnInit {
   }
 
   async editarCombinacion(ingresoID: number) {
-    const ingreso = this.incomes.find(i => i.IngresoID === ingresoID); 
+    const ingreso = this.incomes.find(i => i.IngresoID === ingresoID);
     const modal = await this.modalController.create({
       component: IngresosEgresosModalComponent,
       componentProps: {
-        ingreso: ingreso 
+        ingreso: ingreso
       }
     });
 
     modal.onDidDismiss().then((data) => {
       if (data.data?.success) {
-        this.loadIngresos(); 
+        this.loadIngresos();
       }
     });
-    
+
     return await modal.present();
   }
 
@@ -278,24 +278,24 @@ export class IngresosEgresosComponent implements OnInit {
 
   onFileChange(event: any) {
     const file = event.target.files[0];
-    
+
     if (file) {
       const fileReader = new FileReader();
-      
+
       fileReader.onload = (e: any) => {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
-  
+
         // Asumimos que el primer sheet es el correcto
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-  
+
         // Convertir los datos a formato JSON
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-        
+
         // Aquí manejamos los datos extraídos del Excel
         this.processExcelData(jsonData);
       };
-  
+
       fileReader.readAsArrayBuffer(file);
     }
 
@@ -306,39 +306,39 @@ export class IngresosEgresosComponent implements OnInit {
 
   onFileChangeEgresos(event: any) {
     const file = event.target.files[0];
-    
+
     if (file) {
       const fileReader = new FileReader();
-      
+
       fileReader.onload = (e: any) => {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
-  
+
         // Asumimos que el primer sheet es el correcto
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-  
+
         // Convertir los datos a formato JSON
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-        
+
         // Aquí manejamos los datos extraídos del Excel
         this.processExcelDataEgresos(jsonData);
       };
-  
+
       fileReader.readAsArrayBuffer(file);
     }
 
     event.target.value = '';
 
   }
-  
+
 
   processExcelData(data: any[]) {
     // Asumiendo que la primera fila tiene los encabezados
     const headers = data[0];
-    
+
     // Procesar el resto de las filas
     const rows = data.slice(1);
-  
+
     const processedData = rows.map((row) => ({
       Segmento: row[0] || '',
       Categoria: row[1] || '',
@@ -348,9 +348,9 @@ export class IngresosEgresosComponent implements OnInit {
       RFC: row[5] || '',
       CuentaContpaq: row[6] || 0,
     }));
-  
+
     console.log("Datos procesados:", processedData);
-  
+
     // Llamar al servicio para enviar los datos a la API
     this.ingresosArchivoServices.importarIngresosArchivo(processedData).subscribe(
       (response) => {
@@ -368,10 +368,10 @@ export class IngresosEgresosComponent implements OnInit {
   processExcelDataEgresos(data: any[]) {
     // Asumiendo que la primera fila tiene los encabezados
     const headers = data[0];
-    
+
     // Procesar el resto de las filas
     const rows = data.slice(1);
-  
+
     const processedData = rows.map((row) => ({
       Fecha: this.excelDateToJSDate(row[0]) || '',
       Segmento: row[1] || '',
@@ -382,23 +382,23 @@ export class IngresosEgresosComponent implements OnInit {
       Monto: row[7] || 0,
       Cuenta: row[8] || '',
     }));
-  
+
     console.log("Datos procesados de egresos:", processedData);
-    
+
     // Enviar registros en batches
     this.sendEgresosInBatches(processedData);
   }
 
-  
-  
+
+
   sendEgresosInBatches(registros: any[]) {
     const totalRegistros = registros.length;
     let offset = 0;
-  
+
     const sendNextBatch = () => {
       // Obtener el batch actual de registros
       const batch = registros.slice(offset, offset + this.BATCH_SIZE);
-      
+
       // Si no hay más registros, finalizar
       if (batch.length === 0) {
         console.log('Todos los registros han sido importados.');
@@ -406,7 +406,7 @@ export class IngresosEgresosComponent implements OnInit {
         this.loadIngresos(); // Actualizar la tabla al finalizar la importación
         return;
       }
-  
+
       // Enviar el batch al endpoint
       this.ingresosArchivoServices.importarEgresosArchivo(batch).subscribe(
         () => {
@@ -420,31 +420,31 @@ export class IngresosEgresosComponent implements OnInit {
         }
       );
     };
-  
+
     // Iniciar el proceso de envío
     this.isLoading = true;
     sendNextBatch();
   }
 
-  
-  
+
+
   excelDateToJSDate(serial: number): string {
     const utc_days = Math.floor(serial - 25569) + 1; // Número base de días de Excel
     const date_info = utc_days * 86400; // Convertir días a segundos
     const date = new Date(date_info * 1000); // Crear la fecha en milisegundos
-  
+
     // Formatear la fecha a "yyyy-mm-dd" o al formato que necesites
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    
+
     return `${year}-${month}-${day}`;
   }
 
   exportEgresos() {
 
     // Filtrar los ingresos seleccionados
-    const selectedEgresos = this.incomes.filter(egreso => 
+    const selectedEgresos = this.incomes.filter(egreso =>
       this.selectedIncomes.includes(egreso.IngresoID)
     );
 
@@ -461,13 +461,13 @@ export class IngresosEgresosComponent implements OnInit {
     const egresosReconciliados = selectedEgresos.filter(egreso => egreso.Reconciliado === 1);
 
     // Verificar si hay registros con cuenta contable inválida o combinación incompleta
-    const cuentaContableInvalida = egresosReconciliados.filter(egreso => 
+    const cuentaContableInvalida = egresosReconciliados.filter(egreso =>
       egreso.CuentaContable !== null &&
-      (egreso.CuentaContable <= 0 || 
-      egreso.SegmentoID === null || 
-      egreso.CategoriaID === null || 
-      egreso.SubcategoriaID === null || 
-      egreso.ConceptoID === null || 
+      (egreso.CuentaContable <= 0 ||
+      egreso.SegmentoID === null ||
+      egreso.CategoriaID === null ||
+      egreso.SubcategoriaID === null ||
+      egreso.ConceptoID === null ||
       egreso['CuentaID'] === null)
     );
 
@@ -479,8 +479,8 @@ export class IngresosEgresosComponent implements OnInit {
     }
 
     console.log("Estos son los registros seleccionados y reconciliados que se exportarán: ", egresosReconciliados);
-  
-  
+
+
     // Mapear solo los campos que deseas exportar
     const exportData = egresosReconciliados.map(egreso => ({
       ID: egreso.IngresoID,
@@ -509,66 +509,36 @@ export class IngresosEgresosComponent implements OnInit {
       ReconciliacionID: egreso.ReconciliacionID,
       Observaciones: egreso.ObservacionesDifConciliacion,
     }));
-  
+
     // Crear la hoja de Excel a partir del array de egresos reconciliados
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
     const workbook: XLSX.WorkBook = { Sheets: { 'Capturas': worksheet }, SheetNames: ['Capturas'] };
-  
+
     // Generar el archivo Excel y descargarlo
     const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(blob, 'Capturas_reconciliados.xlsx');
   }
-  
+
 
   checkAdminStatus() {
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     this.isAdmin = user.isAdmin === 1;
   }
-  
+
   loadIngresos() {
-
     this.isLoading = true;
-    
-    this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
 
-      console.log("esta es la data de mis ingresos y egresos:", data)
+    // Llamar a la API según el filtro
+    this._ingresoServ.getIngresosPorFiltro(this.filtroSeleccionado).subscribe((data: Income[]) => {
+      // Ordenar los registros por Fecha de más reciente a más antiguo
+      data.sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime());
 
-      data.sort((a, b) => b.IngresoID - a.IngresoID);
-  
       // Actualizar la variable de control según el filtro seleccionado
-      if (this.filtroSeleccionado === 'ingresos'  || this.filtroSeleccionado === 'cuentaContable') {
-        this.mostrarIngresos = true; // Muestra columnas específicas de ingresos
-      } else {
-        this.mostrarIngresos = false; // Oculta las columnas para otros filtros
-      }
-  
-      // Filtrar según el tipo de registro seleccionado
-      this.incomes = data.filter(income => {
-        if (this.filtroSeleccionado === 'all') {
-          return true;  // Muestra todos
-        } else if (this.filtroSeleccionado === 'ingresos') {
-          return income.TipoIngreso.data.includes(0);  // Filtra solo ingresos
-        } else if (this.filtroSeleccionado === 'egresos') {
-          return income.TipoIngreso.data.includes(1);  // Filtra solo egresos
-        } else if (this.filtroSeleccionado === 'cuentaContable') {
-          return income.CuentaContable !== null && income.CuentaContable > 0 &&
-                 income.SegmentoID !== null && income.CategoriaID !== null &&
-                 income.SubcategoriaID !== null && income.ConceptoID !== null &&
-                 income['CuentaID'] !== null;  // Filtra solo los que tienen CuentaContable no nula y mayores a 0
-        } else if (this.filtroSeleccionado === 'sinCuentaContable') {
-          return income.CuentaContable !== null && 
-                 (income.CuentaContable <= 0 || 
-                 income.SegmentoID === null || 
-                 income.CategoriaID === null || 
-                 income.SubcategoriaID === null || 
-                 income.ConceptoID === null || 
-                 income['CuentaID'] === null);
-        } else if (this.filtroSeleccionado === 'reconciliados') {
-          return income.Reconciliado === 1;  // Filtra solo reconciliados
-        }
-        return false;
-      }).map(income => ({
+      this.mostrarIngresos = this.filtroSeleccionado === 'ingresos' || this.filtroSeleccionado === 'cuentaContable';
+
+      // Mapear la data con las fechas
+      this.incomes = data.map(income => ({
         ...income,
         Fecha: new Date(income.Fecha).toISOString().split('T')[0],
         FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
@@ -576,22 +546,25 @@ export class IngresosEgresosComponent implements OnInit {
       }));
 
       this.isLoading = false;
-  
+
+      console.log("Esta es la data de ingresos y egresos:", this.incomes);
+
       this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
       this.updatePaginatedIncomes();
     }, (error) => {
       this.isLoading = false;
-      console.error('Error fetching incomes', error); 
+      console.error('Error fetching incomes', error);
     });
   }
-  
 
-  setFilter(filtro: 'all' | 'ingresos' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados') {
+
+
+  setFilter(filtro: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados') {
     this.filtroSeleccionado = filtro;
     this.currentPage = 1;  // Reiniciar a la página 1 cuando se cambia el filtro
     this.loadIngresos();  // Recargar los ingresos según el nuevo filtro
   }
-  
+
   onItemsPerPageChange() {
     this.currentPage = 1;  // Reiniciar a la página 1 cuando cambie los registros por página
     this.updatePaginatedIncomes();  // Actualizar la paginación
@@ -618,60 +591,46 @@ export class IngresosEgresosComponent implements OnInit {
   }
 
   applySearch() {
+    this.isLoading = true;  // Iniciar el estado de carga
     this.currentPage = 1;
+
     for (let field of this.selectedFields) {
       if (this.isDateField(field) && !this.dateSearchValues[field]) {
         this.dateSearchValues[field] = { startDate: '', endDate: '' };
       }
     }
-  
-    this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
+
+    // Llamar al servicio de ingresos con el filtro seleccionado
+    this._ingresoServ.getIngresosPorFiltro(this.filtroSeleccionado).subscribe((data: Income[]) => {
       let filteredData = data;
-  
-      // Filtrar según el botón seleccionado
-      if (this.filtroSeleccionado === 'ingresos') {
-        filteredData = data.filter(income => income.TipoIngreso.data.includes(0)); // Solo ingresos
-      } else if (this.filtroSeleccionado === 'egresos') {
-        filteredData = data.filter(income => income.TipoIngreso.data.includes(1)); // Solo egresos
-      } else if (this.filtroSeleccionado === 'cuentaContable') {
-        // Solo cuentas contables que no son nulas y mayores a 0
-        filteredData = data.filter(income => 
-          income.CuentaContable !== null && income.CuentaContable > 0 &&
-          income.SegmentoID !== null && income.CategoriaID !== null &&
-          income.SubcategoriaID !== null && income.ConceptoID !== null &&
-          income['CuentaID'] !== null
-        );
-      } else if (this.filtroSeleccionado === 'sinCuentaContable') {
-        // Solo ingresos o egresos con CuentaContable no nula, pero 0 o faltan otros campos
-        filteredData = data.filter(income => 
-          income.CuentaContable !== null &&
-          (income.CuentaContable <= 0 || 
-           income.SegmentoID === null || 
-           income.CategoriaID === null ||
-           income.SubcategoriaID === null || 
-           income.ConceptoID === null ||
-           income['CuentaID'] === null)
-        );
-      } else if (this.filtroSeleccionado === 'reconciliados') {
-        filteredData = data.filter(income => income.Reconciliado); // Solo ingresos reconciliados
-      }
-  
-      // Si se selecciona "todos", no se filtra
-      this.incomes = filteredData
-        .filter(income => this.matchesSearch(income))
-        .sort((a, b) => b.IngresoID - a.IngresoID)
-        .map(income => ({
-          ...income,
-          Fecha: new Date(income.Fecha).toISOString().split('T')[0],
-          FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
-          FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
-        }));
-        
-      console.log("Esta es la data de ingresos/egresos después del filtro: ", this.incomes);
+
+      // Filtrar por búsqueda
+      filteredData = filteredData.filter(income => this.matchesSearch(income));
+
+      // Ordenar los registros por Fecha de más reciente a más antiguo
+      filteredData.sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime());
+
+      // Mapear los datos a un formato adecuado
+      this.incomes = filteredData.map(income => ({
+        ...income,
+        Fecha: new Date(income.Fecha).toISOString().split('T')[0],
+        FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
+        FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
+      }));
+
+      this.isLoading = false; // Finalizar el estado de carga
+
+      console.log("Esta es la data de ingresos/egresos después del filtro y búsqueda: ", this.incomes);
+
+      // Actualizar la paginación
       this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
       this.updatePaginatedIncomes();
+    }, (error) => {
+      this.isLoading = false; // Finalizar el estado de carga en caso de error
+      console.error('Error fetching incomes for search', error);
     });
   }
+
 
   resetSearch() {
     this.currentPage = 1;
@@ -688,12 +647,12 @@ export class IngresosEgresosComponent implements OnInit {
         const incomeDate = new Date(income[field] as string);
         const startDate = new Date(dateRange.startDate);
         const endDate = new Date(dateRange.endDate);
-        
+
         // Incrementar la fecha final en 1 día para incluir el último día en el rango
         if (endDate) {
           endDate.setDate(endDate.getDate() + 1);
         }
-  
+
         if (startDate && incomeDate < startDate) {
           return false;
         }
@@ -709,7 +668,7 @@ export class IngresosEgresosComponent implements OnInit {
     }
     return true;
   }
-  
+
 
   isDateField(field: string): boolean {
     return ['Fecha', 'FechaAutorizacion', 'FechaConciliacion'].includes(field);
@@ -727,20 +686,20 @@ export class IngresosEgresosComponent implements OnInit {
         component: IngresosEgresosArchivoModalComponent,
         componentProps: { ingreso: { IngresoID: ingresoID } },
       });
-  
+
       modal.onDidDismiss().then((data) => {
         if (data.data?.success) {
-          this.loadIngresos(); 
+          this.loadIngresos();
         }
       });
-  
+
       await modal.present();
     }
   }
-  
-  
+
+
   // downloadFile(fileUrl: string) {
-  //   const baseUrl = 'http://localhost:8081/api/'; 
+  //   const baseUrl = 'http://localhost:8081/api/';
   //   const fullUrl = `${baseUrl}${fileUrl}`;
   //   window.open(fullUrl, '_blank');
   // }
@@ -760,10 +719,10 @@ export class IngresosEgresosComponent implements OnInit {
     await loading.present();
     return loading;
   }
-  
+
   async dismissLoading(loading: HTMLIonLoadingElement) {
     await loading.dismiss();
   }
-  
+
 
 }

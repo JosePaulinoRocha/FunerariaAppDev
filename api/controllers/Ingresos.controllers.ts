@@ -24,6 +24,102 @@ export const ObtenerIngresos = async (req: Request, res: Response) => {
 };
 
 
+export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    const filtro = req.params.filtro; // Obtener el filtro de los parámetros
+
+    try {
+        con = await connect();
+        
+        let query = 'SELECT * FROM vistaingresos WHERE 1=1';
+
+        // Filtrar según el tipo de ingreso
+        if (filtro === 'ingresos') {
+            query += ' AND TipoIngreso = 0';
+        } else if (filtro === 'egresos') {
+            query += ' AND TipoIngreso = 1';
+        } else if (filtro === 'ingresosSinCuenta') {
+            query += ' AND TipoIngreso = 0 AND CuentaID IS NULL';
+        } else if (filtro === 'ingresosConCuenta') {
+            query += ' AND TipoIngreso = 0 AND CuentaID IS NOT NULL';
+        } else if (filtro === 'cuentaContable') {
+            query += ' AND CuentaContable IS NOT NULL AND CuentaContable > 0';
+        } else if (filtro === 'sinCuentaContable') {
+            query += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
+        } else if (filtro === 'reconciliados') {
+            query += ' AND Reconciliado = 1';
+        }
+
+        // Ordenar por Fecha de más reciente a más antiguo
+        query += ' ORDER BY Fecha ASC';
+
+        const ingresos = (await con.query(query))[0] as any[];
+        result = ingresos;
+    } catch (error) {
+        console.log('Error en Ingresos');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+
+export const ObtenerIngresosNoReconciliados = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    
+    try {
+        con = await connect();
+        
+        // Consulta para obtener solo los ingresos no reconciliados
+        const query = 'SELECT * FROM vistaingresos WHERE Reconciliado = 0';
+        
+        const ingresos = (await con.query(query))[0] as any[];
+        result = ingresos;
+    } catch (error) {
+        console.log('Error en ObtenerIngresosNoReconciliados');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+
+export const ObtenerIngresosOptimizado = async (req: Request, res: Response) => {
+    let con;
+    let result: any = [];
+    const { size = 10, offset = 0 } = req.query; // Parámetros de paginación, por defecto trae 10 registros
+  
+    try {
+      con = await connect();
+      
+      // Consulta SQL con LIMIT y OFFSET para traer solo una parte de los registros
+      const query = `
+        SELECT * 
+        FROM vistaingresos
+        LIMIT ? OFFSET ?`;
+      
+      // Ejecutamos la consulta con los parámetros de tamaño (size) y desplazamiento (offset)
+      const ingresos = (await con.query(query, [Number(size), Number(offset)]))[0];
+      
+      result = ingresos;
+    } catch (error) {
+      console.error('Error en ObtenerIngresos:', error);
+      result = null;
+    } finally {
+      await con?.end();
+      return res.json(result);
+    }
+  };
+
+
 export const PostIngresos = async (req: Request, res: Response) => {
     let con: any;
     let result: any;
