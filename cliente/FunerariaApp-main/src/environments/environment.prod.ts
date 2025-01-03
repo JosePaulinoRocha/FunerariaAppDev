@@ -1,4 +1,4 @@
 export const environmentProd = {
-  production: false,
-  endpoint: 'https://systemabmxlifuneraria.com:3080'
+  production: true,
+  endpoint: 'https://systemabmxlifuneraria.com:3309',  // Nota el '/api' después del puerto
 };

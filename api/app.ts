@@ -1,26 +1,27 @@
-import cors from 'cors';
+import https from 'https';
+import fs from 'fs';
 import express, { Application } from 'express';
+import cors from 'cors';
 import morgan from 'morgan';
 import path from 'path';
 
-import Usuarios from "./routes/Usuarios.routes"
-import Ingresos from "./routes/Ingresos.routes"
-import Reconciliaciones from "./routes/Reconciliaciones.routes"
-import Combinaciones from "./routes/Combinaciones.routes"
-import Notificaciones from "./routes/Notificaciones.routes"
-import ImportarIngresos from "./routes/Importar-Ingresos.routes"
-import ImportarIngresosArchivo from "./routes/Importar-Ingresos-Archivo.routes"
-import Proveedores from "./routes/Proveedores.routes"
-import Presupuesto from "./routes/Presupuesto.routes"
-import PresupuestoMensualFrecuencia from "./routes/Presupuesto-Mensual-Frecuencia.routes"
-import PresupuestoMensualCuentas from "./routes/Presupuesto-Mensual-Cuentas.routes"
-import Transferencias from "./routes/Transferencias.routes"
-import Proyeccion from "./routes/Proyeccion.routes"
+// Importación de rutas
+import Usuarios from "./routes/Usuarios.routes";
+import Ingresos from "./routes/Ingresos.routes";
+import Reconciliaciones from "./routes/Reconciliaciones.routes";
+import Combinaciones from "./routes/Combinaciones.routes";
+import Notificaciones from "./routes/Notificaciones.routes";
+import ImportarIngresos from "./routes/Importar-Ingresos.routes";
+import ImportarIngresosArchivo from "./routes/Importar-Ingresos-Archivo.routes";
+import Proveedores from "./routes/Proveedores.routes";
+import Presupuesto from "./routes/Presupuesto.routes";
+import PresupuestoMensualFrecuencia from "./routes/Presupuesto-Mensual-Frecuencia.routes";
+import PresupuestoMensualCuentas from "./routes/Presupuesto-Mensual-Cuentas.routes";
+import Transferencias from "./routes/Transferencias.routes";
+import Proyeccion from "./routes/Proyeccion.routes";
 
-
-
+// Directorio del cliente (asumiendo que está en un lugar relativo)
 const dir = '../../cliente/DirectoriCliente/';
-
 
 export class App {
     private app: Application;
@@ -33,11 +34,13 @@ export class App {
     }
 
     settings() {
-        this.app.set('port', this.port || process.env.PORT || 3309);
+        // Configuración de la aplicación
+        this.app.set('port', this.port || process.env.PORT || 443);  // Usamos 443 para HTTPS
         this.app.set('path', dir);
     }
 
     allowCrossDomain(req: any, res: any, next: any) {
+        // Permitir CORS
         res.header('Access-Control-Allow-Origin', '*');
         res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
         res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Cache-Control, Authorization, Content-Length');
@@ -46,22 +49,21 @@ export class App {
     }
 
     middlewares() {
+        // Middlewares
         this.app.use(morgan('dev'));
         this.app.use(cors({
-            origin: '*', // Asegúrate de cambiar esto al dominio de tu cliente
+            origin: '*', // Cambia esto a tu dominio en producción
             methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
             credentials: true // Si necesitas enviar cookies
         }));
         this.app.use(this.allowCrossDomain);
         this.app.use(express.json({ limit: '1mb' }));
         this.app.use(express.urlencoded({ extended: true }));
-        // this.app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
         this.app.use('/uploads', express.static(path.join(__dirname, '../../uploads/')));
     }
 
-
     routes() {
-       
+        // Rutas de la API
         this.app.use('/api/usuarios', Usuarios);
         this.app.use('/api/ingresos', Ingresos);
         this.app.use('/api/reconciliaciones', Reconciliaciones);
@@ -76,15 +78,22 @@ export class App {
         this.app.use('/api/transferencias', Transferencias);
         this.app.use('/api/proyeccion', Proyeccion);
 
-
-        this.app.get('*',function (req,res){
-            res.sendfile(path.join(dir, 'index.html'));
+        // Ruta general para servir el index.html
+        this.app.get('*', function (req, res) {
+            res.sendFile(path.join(dir, 'index.html'));
         });
     }
 
-
     async listen() {
-        this.app.listen(this.app.get('port'));
-        console.log('server on port:', this.app.get('port'));
+        // Cargar los certificados SSL
+        const privateKey = fs.readFileSync('/etc/ssl/private/_.systemabmxlifuneraria.com_private_key.key', 'utf8');
+        const certificate = fs.readFileSync('/etc/ssl/certs/systemabmxlifuneraria.com_ssl_certificate.cer', 'utf8');
+        const credentials = { key: privateKey, cert: certificate };
+
+        // Crear servidor HTTPS
+        https.createServer(credentials, this.app).listen(this.app.get('port'), () => {
+            console.log(`Server running on https://systemabmxlifuneraria.com:${this.app.get('port')}`);
+        });
     }
 }
+
