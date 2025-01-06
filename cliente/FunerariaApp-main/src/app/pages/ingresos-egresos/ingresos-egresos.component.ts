@@ -80,7 +80,7 @@ export class IngresosEgresosComponent implements OnInit {
 
   isLoading: boolean = false;
 
-
+  pagesRemaining :number = 0
   incomes: Income[] = [];
   paginatedIncomes: Income[] = [];
   currentPage: number = 1;
@@ -92,7 +92,6 @@ export class IngresosEgresosComponent implements OnInit {
   filtroSeleccionado: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados' = 'ingresosSinCuenta';
 
 
-  // Función para seleccionar o deseleccionar todos los ingresos
   toggleSelectAll(event: any) {
     const isChecked = event.target.checked;
     this.selectedIncomes = [];
@@ -105,7 +104,6 @@ export class IngresosEgresosComponent implements OnInit {
     });
   }
 
-  // Función para seleccionar ingresos individualmente
   onSelectIncome(income: any) {
     if (income['selected']) {  // Acceso dinámico con corchetes
       this.selectedIncomes.push(income.IngresoID);
@@ -116,8 +114,6 @@ export class IngresosEgresosComponent implements OnInit {
       }
     }
   }
-
-
 
   getStartDate(field: string): string {
     return this.dateSearchValues[field]?.startDate || '';
@@ -528,21 +524,28 @@ export class IngresosEgresosComponent implements OnInit {
 
   loadIngresos() {
     this.isLoading = true;
-
     this._ingresoServ.getIngresosPorFiltro(this.filtroSeleccionado, this.currentPage, this.itemsPerPage)
-      .subscribe((data: Income[]) => {
-        console.log(data)
-        this.sortAndFormatData(data);
-        this.updatePagination(data.length);
+      .subscribe((data: any) => {
+        console.log(data.ingresos)
+
+        this.sortAndFormatData(data.ingresos);
+        this.updatePagination(data.ingresos.length);
+
+        // Already received totalPages from the API, so no need to recalculate
+        this.totalPages = data.totalPages;
+        this.pagesRemaining = this.totalPages - this.currentPage;
+
         this.isLoading = false;
       }, (error) => {
         this.isLoading = false;
         console.error('Error fetching incomes', error);
+        // Optionally show a user-friendly message
+        alert('Error fetching data. Please try again later.');
       });
   }
-
   sortAndFormatData(data: Income[]) {
     this.incomes = data
+
       .sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime())
       .map(income => ({
         ...income,
@@ -550,46 +553,65 @@ export class IngresosEgresosComponent implements OnInit {
         FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
         FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
       }));
-
+      console.log("sort ",data)
     this.mostrarIngresos = this.filtroSeleccionado === 'ingresos' || this.filtroSeleccionado === 'cuentaContable';
   }
 
   updatePagination(totalRecords: number) {
-    this.totalPages = Math.ceil(totalRecords / this.itemsPerPage);
+    // This method is no longer necessary for recalculating totalPages, but we will use it to update pagination
     this.updatePaginatedIncomes();
   }
 
-  setFilter(filtro: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados') {
-    this.filtroSeleccionado = filtro;
-    this.currentPage = 1;  // Reiniciar a la página 1 cuando se cambia el filtro
-    this.loadIngresos();  // Recargar los ingresos según el nuevo filtro
-  }
-
   onItemsPerPageChange() {
-    this.currentPage = 1;  // Reiniciar a la página 1 cuando cambie los registros por página
-    this.updatePaginatedIncomes();  // Actualizar la paginación
+    // Reset to page 1 when the number of items per page changes
+    this.currentPage = 1;
+    this.updatePaginatedIncomes();
+    this.loadIngresos();  // Ensure data is reloaded with the new items per page
   }
 
   updatePaginatedIncomes() {
-    this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    // Asegúrate de que currentPage sea mayor que 0 y que paginación no esté causando un índice fuera de rango.
+    const startIndex = 0
+    console.log("startIndex", startIndex);
+
+    // Verifica que this.incomes tenga la cantidad de elementos correcta para la paginación.
+    console.log("Total Incomes: ", this.incomes.length);
+
+    // Actualiza los ingresos paginados de acuerdo al startIndex y itemsPerPage.
     this.paginatedIncomes = this.incomes.slice(startIndex, startIndex + this.itemsPerPage);
+    console.log("paginatedIncomes", this.paginatedIncomes, startIndex, this.itemsPerPage);
+
+    // Si los datos aún no se están mostrando, puede ser que `startIndex` esté fuera de rango de `this.incomes`.
+    if (this.paginatedIncomes.length === 0) {
+      console.warn('No hay ingresos para mostrar en esta página, revisa el valor de startIndex y la longitud de this.incomes');
+    }
+
+    // Actualiza las páginas restantes.
+    this.pagesRemaining = Math.max(0, this.totalPages - this.currentPage);
   }
 
   prevPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.updatePaginatedIncomes();
+      console.log('Página anterior:', this.currentPage);
+      this.loadIngresos();
     }
   }
 
   nextPage() {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.updatePaginatedIncomes();
+      console.log('Página siguiente:', this.currentPage);
+      this.loadIngresos();
     }
   }
 
+
+  setFilter(filtro: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados') {
+    this.filtroSeleccionado = filtro;
+    this.currentPage = 1;  // Reset to page 1 when the filter changes
+    this.loadIngresos();  // Reload the data based on the selected filter
+  }
   applySearch() {
     this.isLoading = true;  // Iniciar el estado de carga
     this.currentPage = 1;

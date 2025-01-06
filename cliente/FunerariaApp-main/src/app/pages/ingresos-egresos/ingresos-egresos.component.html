@@ -220,8 +220,8 @@
         <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
       </ion-buttons>
       <div class="page-info">
-        Página {{ currentPage }} de {{ totalPages }}
-      </div>
+        Página {{ currentPage }} de {{ totalPages }} (Faltan {{ pagesRemaining }} páginas)
+    </div>
 
       <ion-select interface="popover" slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
         <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">

@@ -69,10 +69,11 @@ export const ObtenerIngresos = async (req: Request, res: Response) => {
 export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     let con;
     let result;
+    let totalPages;
     const filtro = req.params.filtro; // Obtener el filtro de los parámetros
     const pagina = parseInt(req.query.pagina as string) || 1; // Página solicitada, por defecto es la página 1
     const resultadosPorPagina = parseInt(req.query.resultadosPorPagina as string) || 10; // Resultados por página, por defecto 10
-    console.log("veamos" , pagina, resultadosPorPagina)
+
     // Calcular el OFFSET (desplazamiento) y el LIMIT (número de registros a devolver)
     const offset = (pagina - 1) * resultadosPorPagina;
 
@@ -98,26 +99,42 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
             query += ' AND Reconciliado = 1';
         }
 
-        // Ordenar por Fecha de más reciente a más antiguo
-        query += ' ORDER BY Fecha ASC';
+        // Contar el número total de registros sin aplicar LIMIT
+        let countQuery = `SELECT COUNT(*) as total FROM vistaingresos WHERE 1=1`;
+        if (filtro === 'ingresos') countQuery += ' AND TipoIngreso = 0';
+        else if (filtro === 'egresos') countQuery += ' AND TipoIngreso = 1';
+        else if (filtro === 'ingresosSinCuenta') countQuery += ' AND TipoIngreso = 0 AND CuentaID IS NULL';
+        else if (filtro === 'ingresosConCuenta') countQuery += ' AND TipoIngreso = 0 AND CuentaID IS NOT NULL';
+        else if (filtro === 'cuentaContable') countQuery += ' AND CuentaContable IS NOT NULL AND CuentaContable > 0';
+        else if (filtro === 'sinCuentaContable') countQuery += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
+        else if (filtro === 'reconciliados') countQuery += ' AND Reconciliado = 1';
+        
+        let countResult : any = (await con.query(countQuery))[0];
+        const totalRecords = countResult[0].total;
 
-        // Añadir LIMIT y OFFSET a la consulta
-        query += ` LIMIT ${resultadosPorPagina} OFFSET ${offset}`;
+        // Calcular el total de páginas
+        totalPages = Math.ceil(totalRecords / resultadosPorPagina);
 
-        // Ejecutar la consulta
+        // Ejecutar la consulta con LIMIT y OFFSET para obtener los registros
+        query += ` ORDER BY Fecha ASC LIMIT ${resultadosPorPagina} OFFSET ${offset}`;
+
         const ingresos = (await con.query(query))[0] as any[];
         result = ingresos;
-        console.log(result)
     } catch (error) {
         console.log('Error en Ingresos');
-        // console.log(error);
         result = null;
     } finally {
         await con?.end();
-        // console.log(res)
-        return res.json(result);
+
+        // Enviar la respuesta con los datos de los ingresos y el total de páginas
+        return res.json({
+            ingresos: result,
+            totalPages: totalPages, // Total de páginas
+            currentPage: pagina,    // Página actual
+        });
     }
 };
+
 
 
 export const ObtenerIngresosNoReconciliados = async (req: Request, res: Response) => {
