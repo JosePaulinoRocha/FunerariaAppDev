@@ -75,6 +75,8 @@ export class IngresosEgresosComponent implements OnInit {
 
   readonly BATCH_SIZE = 100;
 
+  isSearchActive: boolean = false;
+
   selectedIncomes: number[] = []; // Almacena los IDs seleccionados
   selectAll: boolean = false;     // Controla si todos los registros están seleccionados
 
@@ -565,36 +567,43 @@ export class IngresosEgresosComponent implements OnInit {
   onItemsPerPageChange() {
     // Reset to page 1 when the number of items per page changes
     this.currentPage = 1;
-    this.updatePaginatedIncomes();
-    this.loadIngresos();  // Ensure data is reloaded with the new items per page
+    // this.updatePaginatedIncomes();
+    this.loadDataBasedOnContext();
   }
 
   updatePaginatedIncomes() {
-    // Asegúrate de que currentPage sea mayor que 0 y que paginación no esté causando un índice fuera de rango.
-    const startIndex = 0
+    // Calcula el startIndex de acuerdo con la bandera de búsqueda
+    let startIndex: number;
+    if (this.isSearchActive) {
+      startIndex = (this.currentPage - 1) * this.itemsPerPage; // Para la búsqueda, usamos la paginación normal
+    } else {
+      startIndex = 0; // Para la carga general, usamos el índice 0
+    }
+  
     console.log("startIndex", startIndex);
-
+  
     // Verifica que this.incomes tenga la cantidad de elementos correcta para la paginación.
     console.log("Total Incomes: ", this.incomes.length);
-
+  
     // Actualiza los ingresos paginados de acuerdo al startIndex y itemsPerPage.
     this.paginatedIncomes = this.incomes.slice(startIndex, startIndex + this.itemsPerPage);
     console.log("paginatedIncomes", this.paginatedIncomes, startIndex, this.itemsPerPage);
-
+  
     // Si los datos aún no se están mostrando, puede ser que `startIndex` esté fuera de rango de `this.incomes`.
     if (this.paginatedIncomes.length === 0) {
       console.warn('No hay ingresos para mostrar en esta página, revisa el valor de startIndex y la longitud de this.incomes');
     }
-
+  
     // Actualiza las páginas restantes.
     this.pagesRemaining = Math.max(0, this.totalPages - this.currentPage);
   }
+  
 
   prevPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
       console.log('Página anterior:', this.currentPage);
-      this.loadIngresos();
+      this.loadDataBasedOnContext();
     }
   }
 
@@ -602,64 +611,89 @@ export class IngresosEgresosComponent implements OnInit {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
       console.log('Página siguiente:', this.currentPage);
-      this.loadIngresos();
+      this.loadDataBasedOnContext();
     }
   }
 
+  // Función para determinar qué carga realizar
+  loadDataBasedOnContext() {
+    if (this.isSearchActive) {
+      this.applySearch(); // Llama a la función de búsqueda
+    } else {
+      this.loadIngresos(); // Llama a la carga general
+    }
+  }
 
   setFilter(filtro: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados') {
     this.filtroSeleccionado = filtro;
     this.currentPage = 1;  // Reset to page 1 when the filter changes
     this.loadIngresos();  // Reload the data based on the selected filter
   }
-  applySearch() {
-    this.isLoading = true;  // Iniciar el estado de carga
-    this.currentPage = 1;
 
-    for (let field of this.selectedFields) {
-      if (this.isDateField(field) && !this.dateSearchValues[field]) {
-        this.dateSearchValues[field] = { startDate: '', endDate: '' };
+
+  // Ajusta la función de búsqueda para activar la bandera
+applySearch() {
+  this.isLoading = true;
+  this.isSearchActive = true;
+
+  const filtros: { [key: string]: string | number } = {};
+
+  for (let field of this.selectedFields) {
+    if (this.isDateField(field)) {
+      const startDate = this.dateSearchValues[field]?.startDate;
+      const endDate = this.dateSearchValues[field]?.endDate;
+
+      if (startDate) filtros[`${field}Desde`] = startDate;
+      if (endDate) {
+        const adjustedEndDate = new Date(endDate);
+        adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
+        filtros[`${field}Hasta`] = adjustedEndDate.toISOString().split('T')[0];
       }
+    } else if (this.searchValues[field]) {
+      filtros[field] = this.searchValues[field];
     }
-
-    // Llamar al servicio de ingresos con el filtro seleccionado
-    this._ingresoServ.getIngresosPorFiltro(this.filtroSeleccionado, this.currentPage, this.itemsPerPage).subscribe((data: Income[]) => {
-      let filteredData = data;
-
-      // Filtrar por búsqueda
-      filteredData = filteredData.filter(income => this.matchesSearch(income));
-
-      // Ordenar los registros por Fecha de más reciente a más antiguo
-      filteredData.sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime());
-
-      // Mapear los datos a un formato adecuado
-      this.incomes = filteredData.map(income => ({
-        ...income,
-        Fecha: new Date(income.Fecha).toISOString().split('T')[0],
-        FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
-        FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
-      }));
-
-      this.isLoading = false; // Finalizar el estado de carga
-
-      console.log("Esta es la data de ingresos/egresos después del filtro y búsqueda: ", this.incomes);
-
-      // Actualizar la paginación
-      this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
-      this.updatePaginatedIncomes();
-    }, (error) => {
-      this.isLoading = false; // Finalizar el estado de carga en caso de error
-      console.error('Error fetching incomes for search', error);
-    });
   }
 
+  this._ingresoServ.getIngresosParametros(filtros).subscribe(
+    (data: Income[]) => {
+      this.incomes = data
+        .sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime())
+        .map(income => ({
+          ...income,
+          Fecha: income.Fecha ? new Date(income.Fecha).toISOString().split('T')[0] : '',
+          FechaAutorizacion: income.FechaAutorizacion
+            ? new Date(income.FechaAutorizacion).toISOString().split('T')[0]
+            : '',
+          FechaConciliacion: income.FechaConciliacion
+            ? new Date(income.FechaConciliacion).toISOString().split('T')[0]
+            : '',
+        }));
 
+      // Asegúrate de recalcular las páginas después de la búsqueda
+      this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
+
+      // Ajusta la página actual si está fuera del rango
+      this.currentPage = Math.min(this.currentPage, this.totalPages);
+
+      // Actualiza la paginación de ingresos
+      this.updatePaginatedIncomes();
+      this.isLoading = false;
+    },
+    (error) => {
+      console.error('Error fetching filtered incomes:', error);
+      this.isLoading = false;
+    }
+  );
+}
+
+  
   resetSearch() {
     this.currentPage = 1;
     this.searchValues = {};
     this.dateSearchValues = {};
     this.selectedFields = [];
-    this.loadIngresos();
+    this.isSearchActive = false; // Desactivar la búsqueda
+    this.loadIngresos(); // Volver a la carga general
   }
 
   matchesSearch(income: Income): boolean {
@@ -667,14 +701,14 @@ export class IngresosEgresosComponent implements OnInit {
       if (this.isDateField(field)) {
         const dateRange = this.dateSearchValues[field];
         const incomeDate = new Date(income[field] as string);
-        const startDate = new Date(dateRange.startDate);
-        const endDate = new Date(dateRange.endDate);
-
-        // Incrementar la fecha final en 1 día para incluir el último día en el rango
+        const startDate = dateRange.startDate ? new Date(dateRange.startDate) : null;
+        const endDate = dateRange.endDate ? new Date(dateRange.endDate) : null;
+  
+        // Ajustar el final del rango para incluir el último día
         if (endDate) {
           endDate.setDate(endDate.getDate() + 1);
         }
-
+  
         if (startDate && incomeDate < startDate) {
           return false;
         }
@@ -690,6 +724,7 @@ export class IngresosEgresosComponent implements OnInit {
     }
     return true;
   }
+  
 
 
   isDateField(field: string): boolean {

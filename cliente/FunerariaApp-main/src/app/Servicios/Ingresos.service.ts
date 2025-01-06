@@ -1,5 +1,5 @@
 import { Ingreso, Concepto, Segmento, Categoria, Subcategoria, Usuario, Combinacion, Estatus, Cuenta, Proveedor } from '../Modelos/Ingresos';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams  } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -86,6 +86,11 @@ export class IngresosServices {
 
   getIngresos(): Observable<Ingreso[]> {
     return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngreso}`);
+  }
+
+  getIngresosParametros(filtros: { [key: string]: any }): Observable<Ingreso[]> {
+    const params = new HttpParams({ fromObject: filtros });
+    return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosParametros/`, { params });
   }
 
   getIngresosPorFiltro(filtro: string, pagina: number, resultadosPorPagina: number): Observable<Ingreso[]> {

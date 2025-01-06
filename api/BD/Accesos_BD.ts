@@ -10,3 +10,15 @@ export async function connect() {
         timezone: 'local',  // Configuración de zona horaria
     });
 }
+
+
+
+// export async function connect() {
+//     return mysql.createConnection({
+//         host: 'localhost',
+//         user: 'root',
+//         password: '',
+//         database: 'systemab_funeraria_db',
+//         timezone: 'local',
+//     });
+// }

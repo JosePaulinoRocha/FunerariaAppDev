@@ -10,7 +10,7 @@ export const ObtenerIngresos = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM vistaingresos';
+        let query = 'SELECT * FROM vistaingresos ORDER BY Fecha DESC';
         const ingresos = (await con.query(query))[0] as any[];
         result = ingresos;
     } catch (error) {
@@ -24,47 +24,63 @@ export const ObtenerIngresos = async (req: Request, res: Response) => {
 };
 
 
-// export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
-//     let con;
-//     let result;
-//     const filtro = req.params.filtro; // Obtener el filtro de los parámetros
+export const ObtenerIngresosParametros = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+      con = await connect();
+  
+      // Extraer todos los parámetros de consulta
+      const params = req.query;
+  
+      // Base del query
+      let query = 'SELECT * FROM vistaingresos WHERE 1=1';
+  
+      // Iterar sobre los filtros y construir el query dinámico
+      for (const [key, value] of Object.entries(params)) {
+        if (value) {
+          switch (key) {
+            // Rango de fechas
+            case 'FechaDesde':
+              query += ` AND Fecha >= ${con.escape(value)}`;
+              break;
+            case 'FechaHasta':
+              query += ` AND Fecha < ${con.escape(value)}`; // Evitar incluir días fuera del rango
+              break;
+  
+            // Rangos numéricos
+            case 'MontoDesde':
+              query += ` AND Monto >= ${con.escape(value)}`;
+              break;
+            case 'MontoHasta':
+              query += ` AND Monto <= ${con.escape(value)}`;
+              break;
+  
+            // Campos con LIKE para cadenas
+            default:
+              query += ` AND ${key} LIKE ${con.escape(`%${value}%`)}`;
+              break;
+          }
+        }
+      }
+  
+      // Agregar ordenación por defecto
+      query += ' ORDER BY Fecha DESC';
+  
+      // Ejecutar el query
+      const ingresos = (await con.query(query))[0] as any[];
+      result = ingresos;
+    } catch (error) {
+      console.error('Error en ObtenerIngresosParametros:', error);
+      result = null;
+    } finally {
+      await con?.end();
+      return res.json(result);
+    }
+  };
+  
 
-//     try {
-//         con = await connect();
-        
-//         let query = 'SELECT * FROM vistaingresos WHERE 1=1';
 
-//         // Filtrar según el tipo de ingreso
-//         if (filtro === 'ingresos') {
-//             query += ' AND TipoIngreso = 0';
-//         } else if (filtro === 'egresos') {
-//             query += ' AND TipoIngreso = 1';
-//         } else if (filtro === 'ingresosSinCuenta') {
-//             query += ' AND TipoIngreso = 0 AND CuentaID IS NULL';
-//         } else if (filtro === 'ingresosConCuenta') {
-//             query += ' AND TipoIngreso = 0 AND CuentaID IS NOT NULL';
-//         } else if (filtro === 'cuentaContable') {
-//             query += ' AND CuentaContable IS NOT NULL AND CuentaContable > 0';
-//         } else if (filtro === 'sinCuentaContable') {
-//             query += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
-//         } else if (filtro === 'reconciliados') {
-//             query += ' AND Reconciliado = 1';
-//         }
-
-//         // Ordenar por Fecha de más reciente a más antiguo
-//         query += ' ORDER BY Fecha ASC';
-
-//         const ingresos = (await con.query(query))[0] as any[];
-//         result = ingresos;
-//     } catch (error) {
-//         console.log('Error en Ingresos');
-//         console.log(error);
-//         result = null;
-//     } finally {
-//         await con?.end();
-//         return res.json(result);
-//     }
-// };
 
 export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     let con;
@@ -116,7 +132,7 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
         totalPages = Math.ceil(totalRecords / resultadosPorPagina);
 
         // Ejecutar la consulta con LIMIT y OFFSET para obtener los registros
-        query += ` ORDER BY Fecha ASC LIMIT ${resultadosPorPagina} OFFSET ${offset}`;
+        query += ` ORDER BY Fecha DESC LIMIT ${resultadosPorPagina} OFFSET ${offset}`;
 
         const ingresos = (await con.query(query))[0] as any[];
         result = ingresos;

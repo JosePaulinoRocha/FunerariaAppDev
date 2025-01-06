@@ -4,7 +4,7 @@ import multer, { FileFilterCallback } from 'multer';
 import fs from 'fs'; // Importa el módulo fs
 import path from 'path'; // Importa el módulo path
 import zlib from 'zlib';
-import { ObtenerIngresos, ObtenerIngresosNoReconciliados, ObtenerIngresosPorFiltro, ObtenerIngresosOptimizado, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, ObtenerCombinacionesSegmento, PostIngresosComprobante, asignarCuenta, asignarCuentasMasivas, ObtenerProveedores, asignarCuentaContable, ObtenerCuentasContables } from '../controllers/Ingresos.controllers';
+import { ObtenerIngresos, ObtenerIngresosParametros, ObtenerIngresosNoReconciliados, ObtenerIngresosPorFiltro, ObtenerIngresosOptimizado, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, ObtenerCombinacionesSegmento, PostIngresosComprobante, asignarCuenta, asignarCuentasMasivas, ObtenerProveedores, asignarCuentaContable, ObtenerCuentasContables } from '../controllers/Ingresos.controllers';
 
 const router = Router();
 
@@ -41,6 +41,8 @@ const upload = multer({
 
 // Rutas
 router.get('/GetIngresos', authenticateJWT, ObtenerIngresos);
+
+router.get('/GetIngresosParametros', authenticateJWT, ObtenerIngresosParametros);
 
 router.get('/GetIngresosPorFiltro/:filtro', authenticateJWT, ObtenerIngresosPorFiltro);
 
