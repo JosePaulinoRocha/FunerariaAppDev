@@ -88,9 +88,12 @@ export class IngresosServices {
     return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngreso}`);
   }
 
-  getIngresosPorFiltro(filtro: string): Observable<Ingreso[]> {
-    return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPorFiltro}${filtro}`);
+  getIngresosPorFiltro(filtro: string, pagina: number, resultadosPorPagina: number): Observable<Ingreso[]> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPorFiltro}${filtro}?pagina=${pagina}&resultadosPorPagina=${resultadosPorPagina}`;
+    console.log(url)
+    return this.http.get<Ingreso[]>(url);
   }
+
 
   getIngresosNoReconciliados(): Observable<Ingreso[]> {
     return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosNoReconciliados`);

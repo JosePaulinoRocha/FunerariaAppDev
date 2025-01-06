@@ -24,10 +24,57 @@ export const ObtenerIngresos = async (req: Request, res: Response) => {
 };
 
 
+// export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
+//     let con;
+//     let result;
+//     const filtro = req.params.filtro; // Obtener el filtro de los parámetros
+
+//     try {
+//         con = await connect();
+        
+//         let query = 'SELECT * FROM vistaingresos WHERE 1=1';
+
+//         // Filtrar según el tipo de ingreso
+//         if (filtro === 'ingresos') {
+//             query += ' AND TipoIngreso = 0';
+//         } else if (filtro === 'egresos') {
+//             query += ' AND TipoIngreso = 1';
+//         } else if (filtro === 'ingresosSinCuenta') {
+//             query += ' AND TipoIngreso = 0 AND CuentaID IS NULL';
+//         } else if (filtro === 'ingresosConCuenta') {
+//             query += ' AND TipoIngreso = 0 AND CuentaID IS NOT NULL';
+//         } else if (filtro === 'cuentaContable') {
+//             query += ' AND CuentaContable IS NOT NULL AND CuentaContable > 0';
+//         } else if (filtro === 'sinCuentaContable') {
+//             query += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
+//         } else if (filtro === 'reconciliados') {
+//             query += ' AND Reconciliado = 1';
+//         }
+
+//         // Ordenar por Fecha de más reciente a más antiguo
+//         query += ' ORDER BY Fecha ASC';
+
+//         const ingresos = (await con.query(query))[0] as any[];
+//         result = ingresos;
+//     } catch (error) {
+//         console.log('Error en Ingresos');
+//         console.log(error);
+//         result = null;
+//     } finally {
+//         await con?.end();
+//         return res.json(result);
+//     }
+// };
+
 export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     let con;
     let result;
     const filtro = req.params.filtro; // Obtener el filtro de los parámetros
+    const pagina = parseInt(req.query.pagina as string) || 1; // Página solicitada, por defecto es la página 1
+    const resultadosPorPagina = parseInt(req.query.resultadosPorPagina as string) || 10; // Resultados por página, por defecto 10
+    console.log("veamos" , pagina, resultadosPorPagina)
+    // Calcular el OFFSET (desplazamiento) y el LIMIT (número de registros a devolver)
+    const offset = (pagina - 1) * resultadosPorPagina;
 
     try {
         con = await connect();
@@ -54,18 +101,23 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
         // Ordenar por Fecha de más reciente a más antiguo
         query += ' ORDER BY Fecha ASC';
 
+        // Añadir LIMIT y OFFSET a la consulta
+        query += ` LIMIT ${resultadosPorPagina} OFFSET ${offset}`;
+
+        // Ejecutar la consulta
         const ingresos = (await con.query(query))[0] as any[];
         result = ingresos;
+        console.log(result)
     } catch (error) {
         console.log('Error en Ingresos');
-        console.log(error);
+        // console.log(error);
         result = null;
     } finally {
         await con?.end();
+        // console.log(res)
         return res.json(result);
     }
 };
-
 
 
 export const ObtenerIngresosNoReconciliados = async (req: Request, res: Response) => {

@@ -5,10 +5,10 @@
 export const environment = {
   production: false,
   // endpoint: 'http://64.23.247.192:8081/',
-  // endpoint: 'https://apifuneraria.com/',
+  // endpoint: 'https://apifuneraria.com/',|
   // endpoint: 'https://systemabmxli.com/api_funeraria_app/',
-  // endpoint: 'http://localhost:3080/',
-  endpoint: 'https://systemabmxlifuneraria.com/',  // Nota el '/api' después del puerto
+  endpoint: 'http://localhost:3000/',
+  // endpoint: 'https://systemabmxlifuneraria.com/',  // Nota el '/api' después del puerto
 
 };
 

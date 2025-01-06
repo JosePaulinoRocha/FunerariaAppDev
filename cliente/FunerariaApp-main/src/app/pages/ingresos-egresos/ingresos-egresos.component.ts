@@ -529,35 +529,35 @@ export class IngresosEgresosComponent implements OnInit {
   loadIngresos() {
     this.isLoading = true;
 
-    // Llamar a la API según el filtro
-    this._ingresoServ.getIngresosPorFiltro(this.filtroSeleccionado).subscribe((data: Income[]) => {
-      // Ordenar los registros por Fecha de más reciente a más antiguo
-      data.sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime());
+    this._ingresoServ.getIngresosPorFiltro(this.filtroSeleccionado, this.currentPage, this.itemsPerPage)
+      .subscribe((data: Income[]) => {
+        console.log(data)
+        this.sortAndFormatData(data);
+        this.updatePagination(data.length);
+        this.isLoading = false;
+      }, (error) => {
+        this.isLoading = false;
+        console.error('Error fetching incomes', error);
+      });
+  }
 
-      // Actualizar la variable de control según el filtro seleccionado
-      this.mostrarIngresos = this.filtroSeleccionado === 'ingresos' || this.filtroSeleccionado === 'cuentaContable';
-
-      // Mapear la data con las fechas
-      this.incomes = data.map(income => ({
+  sortAndFormatData(data: Income[]) {
+    this.incomes = data
+      .sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime())
+      .map(income => ({
         ...income,
         Fecha: new Date(income.Fecha).toISOString().split('T')[0],
         FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
         FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
       }));
 
-      this.isLoading = false;
-
-      console.log("Esta es la data de ingresos y egresos:", this.incomes);
-
-      this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
-      this.updatePaginatedIncomes();
-    }, (error) => {
-      this.isLoading = false;
-      console.error('Error fetching incomes', error);
-    });
+    this.mostrarIngresos = this.filtroSeleccionado === 'ingresos' || this.filtroSeleccionado === 'cuentaContable';
   }
 
-
+  updatePagination(totalRecords: number) {
+    this.totalPages = Math.ceil(totalRecords / this.itemsPerPage);
+    this.updatePaginatedIncomes();
+  }
 
   setFilter(filtro: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados') {
     this.filtroSeleccionado = filtro;
@@ -601,7 +601,7 @@ export class IngresosEgresosComponent implements OnInit {
     }
 
     // Llamar al servicio de ingresos con el filtro seleccionado
-    this._ingresoServ.getIngresosPorFiltro(this.filtroSeleccionado).subscribe((data: Income[]) => {
+    this._ingresoServ.getIngresosPorFiltro(this.filtroSeleccionado, this.currentPage, this.itemsPerPage).subscribe((data: Income[]) => {
       let filteredData = data;
 
       // Filtrar por búsqueda

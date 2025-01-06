@@ -2,7 +2,7 @@ import mysql from 'mysql2/promise';
 
 export async function connect() {
     return mysql.createConnection({
-        host: 'localhost',  // Dirección del servidor MySQL
+        host: 'systemabmxlifuneraria.com',  // Dirección del servidor MySQL
         port: 3306,  // Puerto predeterminado de MySQL
         user: 'root',  // Usuario de MySQL
         password: 'doflamingo011018',  // Contraseña del usuario
