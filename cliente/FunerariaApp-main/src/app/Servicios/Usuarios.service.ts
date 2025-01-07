@@ -50,6 +50,6 @@ export class UsuariosServices {
     const url = `${this.myAppUrl}${this.MyApiUrl}UpdatePassword`;
     return this.http.post<any>(url, { userId, newPassword });
   }
-  
+
 
 }

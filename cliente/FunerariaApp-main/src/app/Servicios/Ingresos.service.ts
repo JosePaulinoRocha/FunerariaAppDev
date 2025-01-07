@@ -100,9 +100,14 @@ export class IngresosServices {
   }
 
 
-  getIngresosNoReconciliados(): Observable<Ingreso[]> {
-    return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosNoReconciliados`);
+  getIngresosNoReconciliados(page: number, limit: number): Observable<any> {
+    const params = new HttpParams()
+        .set('page', page.toString())  // Agrega el parámetro 'page'
+        .set('limit', limit.toString());  // Agrega el parámetro 'limit'
+
+    return this.http.get<any>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosNoReconciliados`, { params });
 }
+
 
 
   getIngresosOptimizado(): Observable<Ingreso[]> {

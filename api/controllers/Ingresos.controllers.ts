@@ -153,18 +153,37 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
 
 
 
-export const ObtenerIngresosNoReconciliados = async (req: Request, res: Response) => {
+export const ObtenerIngresosNoReconciliados = async (req: any, res: Response) => {
     let con;
     let result;
     
     try {
         con = await connect();
         
-        // Consulta para obtener solo los ingresos no reconciliados
-        const query = 'SELECT * FROM vistaingresos WHERE Reconciliado = 0';
+        // Obtener los parámetros de paginación desde la query
+        const page = parseInt(req.query.page) || 1;  // Página por defecto es 1
+        const limit = parseInt(req.query.limit) || 10; // Límite por defecto es 10
+        const offset = (page - 1) * limit;  // Desplazamiento según la página
         
-        const ingresos = (await con.query(query))[0] as any[];
-        result = ingresos;
+        // Consulta SQL con LIMIT y OFFSET
+        const query = 'SELECT * FROM vistaingresos WHERE Reconciliado = 0 LIMIT ? OFFSET ?';
+        
+        // Ejecutar la consulta con los parámetros
+        const ingresos = (await con.query(query, [limit, offset]))[0] as any[];
+        
+        // Obtener el total de registros para calcular el total de páginas
+        const countQuery = 'SELECT COUNT(*) AS total FROM vistaingresos WHERE Reconciliado = 0';
+        const totalResult :any= (await con.query(countQuery))[0];
+        const totalRecords = totalResult[0].total;
+
+        // Enviar los datos y la información de la paginación
+        result = {
+            data: ingresos,
+            totalRecords: totalRecords,
+            totalPages: Math.ceil(totalRecords / limit),
+            currentPage: page,
+            itemsPerPage: limit
+        };
     } catch (error) {
         console.log('Error en ObtenerIngresosNoReconciliados');
         console.log(error);
@@ -174,6 +193,7 @@ export const ObtenerIngresosNoReconciliados = async (req: Request, res: Response
         return res.json(result);
     }
 };
+
 
 
 

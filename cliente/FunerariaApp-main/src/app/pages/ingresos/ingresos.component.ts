@@ -126,41 +126,38 @@ export class IngresosComponent implements OnInit {
   constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private loadingController: LoadingController) { }
 
 
-  
+
 
   ngOnInit() {
     this.loadIngresos();
   }
-
   loadIngresos() {
-
     this.isLoading = true;
 
-    this._ingresoServ.getIngresosNoReconciliados().subscribe((data: Income[]) => {
-      
-      // Filtrar los registros donde Reconciliado es igual a 0
-      // const filteredData = data.filter(income => income.Reconciliado === 0);
-      
-      data.sort((a, b) => b.IngresoID - a.IngresoID);
-      
-      this.incomes = data.map(income => ({
-        ...income,
-        Fecha: new Date(income.Fecha).toISOString().split('T')[0],
-      }));
+    this._ingresoServ.getIngresosNoReconciliados(this.currentPage, this.itemsPerPage).subscribe((response: any) => {
+        const data = response.data;
 
-      console.log("estos son mis registros de ingresos y egresos: ", data);
+        data.sort((a: any, b : any) => b.IngresoID - a.IngresoID);
 
-      this.isLoading = false;
-      
-      this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
-      this.updatePaginated();
+        this.incomes = data.map((income:any) => ({
+            ...income,
+            Fecha: new Date(income.Fecha).toISOString().split('T')[0],
+        }));
+
+        console.log("estos son mis registros de ingresos: ", data);
+
+        this.totalPages = response.totalPages;  // Actualizar el número total de páginas
+        this.currentPage = response.currentPage;  // Actualizar la página actual
+        this.itemsPerPage = response.itemsPerPage;  // Actualizar los ítems por página
+
+        this.updatePaginated();
+        this.isLoading = false;
     }, (error) => {
-      console.error('Error fetching incomes', error);
-      this.isLoading = false;
-
+        console.error('Error fetching incomes', error);
+        this.isLoading = false;
     });
-  }
-  
+}
+
 
   async openModal(income?: Income) {
 
@@ -173,26 +170,28 @@ export class IngresosComponent implements OnInit {
         isEditMode: !!income
       }
     });
-  
+
     modal.onDidDismiss().then((result) => {
       if (result.data && result.role === 'success') {
         this.loadIngresos();
       }
     });
-  
+
     return await modal.present();
   }
 
   updatePaginated() {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const startIndex = 0;
     this.paginatedIncomes = this.incomes.slice(startIndex, startIndex + this.itemsPerPage);
+    console.log(this.paginatedIncomes)
   }
-  
+
 
   prevPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
       this.updatePaginated();
+      this.loadIngresos()
     }
   }
 
@@ -200,6 +199,7 @@ export class IngresosComponent implements OnInit {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
       this.updatePaginated();
+      this.loadIngresos()
     }
   }
 
@@ -209,7 +209,7 @@ export class IngresosComponent implements OnInit {
         this.dateSearchValues[field] = { startDate: '', endDate: '' };
       }
     }
-  
+
     this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
       this.incomes = data
         .filter(income => income.Reconciliado === 0) // Filtrar registros donde Reconciliado es igual a 0
@@ -219,12 +219,12 @@ export class IngresosComponent implements OnInit {
           ...transferencia,
           Fecha: new Date(transferencia.Fecha).toISOString().split('T')[0],
         }));
-  
+
       this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
       this.updatePaginated();
     });
   }
-  
+
 
   resetSearch() {
     this.searchValues = {};
@@ -240,11 +240,11 @@ export class IngresosComponent implements OnInit {
         const incomeDate = new Date(income[field] as string);
         const startDate = new Date(dateRange.startDate);
         const endDate = new Date(dateRange.endDate);
-        
+
         if (endDate) {
           endDate.setDate(endDate.getDate() + 1);
         }
-  
+
         if (startDate && incomeDate < startDate) {
           return false;
         }
@@ -260,7 +260,7 @@ export class IngresosComponent implements OnInit {
     }
     return true;
   }
-  
+
 
   isDateField(field: string): boolean {
     return ['Fecha'].includes(field);
@@ -269,8 +269,8 @@ export class IngresosComponent implements OnInit {
   getFieldLabel(field: string): string {
     return this.searchFields.find(f => f.value === field)?.label || field;
   }
-  
-  
+
+
   getEmptyIncome(): Income {
     return {
       IngresoID: 0,
@@ -322,11 +322,11 @@ export class IngresosComponent implements OnInit {
     await loading.present();
     return loading;
   }
-  
+
   async dismissLoading(loading: HTMLIonLoadingElement) {
     await loading.dismiss();
   }
 
 
-  
+
 }
