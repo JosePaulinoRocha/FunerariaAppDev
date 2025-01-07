@@ -136,19 +136,19 @@ export class IngresosComponent implements OnInit {
 
     this.isLoading = true;
 
-    this._ingresoServ.getIngresos().subscribe((data: Income[]) => {
+    this._ingresoServ.getIngresosNoReconciliados().subscribe((data: Income[]) => {
       
       // Filtrar los registros donde Reconciliado es igual a 0
-      const filteredData = data.filter(income => income.Reconciliado === 0);
+      // const filteredData = data.filter(income => income.Reconciliado === 0);
       
-      filteredData.sort((a, b) => b.IngresoID - a.IngresoID);
+      data.sort((a, b) => b.IngresoID - a.IngresoID);
       
-      this.incomes = filteredData.map(income => ({
+      this.incomes = data.map(income => ({
         ...income,
         Fecha: new Date(income.Fecha).toISOString().split('T')[0],
       }));
 
-      console.log("estos son mis registros de ingresos y egresos: ", filteredData);
+      console.log("estos son mis registros de ingresos y egresos: ", data);
 
       this.isLoading = false;
       
