@@ -89,12 +89,18 @@ export class IngresosApiServices {
 
 
   crearHistorial(fechaInicio: string, fechaCierre: Date, numeroRegistrosImportados: number): Observable<any> {
+    const fechaCierreFormateada = fechaCierre.toISOString().split('T')[0];
     const body = {
-      FechaInicio: fechaInicio,
-      FechaCierre: fechaCierre,
-      NumeroRegistrosImportados: numeroRegistrosImportados
+        FechaInicio: fechaInicio,
+        FechaCierre: fechaCierreFormateada,
+        NumeroRegistrosImportados: numeroRegistrosImportados,
     };
+
+    console.log('Enviando historial con:', body);
+
     return this.http.post(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlHistorialIngresosAdd}`, body);
   }
+
+
 
 }

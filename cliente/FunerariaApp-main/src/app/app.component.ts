@@ -379,60 +379,67 @@ importarIngresos() {
 
 
 
-  // Método para enviar batches de registros
   sendBatches(registros: any[]) {
-      const totalRegistros = registros.length;
-      let offset = 0;
+    const totalRegistros = registros.length;
+    let offset = 0;
 
-      const fechaInicio = '2000-01-01';
+    const fechaInicio = '2000-01-01'; // Fecha de inicio predefinida
 
-      const sendNextBatch = () => {
-          // Obtiene el batch actual de registros
-          const batch = registros.slice(offset, offset + this.BATCH_SIZE);
-          
-          // Si no hay más registros que enviar, finaliza
-          if (batch.length === 0) {
-              console.log('Todos los registros han sido importados.');
+    // Formatear las fechas en los registros antes de enviarlos
+    const registrosFormateados = registros.map((registro) => {
+        if (registro.date_affect) {
+            registro.date_affect = registro.date_affect.split('T')[0]; // Extrae solo la fecha (YYYY-MM-DD)
+        }
+        if (registro.date_ref) {
+            registro.date_ref = registro.date_ref.split('T')[0]; // Extrae solo la fecha (YYYY-MM-DD)
+        }
+        return registro;
+    });
 
+    const sendNextBatch = () => {
+        // Obtiene el batch actual de registros
+        const batch = registrosFormateados.slice(offset, offset + this.BATCH_SIZE);
 
-              const fechaCierre = new Date(); // Almacena la fecha de cierre de la importación
+        // Si no hay más registros que enviar, finaliza
+        if (batch.length === 0) {
+            console.log('Todos los registros han sido importados.');
 
-              // Llama a crearHistorial
-              this._ingresoApiServ.crearHistorial(fechaInicio, fechaCierre, totalRegistros).subscribe(
-                () => {
-                  console.log('Historial de importación creado con éxito.');
-                },
-                (error) => {
-                  console.error('Error al crear el historial de importación:', error);
-                }
-              );
+            const fechaCierre = new Date(); // Almacena la fecha de cierre de la importación
+            const fechaCierreFormateada = fechaCierre.toISOString().split('T')[0]; // Formatear fecha de cierre (YYYY-MM-DD)
 
-
-
-              // Finaliza el indicador de carga
-              this.isLoading = false;
-              return;
-          }
-
-          // Enviar el batch al endpoint
-          this._ingresoApiServ.importarIngresos(batch).subscribe(
+            // Llama a crearHistorial con las fechas formateadas
+            this._ingresoApiServ.crearHistorial(fechaInicio, fechaCierre, totalRegistros).subscribe(
               () => {
-                  console.log(`Batch de ${batch.length} registros importados correctamente`);
-                  offset += this.BATCH_SIZE; // Incrementar el offset para el siguiente batch
-                  sendNextBatch(); // Llamar de nuevo para enviar el siguiente batch
+                  console.log('Historial de importación creado con éxito.');
               },
-              (error: any) => {
-                  console.error('Error al importar el batch de registros', error);
-                  // Aquí podrías manejar errores específicos o realizar un reintento si es necesario
-                  this.isLoading = false; // Finaliza el indicador de carga en caso de error
+              (error) => {
+                  console.error('Error al crear el historial de importación:', error);
               }
           );
-      };
 
-      // Iniciar el proceso de envío
-      sendNextBatch();
+            // Finaliza el indicador de carga
+            this.isLoading = false;
+            return;
+        }
+
+        // Enviar el batch al endpoint
+        this._ingresoApiServ.importarIngresos(batch).subscribe(
+            () => {
+                console.log(`Batch de ${batch.length} registros importados correctamente`);
+                offset += this.BATCH_SIZE; // Incrementar el offset para el siguiente batch
+                sendNextBatch(); // Llamar de nuevo para enviar el siguiente batch
+            },
+            (error: any) => {
+                console.error('Error al importar el batch de registros', error);
+                // Aquí podrías manejar errores específicos o realizar un reintento si es necesario
+                this.isLoading = false; // Finaliza el indicador de carga en caso de error
+            }
+        );
+    };
+
+    // Iniciar el proceso de envío
+    sendNextBatch();
   }
-
 
   
 
