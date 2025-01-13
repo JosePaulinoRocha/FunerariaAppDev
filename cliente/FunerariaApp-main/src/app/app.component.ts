@@ -171,7 +171,7 @@ export class AppComponent {
             console.log("La fecha de cierre es menor al día actual: ", fechaCierreSinHora, fechaActualSinHora);
             this.getAfectacionesDesdeFecha(fechaCierreSinHora);
           } else {
-            console.log('No es necesaria una nueva importación, la FechaCierre es más reciente o igual a hoy.');
+            console.log('No es necesaria una nueva importación, la FechaCierre es más reciente o igual a hoy. ', ' Fecha de cierre: ',fechaCierreSinHora, 'Fecha actual: ',fechaActualSinHora);
           }
         } else {
           // Si el historial está vacío, traer registros desde el 1 de enero del 2000

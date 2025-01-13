@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
 import { CombinacionesModalComponent } from './modal-combinaciones/combinaciones-modal.component';
+import { ConceptosModalComponent } from './modal-conceptos/concepto-modal.component';
+
 
 interface Ingreso {
   IngresoID: number;
@@ -254,6 +256,29 @@ export class IncomeModalComponent implements OnInit {
       this.openCombinacionesModal(segmentoId);
     }
   }
+
+  async onConceptSelectorClick() {
+    const modal = await this.modalController.create({
+      component: ConceptosModalComponent,
+    });
+  
+    modal.onDidDismiss().then((data) => {
+      if (data.data) {
+        console.log('Concepto seleccionado: ', data.data);
+        this.ingreso.ConceptoID = data.data.ConceptoID;
+        this.ingreso.NombreConcepto = data.data.NombreConcepto; // Muestra el nombre seleccionado
+      }
+    });
+  
+    return await modal.present();
+  }
+  
+  
+
+  preventOpen(event: Event) {
+    event.preventDefault(); // Previene que el selector se abra
+  }
+  
   
   
   async openCombinacionesModal(segmentoId: number) {
@@ -279,7 +304,7 @@ export class IncomeModalComponent implements OnInit {
 
   fillFormWithCombination(combinacion: Combinacion) {
     if (combinacion) {
-      
+      // Actualiza el formulario con los valores de la combinación
       this.form.patchValue({
         SegmentoID: combinacion.SegmentoID,
         ConceptoID: combinacion.ConceptoID,
@@ -287,14 +312,17 @@ export class IncomeModalComponent implements OnInit {
         SubcategoriaID: combinacion.SubcategoriaID
       });
   
+      // Asegúrate de actualizar la propiedad 'NombreConcepto' también
       this.ingreso.SegmentoID = combinacion.SegmentoID;
       this.ingreso.ConceptoID = combinacion.ConceptoID;
       this.ingreso.CategoriaID = combinacion.CategoriaID;
       this.ingreso.SubcategoriaID = combinacion.SubcategoriaID;
+      this.ingreso.NombreConcepto = combinacion.NombreConcepto; // Actualiza el nombre del concepto
   
       console.log("Datos del formulario actualizados con la combinación:", this.form.value);
     }
   }
+  
   
 
   

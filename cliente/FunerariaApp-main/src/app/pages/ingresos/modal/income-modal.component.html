@@ -105,25 +105,37 @@
 
           <ion-item>
             <ion-label position="stacked">Concepto</ion-label>
-            <ion-radio-group style="display: flex;" [(ngModel)]="isNewConcepto" name="isNewConcepto">
+            <ion-radio-group style="display: flex; flex-direction: row;" [(ngModel)]="isNewConcepto" name="isNewConcepto">
               <ion-item style="font-size: 12px;">
                 <ion-label>Usar existente</ion-label>
-                <ion-radio slot="start" [value]="false"></ion-radio>
+                <ion-radio slot="start" [value]="false" (ionSelect)="onConceptSelectorClick()"></ion-radio>
               </ion-item>
               <ion-item style="font-size: 12px;">
                 <ion-label>Crear nuevo</ion-label>
                 <ion-radio slot="start" [value]="true"></ion-radio>
               </ion-item>
             </ion-radio-group>
+          
             <div *ngIf="!isNewConcepto">
-              <ion-select placeholder="Concepto" style="width: 32rem;" [(ngModel)]="ingreso.ConceptoID" name="concepto" required searchbar="true">
-                <ion-select-option *ngFor="let item of concepto" [value]="item.ConceptoID">{{ item.Nombre }}</ion-select-option>
-              </ion-select>
+              <!-- Muestra el nombre del concepto seleccionado y abre el modal al hacer clic -->
+              <ion-item button (click)="onConceptSelectorClick()">
+                <ion-label style="width: 30rem; color: var(--ion-text-color)">
+                  {{ ingreso.NombreConcepto || 'Seleccione un concepto' }}
+                </ion-label>
+              </ion-item>
             </div>
+          
             <div *ngIf="isNewConcepto">
-              <ion-input style="width: 32rem;" [(ngModel)]="newConcepto" name="newConcepto" placeholder="Nuevo Concepto" required></ion-input>
+              <ion-input 
+                style="width: 32rem; --background: #D4D4D4; --border-radius: 8px; --padding-start: 10px;" 
+                [(ngModel)]="newConcepto" 
+                name="newConcepto" 
+                placeholder="Nuevo Concepto" 
+                required>
+              </ion-input>
             </div>
           </ion-item>
+          
 
           <ion-item>
             <ion-label position="stacked">Descripción</ion-label>
@@ -333,25 +345,36 @@
             </div>
           </ion-item>
 
-          <ion-item>
+          <ion-item style="height: 8.8rem;">
             <ion-label position="stacked">Concepto</ion-label>
-            <ion-radio-group style="display: flex;" [(ngModel)]="isNewConcepto" name="isNewConcepto">
+            <ion-radio-group style="display: flex; flex-direction: row;" [(ngModel)]="isNewConcepto" name="isNewConcepto">
               <ion-item style="font-size: 12px;">
                 <ion-label>Usar existente</ion-label>
-                <ion-radio slot="start" [value]="false"></ion-radio>
+                <ion-radio slot="start" [value]="false" (ionSelect)="onConceptSelectorClick()"></ion-radio>
               </ion-item>
               <ion-item style="font-size: 12px;">
                 <ion-label>Crear nuevo</ion-label>
                 <ion-radio slot="start" [value]="true"></ion-radio>
               </ion-item>
             </ion-radio-group>
+          
             <div *ngIf="!isNewConcepto">
-              <ion-select placeholder="Concepto" style="width: 13rem;" [(ngModel)]="ingreso.ConceptoID" name="concepto" required searchbar="true">
-                <ion-select-option *ngFor="let item of concepto" [value]="item.ConceptoID">{{ item.Nombre }}</ion-select-option>
-              </ion-select>
+              <!-- Muestra el nombre del concepto seleccionado y abre el modal al hacer clic -->
+              <ion-item button (click)="onConceptSelectorClick()">
+                <ion-label style="width: 13rem; color: var(--ion-text-color); font-size: 12px;">
+                  {{ ingreso.NombreConcepto || 'Seleccione un concepto' }}
+                </ion-label>
+              </ion-item>
             </div>
+          
             <div *ngIf="isNewConcepto">
-              <ion-input style="width: 13rem;" [(ngModel)]="newConcepto" name="newConcepto" placeholder="Nuevo Concepto" required></ion-input>
+              <ion-input 
+                style="width: 13rem; --background: #D4D4D4; --border-radius: 8px; --padding-start: 10px;" 
+                [(ngModel)]="newConcepto" 
+                name="newConcepto" 
+                placeholder="Nuevo Concepto" 
+                required>
+              </ion-input>
             </div>
           </ion-item>
 

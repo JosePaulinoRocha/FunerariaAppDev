@@ -1,4 +1,3 @@
-/* income-modal.component.scss */
 :host {
   ion-content {
     --background: #f4f4f4;
@@ -41,7 +40,7 @@
   ion-datetime {
     margin: 0 auto;
     display: block;
-    --padding-end: 0; /* Reduce el espacio al final del datetime picker */
+    --padding-end: 0;
   }
 
   ion-footer {
@@ -49,7 +48,6 @@
     justify-content: center;
   }
 }
-
 
 .activo {
   color: green;
