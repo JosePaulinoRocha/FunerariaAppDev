@@ -190,7 +190,7 @@ export class IncomeModalComponent implements OnInit {
     'Reembolso',
     'Prestamo Foraneo'
   ];
-  
+
 
   @Input() isEditMode = false;
 
@@ -248,7 +248,7 @@ export class IncomeModalComponent implements OnInit {
     }
     return this.segmento; // Devuelve todos los segmentos si es ingreso
   }
-  
+
 
   onSegmentSelected(event: any) {
     const segmentoId = event.detail.value;
@@ -261,7 +261,7 @@ export class IncomeModalComponent implements OnInit {
     const modal = await this.modalController.create({
       component: ConceptosModalComponent,
     });
-  
+
     modal.onDidDismiss().then((data) => {
       if (data.data) {
         console.log('Concepto seleccionado: ', data.data);
@@ -269,18 +269,18 @@ export class IncomeModalComponent implements OnInit {
         this.ingreso.NombreConcepto = data.data.NombreConcepto; // Muestra el nombre seleccionado
       }
     });
-  
+
     return await modal.present();
   }
-  
-  
+
+
 
   preventOpen(event: Event) {
     event.preventDefault(); // Previene que el selector se abra
   }
-  
-  
-  
+
+
+
   async openCombinacionesModal(segmentoId: number) {
     console.log("este es el segmento ID que estoy enviando a las combinaciones: " ,segmentoId)
     const modal = await this.modalController.create({
@@ -289,7 +289,7 @@ export class IncomeModalComponent implements OnInit {
         segmentoId: segmentoId
       }
     });
-  
+
     modal.onDidDismiss().then((data) => {
       if (data.data) {
         console.log("esta es la data en el componente principal con la combinacion: ", data.data)
@@ -297,7 +297,7 @@ export class IncomeModalComponent implements OnInit {
         this.filterProveedoresByCombinacion();
       }
     });
-  
+
     return await modal.present();
   }
 
@@ -311,31 +311,31 @@ export class IncomeModalComponent implements OnInit {
         CategoriaID: combinacion.CategoriaID,
         SubcategoriaID: combinacion.SubcategoriaID
       });
-  
+
       // Asegúrate de actualizar la propiedad 'NombreConcepto' también
       this.ingreso.SegmentoID = combinacion.SegmentoID;
       this.ingreso.ConceptoID = combinacion.ConceptoID;
       this.ingreso.CategoriaID = combinacion.CategoriaID;
       this.ingreso.SubcategoriaID = combinacion.SubcategoriaID;
       this.ingreso.NombreConcepto = combinacion.NombreConcepto; // Actualiza el nombre del concepto
-  
+
       console.log("Datos del formulario actualizados con la combinación:", this.form.value);
     }
   }
-  
-  
 
-  
+
+
+
   onCategoriaChange(event: any) {
     const categoriaId = event.detail.value;
     this.filterProveedoresByCombinacion();
   }
-  
+
   onSubcategoriaChange(event: any) {
     const subcategoriaId = event.detail.value;
     this.filterProveedoresByCombinacion();
   }
-  
+
   onConceptoChange(event: any) {
     const conceptoId = event.detail.value;
   }
@@ -350,7 +350,7 @@ export class IncomeModalComponent implements OnInit {
       this.filteredCuentas = this.cuenta.filter(
         (c) => c.TipoCuentaID === this.ingreso.TipoCuentaID
       );
-  
+
       this.isNewCuenta = false;
       this.ingreso.CuentaID = 0;
       this.ingreso.RFC = '';
@@ -358,7 +358,7 @@ export class IncomeModalComponent implements OnInit {
       this.newRFC = '';
     }
   }
-  
+
 
   onCuentaChange(event: any) {
     const cuentaID = event.detail.value;
@@ -391,29 +391,32 @@ export class IncomeModalComponent implements OnInit {
   loadSegmentos() {
     this._ingresoServ.getSegmentos().subscribe(
       (data: Segmento[]) => {
-        this.segmento = data;
+        // Ordenar los segmentos alfabéticamente por el campo 'Nombre'
+        this.segmento = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
       },
       (error) => {
         this.presentAlert('Error fetching segments');
       }
     );
   }
-
+  
   loadCategorias() {
     this._ingresoServ.getCategorias().subscribe(
       (data: Categoria[]) => {
-        this.categoria = data;
+        // Ordenar las categorías alfabéticamente por el campo 'Nombre'
+        this.categoria = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
       },
       (error) => {
         this.presentAlert('Error fetching categories');
       }
     );
   }
-
+  
   loadSubcategorias() {
     this._ingresoServ.getSubcategorias().subscribe(
       (data: Subcategoria[]) => {
-        this.subcategoria = data;
+        // Ordenar las subcategorías alfabéticamente por el campo 'Nombre'
+        this.subcategoria = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
       },
       (error) => {
         this.presentAlert('Error fetching subcategories');
@@ -425,8 +428,8 @@ export class IncomeModalComponent implements OnInit {
     this._ingresoServ.getProveedores().subscribe(
       (data: Proveedor[]) => {
         console.log('Esta es mi data en proveedores: ', data);
-        this.allProveedores = data; 
-        this.proveedor = [...this.allProveedores]; 
+        this.allProveedores = data;
+        this.proveedor = [...this.allProveedores];
       },
       (error) => {
         this.presentAlert('Error fetching providers');
@@ -506,7 +509,7 @@ export class IncomeModalComponent implements OnInit {
     });
     await alert.present();
   }
-  
+
   async presentErrorAlert() {
     const alert = await this.alertController.create({
       header: 'Error',
@@ -515,8 +518,8 @@ export class IncomeModalComponent implements OnInit {
     });
     await alert.present();
   }
-  
-  
+
+
 
   saveIncome() {
 
@@ -531,7 +534,7 @@ export class IncomeModalComponent implements OnInit {
   } else {
       estatusComprobacionID = 4; // Si hay algo en selectedFile
   }
-    
+
     const incomeData = {
         IngresoID: this.ingreso.IngresoID,
         TipoIngreso: this.ingreso.TipoIngreso,
@@ -544,8 +547,8 @@ export class IncomeModalComponent implements OnInit {
         CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
         RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
         Fecha: this.ingreso.Fecha,
-        FechaAutorizacion: this.ingreso.FechaAutorizacion,
-        FechaConciliacion: this.ingreso.FechaConciliacion,
+        // FechaAutorizacion: this.ingreso.FechaAutorizacion,
+        // FechaConciliacion: this.ingreso.FechaConciliacion,
         Descripcion: this.ingreso.Descripcion,
         Piezas: this.ingreso.Piezas,
         Monto: this.ingreso.Monto,
@@ -556,7 +559,7 @@ export class IncomeModalComponent implements OnInit {
     };
 
     console.log("Estos son los datos que estoy mandando Ingreso / Egreso: ", incomeData);
-  
+
 
     if (this.isEditMode) {
         // Lógica para actualizar ingreso
@@ -619,7 +622,7 @@ export class IncomeModalComponent implements OnInit {
             }
         );
     }
-    
+
   }
 
   closeModal(success: boolean) {
@@ -630,10 +633,10 @@ export class IncomeModalComponent implements OnInit {
   filterProveedoresByCombinacion() {
     const categoriaId = this.ingreso.CategoriaID;
     const subcategoriaId = this.ingreso.SubcategoriaID;
-  
+
     console.log('CategoriaID:', categoriaId);
     console.log('SubcategoriaID:', subcategoriaId);
-  
+
     // Verifica si CategoriaID y SubcategoriaID son mayores que 0
     if (categoriaId > 0 && subcategoriaId > 0) {
       // Filtra proveedores que coincidan con CategoriaID y SubcategoriaID
@@ -641,9 +644,9 @@ export class IncomeModalComponent implements OnInit {
         p.CategoriaID === categoriaId &&
         p.SubcategoriaID === subcategoriaId
       );
-  
+
       console.log('Filtered Proveedores:', filteredProveedores);
-  
+
       // Actualiza la lista de proveedores
       this.proveedor = filteredProveedores;
     } else {
@@ -652,8 +655,8 @@ export class IncomeModalComponent implements OnInit {
       this.proveedor = [...this.allProveedores];
     }
   }
-  
-  
+
+
 
 
 }
