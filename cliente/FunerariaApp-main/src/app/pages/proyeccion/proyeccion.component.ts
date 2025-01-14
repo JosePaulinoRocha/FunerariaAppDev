@@ -157,7 +157,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
         console.log("Datos de utilidades netas mensuales:", data);
 
         // Extraemos los datos para la gráfica
-        const labels = data.map(item => `${item.Mes} ${item.Anio}`);
+        const labels = data.map(item => `${item.MesNumero} / ${item.Anio}`);
         const values = data.map(item => parseFloat(item.UtilidadNeta));
 
         // Creamos la gráfica
@@ -641,8 +641,8 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
 
 
   private updateEgresosMensualesChart(data: any[]) {
-    const labels = data.map(item => `${item.Mes} ${item.Anio}`);
-    const egresos = data.map(item => parseFloat(item.IngresoTotal)); // Asegúrate de que el campo sea el correcto.
+    const labels = data.map(item => `${item.MesNumero} / ${item.Anio}`);
+    const egresos = data.map(item => parseFloat(item.EgresoTotal)); // Asegúrate de que el campo sea el correcto.
 
     // Destruir el gráfico existente si ya está definido
     if (this.charts['barChartEgresosMensuales']) {
