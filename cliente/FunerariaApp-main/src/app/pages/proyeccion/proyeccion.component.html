@@ -36,6 +36,57 @@
       </ion-button>
     </div>
 
+
+    <div class="selectsProyecciones">
+      <!-- Filtrar Egreso por segmentos -->
+      <ion-select
+        [(ngModel)]="selectedSegmentos"
+        (ionChange)="onFilterChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por segmentos"
+        interface="popover">
+        <ion-select-option *ngFor="let segmento of filtros.segmentos" [value]="segmento.SegmentoID">
+          {{ segmento.Nombre }}
+        </ion-select-option>
+      </ion-select>
+
+      <!-- Filtrar Egreso por categorías -->
+      <ion-select
+        [(ngModel)]="selectedCategorias"
+        (ionChange)="onFilterChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por categorias"
+        interface="popover">
+        <ion-select-option *ngFor="let categoria of filtros.categorias" [value]="categoria.CategoriaID">
+          {{ categoria.Nombre }}
+        </ion-select-option>
+      </ion-select>
+
+      <!-- Filtrar Egreso por subcategorías -->
+      <ion-select
+        [(ngModel)]="selectedSubcategorias"
+        (ionChange)="onFilterChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por subcategoria"
+        interface="popover">
+        <ion-select-option *ngFor="let subcategoria of filtros.subcategorias" [value]="subcategoria.SubcategoriaID">
+          {{ subcategoria.Nombre }}
+        </ion-select-option>
+      </ion-select>
+
+      <!-- Filtrar Egreso por conceptos -->
+      <ion-select
+        [(ngModel)]="selectedConceptos"
+        (ionChange)="onFilterChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por concepto"
+        interface="popover">
+        <ion-select-option *ngFor="let concepto of filtros.conceptos" [value]="concepto.ConceptoID">
+          {{ concepto.Nombre }}
+        </ion-select-option>
+      </ion-select>
+    </div>
+
     <!-- Gráficas de Egresos -->
     <div [class.hidden]="activeEgresoChart !== 'actualVsPlaneado'">
       <h2 class="chart-title">Egresos: Actual vs Planeado</h2>
@@ -57,7 +108,13 @@
         <canvas id="egresosSemanalesChart"></canvas>
       </div>
     </div>
-    
+    <div [class.hidden]="activeEgresoChart !== 'barChartEgresosPorFiltros'">
+      <h2 class="chart-title">Egresos por Filtros</h2>
+      <div class="chart-container">
+        <canvas id="barChartEgresosPorFiltros"></canvas>
+      </div>
+    </div>
+
     <div class="data-row">
       <div class="data-item">
         <div class="data-label">Actual</div>
@@ -83,7 +140,8 @@
       <ion-button
         fill="solid"
         color="primary"
-        [disabled]="activeIngresoChart === 'actualVsPlaneado'"
+        [disabled]="activeIngresoChart === '
+        actualVsPlaneado'"
         (click)="toggleIngresoChart('actualVsPlaneado')">
         Actual vs Planeado
       </ion-button>
@@ -101,6 +159,56 @@
         (click)="toggleIngresoChart('porSemana')">
         Por Semana
       </ion-button>
+    </div>
+
+    <div class="selectsProyecciones">
+      <!-- Filtrar Egreso por segmentos -->
+      <ion-select
+        [(ngModel)]="selectedSegmentosIngresos"
+        (ionChange)="onFilterIngresosChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por segmentos"
+        interface="popover">
+        <ion-select-option *ngFor="let segmento of filtros.segmentos" [value]="segmento.SegmentoID">
+          {{ segmento.Nombre }}
+        </ion-select-option>
+      </ion-select>
+
+      <!-- Filtrar Egreso por categorías -->
+      <ion-select
+        [(ngModel)]="selectedCategoriasIngresos"
+        (ionChange)="onFilterIngresosChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por categorias"
+        interface="popover">
+        <ion-select-option *ngFor="let categoria of filtros.categorias" [value]="categoria.CategoriaID">
+          {{ categoria.Nombre }}
+        </ion-select-option>
+      </ion-select>
+
+      <!-- Filtrar Egreso por subcategorías -->
+      <ion-select
+        [(ngModel)]="selectedSubcategoriasIngresos"
+        (ionChange)="onFilterIngresosChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por subcategoria"
+        interface="popover">
+        <ion-select-option *ngFor="let subcategoria of filtros.subcategorias" [value]="subcategoria.SubcategoriaID">
+          {{ subcategoria.Nombre }}
+        </ion-select-option>
+      </ion-select>
+
+      <!-- Filtrar Egreso por conceptos -->
+      <ion-select
+        [(ngModel)]="selectedConceptosIngresos"
+        (ionChange)="onFilterIngresosChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por concepto"
+        interface="popover">
+        <ion-select-option *ngFor="let concepto of filtros.conceptos" [value]="concepto.ConceptoID">
+          {{ concepto.Nombre }}
+        </ion-select-option>
+      </ion-select>
     </div>
 
     <!-- Gráficas de Ingresos -->
@@ -122,6 +230,13 @@
       <h2 class="chart-title">Ingresos del mes por semana</h2>
       <div class="chart-container">
         <canvas id="ingresosSemanalesChart"></canvas>
+      </div>
+    </div>
+
+    <div [class.hidden]="activeIngresoChart !== 'barChartIngresosPorFiltros'">
+      <h2 class="chart-title">Ingresos por Filtros</h2>
+      <div class="chart-container">
+        <canvas id="barChartIngresosPorFiltros"></canvas>
       </div>
     </div>
 
@@ -171,8 +286,55 @@
       </ion-button>
     </div>
 
+    <div class="selectsProyecciones">
+      <!-- Filtrar Egreso por segmentos -->
+      <ion-select
+        [(ngModel)]="selectedSegmentos"
+        (ionChange)="onFilterChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por segmentos"
+        interface="popover">
+        <ion-select-option *ngFor="let segmento of filtros.segmentos" [value]="segmento.SegmentoID">
+          {{ segmento.Nombre }}
+        </ion-select-option>
+      </ion-select>
 
-    <!-- Gráficas de Utilidad Neta -->
+      <!-- Filtrar Egreso por categorías -->
+      <ion-select
+        [(ngModel)]="selectedCategorias"
+        (ionChange)="onFilterChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por categorias"
+        interface="popover">
+        <ion-select-option *ngFor="let categoria of filtros.categorias" [value]="categoria.CategoriaID">
+          {{ categoria.Nombre }}
+        </ion-select-option>
+      </ion-select>
+
+      <!-- Filtrar Egreso por subcategorías -->
+      <ion-select
+        [(ngModel)]="selectedSubcategorias"
+        (ionChange)="onFilterChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por subcategoria"
+        interface="popover">
+        <ion-select-option *ngFor="let subcategoria of filtros.subcategorias" [value]="subcategoria.SubcategoriaID">
+          {{ subcategoria.Nombre }}
+        </ion-select-option>
+      </ion-select>
+
+      <!-- Filtrar Egreso por conceptos -->
+      <ion-select
+        [(ngModel)]="selectedConceptos"
+        (ionChange)="onFilterChange()"
+        multiple="false"
+        placeholder="Filtrar Egreso por concepto"
+        interface="popover">
+        <ion-select-option *ngFor="let concepto of filtros.conceptos" [value]="concepto.ConceptoID">
+          {{ concepto.Nombre }}
+        </ion-select-option>
+      </ion-select>
+    </div>    <!-- Gráficas de Utilidad Neta -->
     <div [class.hidden]="activeUtilidadChart !== 'actualVsPlaneado'">
       <h2 class="chart-title">Utilidad Neta: Actual vs Planeado</h2>
       <div class="chart-container">

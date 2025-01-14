@@ -1,5 +1,5 @@
 import { Presupuesto } from '../Modelos/Presupuesto';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -18,6 +18,33 @@ export class ProyeccionServices {
     this.myAppUrl = environment.endpoint;
     this.MyApiUrl = 'api/proyeccion/';
 
+  }
+
+  getFiltros(): Observable<any> {
+    return this.http.get<any>(`${this.myAppUrl}${this.MyApiUrl}GetFiltros/`);
+  }
+
+
+  ObtenerIngresosPorFiltros(selectedSegmentos: any, selectedCategorias: any, selectedSubcategorias: any, selectedConceptos: any): Observable<any> {
+    const filtros = {
+      segmento: selectedSegmentos || [],
+      categoria: selectedCategorias || [],
+      subcategoria: selectedSubcategorias || [],
+      concepto: selectedConceptos || []
+    };
+
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}ObtenerIngresosPorFiltros/`,  filtros );
+  }
+
+  ObtenerEgresosPorFiltros(selectedSegmentos: any, selectedCategorias: any, selectedSubcategorias: any, selectedConceptos: any): Observable<any> {
+    const filtros = {
+      segmento: selectedSegmentos || [],
+      categoria: selectedCategorias || [],
+      subcategoria: selectedSubcategorias || [],
+      concepto: selectedConceptos || []
+    };
+
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}ObtenerEgresosPorFiltros/`,  filtros );
   }
 
   getEgresoMensual(): Observable<any[]> {
@@ -71,5 +98,5 @@ export class ProyeccionServices {
   getIngresosPorCategoriaMensuales(): Observable<any[]> {
     return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosPorCategoriaMensuales/`);
   }
-  
+
 }

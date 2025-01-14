@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import { authenticateJWT } from '../middlewares/authMiddleware';
-import { ObtenerEgresoActual, ObtenerIngresosPorCategoriaMensuales, ObtenerIngresosMensualSemanales, ObtenerEgresosMensualSemanales, ObtenerIngresoMensualSegmentos, ObtenerIngresoActual, ObtenerIngresosMensuales, ObtenerEgresosPorCategoriaMensuales, ObtenerEgresoPasado, ObtenerIngresoPasado, ObtenerEgresosMensuales, ObtenerUtilidadesNetasMensuales, ObtenerEgresoMensualSegmentos } from '../controllers/Proyeccion.controller';
+import { ObtenerEgresoActual, ObtenerIngresosPorCategoriaMensuales, ObtenerIngresosMensualSemanales, ObtenerEgresosMensualSemanales, ObtenerIngresoMensualSegmentos, ObtenerIngresoActual, ObtenerIngresosMensuales, ObtenerEgresosPorCategoriaMensuales, ObtenerEgresoPasado, ObtenerIngresoPasado, ObtenerEgresosMensuales, ObtenerUtilidadesNetasMensuales, ObtenerEgresoMensualSegmentos, ObtenerFiltros, ObtenerIngresosPorFiltros, ObtenerEgresosPorFiltros } from '../controllers/Proyeccion.controller';
 
 const router = Router();
+router.get('/GetFiltros', authenticateJWT ,ObtenerFiltros);
+
+router.post('/ObtenerIngresosPorFiltros', authenticateJWT ,ObtenerIngresosPorFiltros);
+
+router.post('/ObtenerEgresosPorFiltros', authenticateJWT, ObtenerEgresosPorFiltros);
 
 router.get('/GetEgresoActual', authenticateJWT, ObtenerEgresoActual);
 

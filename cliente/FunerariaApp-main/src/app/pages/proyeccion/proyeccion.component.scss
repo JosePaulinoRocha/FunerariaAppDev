@@ -17,6 +17,13 @@
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+.selectsProyecciones{
+  display: flex;
+  margin-left: 3rem;
+  margin-right: 3rem;
+  gap: 2rem;
+}
+
 .chart-container {
   position: relative;
   width: 100%;
