@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateJWT } from '../middlewares/authMiddleware';
-import { ObtenerIngresos, ObtenerIngresosParaConciliacion, ObtenerUltimaReconciliacion, CrearReconciliacion, ActualizarIngresos, ObtenerReconciliaciones, EliminarReconciliacion, ActualizarObservacion, ReintegrarReconciliacion, ReintegrarMontoReconciliacion } from '../controllers/Reconciliaciones.controller';
+import { ObtenerCuentasCajaChica, ObtenerCuentasBancarias ,ObtenerIngresos, ObtenerIngresosParaConciliacion, ObtenerUltimaReconciliacion, CrearReconciliacion, ActualizarIngresos, ObtenerReconciliaciones, EliminarReconciliacion, ActualizarObservacion, ReintegrarReconciliacion, ReintegrarMontoReconciliacion } from '../controllers/Reconciliaciones.controller';
 
 const router = Router();
 
@@ -23,5 +23,10 @@ router.get('/ReintegrarReconciliacion/:reconciliacionID', authenticateJWT, Reint
 
 router.post('/ReintegrarMontoReconciliacion', authenticateJWT, ReintegrarMontoReconciliacion);
 
+// Ruta para obtener cuentas de caja chica
+router.get('/GetCuentasCajaChica', authenticateJWT, ObtenerCuentasCajaChica);
+
+// Ruta para obtener cuentas bancarias
+router.get('/GetCuentasBancarias', authenticateJWT, ObtenerCuentasBancarias);
 
 export default router;

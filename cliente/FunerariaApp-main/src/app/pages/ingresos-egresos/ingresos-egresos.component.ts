@@ -93,6 +93,37 @@ export class IngresosEgresosComponent implements OnInit {
   mostrarIngresos: boolean = true;
   filtroSeleccionado: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados' = 'ingresosSinCuenta';
 
+  sortField: string = '';
+
+  sortDirection: 'asc' | 'desc' = 'asc';
+
+  sortTable(field: string) {
+    if (this.sortField === field) {
+      // Cambia la dirección del orden si el campo ya está seleccionado
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Si es un nuevo campo, inicia en 'asc'
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    }
+  
+    // Ordena los datos completos antes de paginar
+    this.incomes.sort((a, b) => {
+      const valueA = a[field];
+      const valueB = b[field];
+  
+      if (valueA == null || valueB == null) return 0; // Manejo de valores nulos o indefinidos
+      if (this.sortDirection === 'asc') {
+        return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
+      } else {
+        return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
+      }
+    });
+  
+    // Actualiza los datos paginados después de ordenar
+    this.updatePaginatedIncomes();
+  }
+  
 
   toggleSelectAll(event: any) {
     const isChecked = event.target.checked;
@@ -633,59 +664,57 @@ export class IngresosEgresosComponent implements OnInit {
 
 
   // Ajusta la función de búsqueda para activar la bandera
-applySearch() {
-  this.isLoading = true;
-  this.isSearchActive = true;
-
-  const filtros: { [key: string]: string | number } = {};
-
-  for (let field of this.selectedFields) {
-    if (this.isDateField(field)) {
-      const startDate = this.dateSearchValues[field]?.startDate;
-      const endDate = this.dateSearchValues[field]?.endDate;
-
-      if (startDate) filtros[`${field}Desde`] = startDate;
-      if (endDate) {
-        const adjustedEndDate = new Date(endDate);
-        adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
-        filtros[`${field}Hasta`] = adjustedEndDate.toISOString().split('T')[0];
+  applySearch() {
+    this.isLoading = true;
+    this.isSearchActive = true;
+  
+    const filtros: { [key: string]: string | number } = { filtro: this.filtroSeleccionado }; // Incluye el filtro seleccionado
+  
+    for (let field of this.selectedFields) {
+      if (this.isDateField(field)) {
+        const startDate = this.dateSearchValues[field]?.startDate;
+        const endDate = this.dateSearchValues[field]?.endDate;
+  
+        if (startDate) filtros[`${field}Desde`] = startDate;
+        if (endDate) {
+          const adjustedEndDate = new Date(endDate);
+          adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
+          filtros[`${field}Hasta`] = adjustedEndDate.toISOString().split('T')[0];
+        }
+      } else if (this.searchValues[field]) {
+        filtros[field] = this.searchValues[field];
       }
-    } else if (this.searchValues[field]) {
-      filtros[field] = this.searchValues[field];
     }
+  
+    // Llama al servicio con filtros y el filtro seleccionado
+    this._ingresoServ.getIngresosParametros(filtros).subscribe(
+      (data: Income[]) => {
+        this.incomes = data
+          .sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime())
+          .map(income => ({
+            ...income,
+            Fecha: income.Fecha ? new Date(income.Fecha).toISOString().split('T')[0] : '',
+            FechaAutorizacion: income.FechaAutorizacion
+              ? new Date(income.FechaAutorizacion).toISOString().split('T')[0]
+              : '',
+            FechaConciliacion: income.FechaConciliacion
+              ? new Date(income.FechaConciliacion).toISOString().split('T')[0]
+              : '',
+          }));
+  
+        // Actualiza la paginación después de la búsqueda
+        this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
+        this.currentPage = Math.min(this.currentPage, this.totalPages);
+        this.updatePaginatedIncomes();
+        this.isLoading = false;
+      },
+      (error) => {
+        console.error('Error fetching filtered incomes:', error);
+        this.isLoading = false;
+      }
+    );
   }
-
-  this._ingresoServ.getIngresosParametros(filtros).subscribe(
-    (data: Income[]) => {
-      this.incomes = data
-        .sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime())
-        .map(income => ({
-          ...income,
-          Fecha: income.Fecha ? new Date(income.Fecha).toISOString().split('T')[0] : '',
-          FechaAutorizacion: income.FechaAutorizacion
-            ? new Date(income.FechaAutorizacion).toISOString().split('T')[0]
-            : '',
-          FechaConciliacion: income.FechaConciliacion
-            ? new Date(income.FechaConciliacion).toISOString().split('T')[0]
-            : '',
-        }));
-
-      // Asegúrate de recalcular las páginas después de la búsqueda
-      this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
-
-      // Ajusta la página actual si está fuera del rango
-      this.currentPage = Math.min(this.currentPage, this.totalPages);
-
-      // Actualiza la paginación de ingresos
-      this.updatePaginatedIncomes();
-      this.isLoading = false;
-    },
-    (error) => {
-      console.error('Error fetching filtered incomes:', error);
-      this.isLoading = false;
-    }
-  );
-}
+  
 
   
   resetSearch() {

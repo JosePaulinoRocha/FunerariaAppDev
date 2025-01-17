@@ -27,24 +27,29 @@
           <ion-select-option value="cuentaBancaria">Cuenta Bancaria</ion-select-option>
         </ion-select>
       </ion-item>
-
+      
+      <!-- Mostrar las cuentas de caja chica cuando se selecciona "Caja Chica" -->
       <div *ngIf="tipoCuenta === 'cajaChica'">
         <ion-item>
           <ion-label>Cuenta caja chica:</ion-label>
           <ion-select interface="popover" [(ngModel)]="cuentaCajaChica">
+            <!-- Lista las cuentas de caja chica -->
             <ion-select-option *ngFor="let income of incomesCajaChica" [value]="income.CuentaID">{{ income.NombreCuenta }}</ion-select-option>
           </ion-select>
         </ion-item>
       </div>
-
+      
+      <!-- Mostrar las cuentas bancarias cuando se selecciona "Cuenta Bancaria" -->
       <div *ngIf="tipoCuenta === 'cuentaBancaria'">
         <ion-item>
           <ion-label>Cuenta bancaria:</ion-label>
           <ion-select interface="popover" [(ngModel)]="cuentaBancaria">
+            <!-- Lista las cuentas bancarias -->
             <ion-select-option *ngFor="let income of incomesCuentaBancaria" [value]="income.CuentaID">{{ income.NombreCuenta }}</ion-select-option>
           </ion-select>
         </ion-item>
       </div>
+      
 
       <ion-button style="margin: 1rem 0 0 1rem;" [disabled]="!isFormValid()" (click)="reconciliar()">Reconciliar</ion-button>
     </div>

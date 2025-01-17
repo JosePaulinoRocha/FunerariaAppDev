@@ -93,4 +93,12 @@ export class ReconciliacionesServices {
     return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlReintegrarMontoReconciliacion}`, reintegroData);
   }
 
+  getCuentasCajaChica(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}/GetCuentasCajaChica`);
+}
+
+  getCuentasBancarias(): Observable<any[]> {
+      return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}/GetCuentasBancarias`);
+  }
+
 }

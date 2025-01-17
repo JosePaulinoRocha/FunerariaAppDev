@@ -96,18 +96,74 @@
           <th>ID</th>
           <th *ngIf="isAdmin">Cuenta</th>
           <th *ngIf="isAdmin">Combinacion</th>
-          <th><span style="margin-left: 2rem;"></span> Fecha <span style="margin-left: 2rem;"></span></th>
-          <th><span style="margin-left: 2rem;"></span>Segmento<span style="margin-left: 2rem;"></span></th>
-          <th><span style="margin-left: 3rem;"></span>Categoria<span style="margin-left: 3rem;"></span></th>
-          <th *ngIf="!mostrarIngresos"><span style="margin-left: 3rem;"></span>Subcategoria<span style="margin-left: 3rem;"></span></th>
-          <th><span style="margin-left: 10rem;"></span> Concepto <span style="margin-left: 10rem;"></span></th>
-          <th><span style="margin-left: 1rem;"></span> Cuenta Contable <span style="margin-left: 1rem;"></span></th>
-          <th><span style="margin-left: 10rem;"></span>Descripcion<span style="margin-left: 10rem;"></span></th>
+          <th (click)="sortTable('Fecha')">
+            <span style="margin-left: 2rem;"></span>
+            Fecha
+            <span *ngIf="sortField === 'Fecha'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+            <span style="margin-left: 2rem;"></span>
+          </th>
+          <th (click)="sortTable('NombreSegmento')">
+            <span style="margin-left: 2rem;"></span>
+            Segmento
+            <span *ngIf="sortField === 'NombreSegmento'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+            <span style="margin-left: 2rem;"></span>
+          </th>
+          <th (click)="sortTable('NombreCategoria')">
+            <span style="margin-left: 3rem;"></span>
+            Categoria
+            <span *ngIf="sortField === 'NombreCategoria'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+            <span style="margin-left: 3rem;"></span>
+          </th>
+          <th *ngIf="!mostrarIngresos" (click)="sortTable('NombreSubcategoria')">
+            <span style="margin-left: 3rem;"></span>
+            Subcategoria
+            <span *ngIf="sortField === 'NombreSubcategoria'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+            <span style="margin-left: 3rem;"></span>
+          </th>
+          <th (click)="sortTable('NombreConcepto')">
+            <span style="margin-left: 10rem;"></span>
+            Concepto
+            <span *ngIf="sortField === 'NombreConcepto'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+            <span style="margin-left: 10rem;"></span>
+          </th>
+          <th (click)="sortTable('CuentaContable')">
+            <span style="margin-left: 1rem;"></span>
+            Cuenta Contable
+            <span *ngIf="sortField === 'CuentaContable'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+            <span style="margin-left: 1rem;"></span>
+          </th>
+          <th (click)="sortTable('Descripcion')">
+            <span style="margin-left: 10rem;"></span>
+            Descripción
+            <span *ngIf="sortField === 'Descripcion'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+            <span style="margin-left: 10rem;"></span>
+          </th>
           <th *ngIf="!mostrarIngresos"><span style="margin-left: 3rem;"></span>Proveedor<span style="margin-left: 3rem;"></span></th>
           <th *ngIf="!mostrarIngresos"><span style="margin-left: 3rem;"></span>Estatus Proveedor<span style="margin-left: 3rem;"></span></th>
           <th *ngIf="!mostrarIngresos">Piezas</th>
           <th><span style="margin-left: 2rem;"></span>Tipo de cuenta<span style="margin-left: 2rem;"></span></th>
-          <th><span style="margin-left: 2rem;"></span>Cuenta<span style="margin-left: 2rem;"></span></th>
+          <th (click)="sortTable('NombreCuenta')">
+            <span style="margin-left: 2rem;"></span>
+            Cuenta
+            <span *ngIf="sortField === 'NombreCuenta'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+            <span style="margin-left: 2rem;"></span>
+          </th>
           <th>RFC</th>
           <th>Monto</th>
           <th>Saldo</th>

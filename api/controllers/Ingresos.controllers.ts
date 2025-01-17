@@ -30,33 +30,45 @@ export const ObtenerIngresosParametros = async (req: Request, res: Response) => 
     try {
       con = await connect();
   
-      // Extraer todos los parámetros de consulta
       const params = req.query;
+      const filtro = params.filtro; // Recibe el filtro principal
+      delete params.filtro; // Remueve el filtro del resto de los parámetros
   
-      // Base del query
       let query = 'SELECT * FROM vistaingresos WHERE 1=1';
   
-      // Iterar sobre los filtros y construir el query dinámico
+      // Aplica el filtro principal
+      if (filtro === 'ingresos') {
+        query += ' AND TipoIngreso = 0';
+      } else if (filtro === 'egresos') {
+        query += ' AND TipoIngreso = 1';
+      } else if (filtro === 'ingresosSinCuenta') {
+        query += ' AND TipoIngreso = 0 AND CuentaID IS NULL';
+      } else if (filtro === 'ingresosConCuenta') {
+        query += ' AND TipoIngreso = 0 AND CuentaID IS NOT NULL';
+      } else if (filtro === 'cuentaContable') {
+        query += ' AND CuentaContable IS NOT NULL AND CuentaContable > 0';
+      } else if (filtro === 'sinCuentaContable') {
+        query += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
+      } else if (filtro === 'reconciliados') {
+        query += ' AND Reconciliado = 1';
+      }
+  
+      // Aplica los parámetros de búsqueda adicionales
       for (const [key, value] of Object.entries(params)) {
         if (value) {
           switch (key) {
-            // Rango de fechas
             case 'FechaDesde':
               query += ` AND Fecha >= ${con.escape(value)}`;
               break;
             case 'FechaHasta':
-              query += ` AND Fecha < ${con.escape(value)}`; // Evitar incluir días fuera del rango
+              query += ` AND Fecha < ${con.escape(value)}`;
               break;
-  
-            // Rangos numéricos
             case 'MontoDesde':
               query += ` AND Monto >= ${con.escape(value)}`;
               break;
             case 'MontoHasta':
               query += ` AND Monto <= ${con.escape(value)}`;
               break;
-  
-            // Campos con LIKE para cadenas
             default:
               query += ` AND ${key} LIKE ${con.escape(`%${value}%`)}`;
               break;
@@ -64,10 +76,8 @@ export const ObtenerIngresosParametros = async (req: Request, res: Response) => 
         }
       }
   
-      // Agregar ordenación por defecto
       query += ' ORDER BY Fecha DESC';
   
-      // Ejecutar el query
       const ingresos = (await con.query(query))[0] as any[];
       result = ingresos;
     } catch (error) {
@@ -78,6 +88,7 @@ export const ObtenerIngresosParametros = async (req: Request, res: Response) => 
       return res.json(result);
     }
   };
+  
   
 
 

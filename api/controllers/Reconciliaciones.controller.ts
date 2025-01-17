@@ -2,6 +2,46 @@ import { Request, Response } from "express";
 import { connect } from "../BD/Accesos_BD";
 import { RowDataPacket, ResultSetHeader  } from 'mysql2/promise';
 
+
+// Función para obtener cuentas de Caja Chica ordenadas
+export const ObtenerCuentasCajaChica = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM cuentas WHERE TipoCuentaID = 1 ORDER BY NombreCuenta ASC';
+        const cuentasCajaChica = (await con.query(query))[0] as any[];
+        result = cuentasCajaChica;
+    } catch (error) {
+        console.log('Error en Cuentas Caja Chica');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+// Función para obtener cuentas bancarias ordenadas
+export const ObtenerCuentasBancarias = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM cuentas WHERE TipoCuentaID = 2 ORDER BY NombreCuenta ASC';
+        const cuentasBancarias = (await con.query(query))[0] as any[];
+        result = cuentasBancarias;
+    } catch (error) {
+        console.log('Error en Cuentas Bancarias');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
 export const ObtenerIngresos = async (req: Request, res: Response) => {
     let con;
     let result;

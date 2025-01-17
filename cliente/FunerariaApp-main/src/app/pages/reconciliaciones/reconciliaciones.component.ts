@@ -68,7 +68,7 @@ export class ReconciliacionesComponent implements OnInit {
   constructor(private modalController: ModalController, private _reconciliacionServ: ReconciliacionesServices) {}
 
   ngOnInit() {
-    this.loadIngresos();
+    this.loadCuentas();
   }
 
   handleCheckboxChange(income: Income): void {
@@ -100,36 +100,32 @@ export class ReconciliacionesComponent implements OnInit {
     console.log('Diferencia:', this.diferencia);
   }
 
-  loadIngresos() {
-    this._reconciliacionServ.getIngresos().subscribe((data: any[]) => {
-      this.incomes = data.map(income => ({
-        ...income,
-        Fecha: new Date(income.Fecha).toISOString().split('T')[0],
-        FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
-        FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0],
-        Monto: parseFloat(income.Monto)  // Asegurarse que Monto sea un número
-      })).filter(income => !income.Reconciliado);
-  
-      const uniqueCajaChica = new Map();
-      const uniqueCuentaBancaria = new Map();
-  
-      this.incomes.forEach(income => {
-        if (income.TipoCuentaID === 1 && !uniqueCajaChica.has(income.CuentaID)) {
-          uniqueCajaChica.set(income.CuentaID, income);
-        } else if (income.TipoCuentaID === 2 && !uniqueCuentaBancaria.has(income.CuentaID)) {
-          uniqueCuentaBancaria.set(income.CuentaID, income);
-        }
-      });
-  
-      this.incomesCajaChica = Array.from(uniqueCajaChica.values());
-      this.incomesCuentaBancaria = Array.from(uniqueCuentaBancaria.values());
-  
-      console.log("Cuentas por caja chica: ", this.incomesCajaChica);
-      console.log("Cuentas por cuenta bancaria: ", this.incomesCuentaBancaria);
-    }, (error) => {
-      console.error('Error fetching incomes', error); 
-    });
+  loadCuentas() {
+    // Cargar cuentas de caja chica
+    this._reconciliacionServ.getCuentasCajaChica().subscribe(
+      (data: any[]) => {
+        console.log('Cuentas Caja Chica: ', data);
+        // Ordenar alfabéticamente por NombreCuenta
+        this.incomesCajaChica = data.sort((a, b) => a.NombreCuenta.localeCompare(b.NombreCuenta));
+      },
+      (error: any) => {
+        console.error('Error fetching Caja Chica accounts', error);
+      }
+    );
+
+    // Cargar cuentas bancarias
+    this._reconciliacionServ.getCuentasBancarias().subscribe(
+      (data: any[]) => {
+        console.log('Cuentas Bancarias: ', data);
+        // Ordenar alfabéticamente por NombreCuenta
+        this.incomesCuentaBancaria = data.sort((a, b) => a.NombreCuenta.localeCompare(b.NombreCuenta));
+      },
+      (error: any) => {
+        console.error('Error fetching Bancaria accounts', error);
+      }
+    );
   }
+
 
   onTipoCuentaChange(event: any) {
     this.tipoCuenta = event.detail.value;
