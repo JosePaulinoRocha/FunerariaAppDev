@@ -1068,88 +1068,66 @@ const calcularSaldoCuenta = async (CuentaID: number | string, nuevoMonto: number
 export const asignarCuenta = async (req: Request, res: Response) => {
     let con: any;
     let result: any;
-    const { IngresoID, TipoCuentaID, CuentaID, RFC, CategoriaID, SubcategoriaID } = req.body;
+    const { IngresoID, TipoCuentaID, CuentaID, TipoCuenta2ID, CuentaID2, RFC, RFC2, CategoriaID, SubcategoriaID, Monto, Fecha, Descripcion, SegmentoID } = req.body;
 
     try {
         con = await connect();
         await con.beginTransaction();
         console.log('Transacción iniciada');
 
-        // Función para obtener o crear una CuentaID
-        const getOrCreateCuentaId = async (cuentaId: number | string | null, additionalFields: { [key: string]: any } = {}) => {
-            if (typeof cuentaId === 'string' || cuentaId === 0 || cuentaId === null) {
-                const columnName = 'NombreCuenta';
+        // Actualizar el registro existente
+        if (TipoCuenta2ID && CuentaID2) {
+            // Restar monto de la cuenta principal
+            const montoSecundario = parseFloat(Monto);
+            const montoPrincipal = (await con.query(`SELECT Monto FROM ingresos WHERE IngresoID = ?`, [IngresoID]))[0][0].Monto - montoSecundario;
 
-                if (!additionalFields[columnName]) {
-                    additionalFields[columnName] = cuentaId;
-                }
-
-                let insertQuery = `INSERT INTO cuentas (${Object.keys(additionalFields).join(', ')})`;
-                let queryValues = Object.values(additionalFields);
-
-                insertQuery += ` VALUES (${queryValues.map(() => '?').join(', ')})`;
-                const [insertResult]: any = await con.query(insertQuery, queryValues);
-                return insertResult.insertId;
+            if (montoPrincipal < 0) {
+                throw new Error('El monto asignado excede el monto disponible en la cuenta principal.');
             }
-            return cuentaId;
-        };
 
-        // Verifica o crea la CuentaID dependiendo del TipoCuentaID
-        let newCuentaID: number | string = 0;
-        const TipoCuentaIDNum = Number(TipoCuentaID);
+            // Actualizar el registro existente con el nuevo monto
+            const updateIngresoQuery = `
+                UPDATE ingresos
+                SET Monto = ?, CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?
+                WHERE IngresoID = ?
+            `;
+            await con.query(updateIngresoQuery, [montoPrincipal, CuentaID, TipoCuentaID, CategoriaID, SubcategoriaID, IngresoID]);
 
-        if (TipoCuentaIDNum === 1) {
-            newCuentaID = await getOrCreateCuentaId(CuentaID, { TipoCuentaID: TipoCuentaIDNum });
-        } else if (TipoCuentaIDNum === 2) {
-            newCuentaID = await getOrCreateCuentaId(CuentaID, { RFC, TipoCuentaID: TipoCuentaIDNum });
+            // Insertar un nuevo registro para la cuenta secundaria
+            const insertIngresoQuery = `
+                INSERT INTO ingresos (TipoCuentaID, CuentaID, CategoriaID, SubcategoriaID, Monto, Fecha, Descripcion, SegmentoID)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            await con.query(insertIngresoQuery, [
+                TipoCuenta2ID, CuentaID2, CategoriaID, SubcategoriaID, montoSecundario, Fecha, Descripcion, SegmentoID
+            ]);
+
+            // Calcular y actualizar los saldos
+            const saldoCuentaPrincipal = await calcularSaldoCuenta(CuentaID, montoPrincipal, true, con);
+            const saldoCuentaSecundaria = await calcularSaldoCuenta(CuentaID2, montoSecundario, true, con);
+
+            await con.query(`UPDATE ingresos SET Saldo = ? WHERE IngresoID = ?`, [saldoCuentaPrincipal, IngresoID]);
+            const [newIngreso] = await con.query(`SELECT LAST_INSERT_ID() as NewIngresoID`);
+            const newIngresoID = newIngreso[0].NewIngresoID;
+            await con.query(`UPDATE ingresos SET Saldo = ? WHERE IngresoID = ?`, [saldoCuentaSecundaria, newIngresoID]);
+
         } else {
-            throw new Error(`TipoCuentaID no válido: ${TipoCuentaIDNum}`);
+            // Si no hay cuenta secundaria, actualizar como antes
+            const updateIngresoQuery = `
+                UPDATE ingresos
+                SET CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?, Monto = ?
+                WHERE IngresoID = ?
+            `;
+            await con.query(updateIngresoQuery, [CuentaID, TipoCuentaID, CategoriaID, SubcategoriaID, Monto, IngresoID]);
+
+            // Calcular y actualizar saldo
+            const saldoFinal = await calcularSaldoCuenta(CuentaID, parseFloat(Monto), true, con);
+            await con.query(`UPDATE ingresos SET Saldo = ? WHERE IngresoID = ?`, [saldoFinal, IngresoID]);
         }
-
-
-        // Función para obtener o crear una Categoría/Subcategoría
-        const getOrCreateId = async (table: string, value: number | string) => {
-            if (typeof value === 'string') {
-                const insertQuery = `INSERT INTO ${table} (Nombre) VALUES (?)`;
-                const [insertResult]: any = await con.query(insertQuery, [value]);
-                return insertResult.insertId;
-            }
-            return value;
-        };
-
-        // Obtener o crear IDs de la categoría y subcategoría
-        const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
-        const newSubcategoriaID = await getOrCreateId('subcategorias', SubcategoriaID);
-
-
-        // Actualizar la cuenta, categoría y subcategoría en el ingreso
-        const updateIngresoQuery = `
-            UPDATE ingresos 
-            SET CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?
-            WHERE IngresoID = ?
-        `;
-        const updateValues = [newCuentaID, TipoCuentaIDNum, newCategoriaID, newSubcategoriaID, IngresoID];
-        await con.query(updateIngresoQuery, updateValues);
-
-
-        // Obtener el Monto antes de calcular el saldo
-        const montoQuery = `SELECT Monto FROM ingresos WHERE IngresoID = ?`;
-        const [montoResult]: any = await con.query(montoQuery, [IngresoID]);
-        const nuevoMonto = montoResult.length > 0 ? parseFloat(montoResult[0].Monto) : 0;
-
-        // Calcular el saldo después de la asignación
-        const esIngreso = true; // Asumes que es un ingreso porque TipoIngreso es siempre 0 en este caso
-        const saldoFinal = await calcularSaldoCuenta(CuentaID, nuevoMonto, esIngreso, con);
-
-        // Actualizar el saldo en la tabla ingresos
-        const updateSaldoQuery = `UPDATE ingresos SET Saldo = ? WHERE IngresoID = ?`;
-        await con.query(updateSaldoQuery, [saldoFinal, IngresoID]);
-
-        
 
         await con.commit();
         console.log('Transacción confirmada.');
-        result = { message: 'Cuenta, categoría y subcategoría asignadas exitosamente', IngresoID };
+        result = { message: 'Cuenta(s) asignada(s) exitosamente', IngresoID };
     } catch (error) {
         console.error('Error en asignarCuenta:', error instanceof Error ? error.message : error);
         await con.rollback();
@@ -1163,6 +1141,7 @@ export const asignarCuenta = async (req: Request, res: Response) => {
         return res.json(result);
     }
 };
+
 
 
 

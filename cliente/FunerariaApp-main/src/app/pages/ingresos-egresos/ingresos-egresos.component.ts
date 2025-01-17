@@ -174,30 +174,31 @@ export class IngresosEgresosComponent implements OnInit {
   constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private ingresosArchivoServices: IngresosArchivoServices, private loadingController: LoadingController) { }
 
   async openAssignAccountsModal() {
-    // Obtener los IDs de todos los ingresos filtrados y paginados (no solo los de la página actual)
-    const selectedIncomeIDs = this.selectedIncomes;
-
-    console.log("estos son los ID's :", selectedIncomeIDs);
-
-    // Abrir el modal para asignar cuentas
+    // Filtrar los ingresos seleccionados para obtener los IDs
+    const selectedIncomesData = this.incomes.filter(income => this.selectedIncomes.includes(income.IngresoID));
+  
+    // Asegúrate de que hay datos seleccionados
+    if (selectedIncomesData.length === 0) {
+      console.error('No se han seleccionado ingresos para la asignación masiva');
+      return;
+    }
+  
     const modal = await this.modalController.create({
       component: IngresosEgresosCuentaModalComponent,
       componentProps: {
-        incomeIDs: selectedIncomeIDs,  // Pasar los IDs de ingresos al modal
-        bulkAssignment: true  // Indicamos que es una asignación masiva
+        incomesData: selectedIncomesData,  // Datos completos para el modal
+        incomeIDs: selectedIncomesData.map(income => income.IngresoID), // Pasar solo los IDs
+        bulkAssignment: true
       }
     });
-
+  
     modal.onDidDismiss().then((data) => {
       if (data.data?.success) {
         this.loadIngresos();
-
-        // Vaciar el arreglo de IDs después de la asignación
-        this.selectedIncomes = [];
-
+        this.selectedIncomes = []; // Vaciar la selección
       }
     });
-
+  
     await modal.present();
   }
 

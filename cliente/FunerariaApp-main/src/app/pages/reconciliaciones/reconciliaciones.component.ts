@@ -93,6 +93,10 @@ export class ReconciliacionesComponent implements OnInit {
   calcularDiferencia(): void {
     // Diferencia = Balance Final - (Saldo Última Reconciliación + Monto Total Seleccionado)
     this.diferencia = this.balanceFinal - this.ultimaReconciliacionSaldo + this.checkedMonto;
+    
+    // Redondear la diferencia a dos decimales
+    this.diferencia = parseFloat(this.diferencia.toFixed(2));
+  
     console.log('Diferencia:', this.diferencia);
   }
 

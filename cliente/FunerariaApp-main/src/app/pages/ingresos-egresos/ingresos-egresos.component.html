@@ -193,11 +193,14 @@
             </ion-button>
           </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null" *ngIf="!mostrarIngresos">{{ income.NombreEstatus }}</td>
-          <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.FechaAutorizacion }}</td>
+          <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">
+            {{ income.FechaAutorizacion !== '1970-01-01' ? income.FechaAutorizacion : '' }}
+          </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.NombreUsuarioAutoriza }}</td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.NombreUsuarioRecibe }}</td>
-          <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null" [ngClass]="{ 'text-red': income.Reconciliado === 0, 'text-green': income.Reconciliado === 1 }">
-            {{ income.FechaConciliacion }}
+          <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null" 
+              [ngClass]="{ 'text-red': income.Reconciliado === 0, 'text-green': income.Reconciliado === 1 }">
+            {{ income.FechaConciliacion !== '1970-01-01' ? income.FechaConciliacion : '' }}
           </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null" [ngClass]="{ 'text-red': income.Reconciliado === 0, 'text-green': income.Reconciliado === 1 }">
             {{ income.Reconciliado === 0 ? 'No reconciliado' : 'Reconciliado' }}

@@ -4,14 +4,34 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
+
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => void;
+    lastAutoTable: { finalY: number };
+  }
+}
+
 
 interface Ingreso {
   IngresoID: number;
   TipoCuentaID: number;
   CuentaID: number;
   RFC: string;
+  TipoCuenta2ID: number;
+  Cuenta2ID: number;
+  RFC2: string;
+  Monto: number;
   CategoriaID: number;
   SubcategoriaID: number;
+  Fecha: string;
+  SegmentoID: number;
+  Descripcion: string;
+  TipoIngreso: { data: number[]; type: string; };
+  NombreSegmento : string;
 }
 
 interface Cuenta {
@@ -42,15 +62,26 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
   @Input() ingreso: Ingreso = {
     IngresoID: 0,
     TipoCuentaID: 0,
+    TipoCuenta2ID: 0,
     CuentaID: 0,
+    Cuenta2ID: 0,
     RFC: '',
+    RFC2: '',
+    Monto: 0,
     CategoriaID: 0,
     SubcategoriaID: 0,
+
+    Fecha: '',
+    SegmentoID: 0,
+    Descripcion: '',
+    TipoIngreso: { data: [], type: '' },
+    NombreSegmento: '',
   };
 
   @Input() isMassiveAssignMode: boolean = false;
   @Input() selectedRecords: number[] = [];
 
+  @Input() incomesData: Ingreso[] = []; // Recibimos los datos completos
   @Input() incomeIDs: number[] = [];
   @Input() bulkAssignment: boolean = false;
 
@@ -70,8 +101,19 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
   showRFC = false;
 
   isNewCuenta = false;
+  isNewCuenta2 = false;
+
   newNombreCuenta = '';
+  newNombreCuenta2 = '';
+
   newRFC = '';
+  newRFC2 = '';
+
+
+  filteredCuentasEnvia: Cuenta[] = [];
+  filteredCuentasRecibe: Cuenta[] = [];
+
+  initialMonto: number = 0;
 
   @Input() isEditMode: boolean = false;
 
@@ -79,10 +121,13 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
 
   ngOnInit() {
     console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
+
+    this.initialMonto = this.ingreso.Monto;
   
     if (this.bulkAssignment) {
       this.isMassiveAssignMode = true;
       this.updateModalMode();
+      console.log('Datos para generar PDF:', this.incomesData);
     } else {
       this.isMassiveAssignMode = false;
       this.updateModalMode();
@@ -91,8 +136,49 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     this.loadCuentas();
     this.loadCategorias();
     this.loadSubcategorias();
-    this.onTipoCuentaChange();
+    // this.onTipoCuentaChange();
 
+  }
+
+
+  generatePDF() {
+    const doc = new jsPDF();
+  
+    // Obtener la fecha y hora actual
+    const currentDate = new Date().toLocaleString();
+  
+    // Aseguramos que Monto sea un número en el mapeo
+    const tableData = this.incomesData.map(income => [
+      income.IngresoID,
+      income.Descripcion || 'Sin descripción', // Manejar descripción nula o indefinida
+      income.Monto !== null && income.Monto !== undefined 
+        ? `$${parseFloat(income.Monto.toString()).toFixed(2)}`  // Convertir Monto a número explícitamente
+        : 'Sin monto',
+      income.NombreSegmento,  // Puedes cambiar este campo por el nombre si lo tienes cargado
+      income.Fecha || 'Sin fecha'
+    ]);
+  
+    // Aseguramos que Monto sea un número en la sumatoria total
+    const total = this.incomesData.reduce((sum, income) => 
+      sum + (typeof income.Monto === 'number' ? income.Monto : parseFloat(income.Monto || '0')),  // Convertir Monto a número si es cadena
+      0
+    );
+  
+    // Título del PDF
+    doc.text('Asignación Masiva de Cuentas', 10, 10);
+    
+    // Encabezado de la tabla con Segmento y Fecha
+    doc.autoTable({
+      head: [['IngresoID', 'Descripción', 'Monto', 'Segmento', 'Fecha']],
+      body: tableData
+    });
+  
+    // Total y fecha de creación del PDF
+    doc.text(`Total: $${total.toFixed(2)}`, 10, doc.lastAutoTable.finalY + 10);
+    doc.text(`Generado el: ${currentDate}`, 10, doc.lastAutoTable.finalY + 20);
+  
+    // Guardar el archivo PDF
+    doc.save('AsignacionMasiva.pdf');
   }
   
 
@@ -108,16 +194,14 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
   }
 
   loadCuentas() {
-    this._ingresoServ.getCuentas().subscribe(
-      (data: Cuenta[]) => {
-        console.log('Esta es mi data en cuentas: ', data);
-        this.cuenta = data;
-        this.onTipoCuentaChange();
-      },
-      (error) => {
-        this.presentAlert('Error fetching combinations');
-      }
-    );
+    this._ingresoServ.getCuentas().subscribe((data: Cuenta[]) => {
+      console.log("esta es la info de cuentas: ", data);
+      this.cuenta = data;
+      this.onTipoCuentaChange('envia');
+      this.onTipoCuentaChange('recibe');
+    }, (error) => {
+      this.presentAlert('Error fetching categories');
+    });
   }
 
   loadCategorias() {
@@ -136,12 +220,18 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     });
   }
 
-  onTipoCuentaChange() {
-
-    this.filteredCuentas = this.cuenta.filter(
-      (c) => c.TipoCuentaID === this.ingreso.TipoCuentaID
-    );
-    
+  onTipoCuentaChange(tipo: 'envia' | 'recibe') {
+    if (tipo === 'envia' && this.ingreso.TipoCuentaID) {
+      this.filteredCuentasEnvia = this.cuenta.filter(
+        (c) => c.TipoCuentaID === this.ingreso.TipoCuentaID
+      );
+      this.ingreso.CuentaID = 0;
+    } else if (tipo === 'recibe' && this.ingreso.TipoCuenta2ID) {
+      this.filteredCuentasRecibe = this.cuenta.filter(
+        (c) => c.TipoCuentaID === this.ingreso.TipoCuenta2ID
+      );
+      this.ingreso.Cuenta2ID = 0;
+    }
   }
 
   onCuentaChange(event: any) {
@@ -191,6 +281,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
        }).subscribe(
          () => {
            this.presentAlert('Cuentas asignadas correctamente a los registros seleccionados.');
+           this.generatePDF(); 
            this.closeModal(true);
          },
          (error) => {
@@ -204,10 +295,18 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
       const incomeData = {
         IngresoID: this.ingreso.IngresoID,
         TipoCuentaID: this.ingreso.TipoCuentaID,
+        TipoCuenta2ID: this.ingreso.TipoCuenta2ID,
         CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
+        CuentaID2: this.isNewCuenta2 ? this.newNombreCuenta2 : this.ingreso.Cuenta2ID,
         RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
+        RFC2: this.ingreso.TipoCuenta2ID === 2 ? (this.newRFC2 || this.ingreso.RFC2 || '') : '',
+        Monto: this.ingreso.Monto,
         CategoriaID: this.isNewCategoria ? this.newCategoria : this.ingreso.CategoriaID,
         SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
+        Fecha: this.ingreso.Fecha,
+        SegmentoID: this.ingreso.SegmentoID,
+        Descripcion: this.ingreso.Descripcion,
+        TipoIngreso: this.ingreso.TipoIngreso.data,
       };
 
       console.log("Informacion de la actualizacion de cuenta y datos: ", incomeData);
