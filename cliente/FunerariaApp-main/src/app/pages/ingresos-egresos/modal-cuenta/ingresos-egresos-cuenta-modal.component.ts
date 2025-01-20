@@ -115,6 +115,8 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
 
   initialMonto: number = 0;
 
+  totalMontoSeleccionado: number = 0;
+
   @Input() isEditMode: boolean = false;
 
   constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private alertController: AlertController) {}
@@ -127,6 +129,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     if (this.bulkAssignment) {
       this.isMassiveAssignMode = true;
       this.updateModalMode();
+      this.calcularTotalMontos();
       console.log('Datos para generar PDF:', this.incomesData);
     } else {
       this.isMassiveAssignMode = false;
@@ -140,6 +143,14 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
 
   }
 
+  calcularTotalMontos() {
+    this.totalMontoSeleccionado = this.incomesData.reduce((total, ingreso) => {
+      // Convertir Monto a número si es cadena
+      const monto = typeof ingreso.Monto === 'string' ? parseFloat(ingreso.Monto) : ingreso.Monto;
+      return total + (isNaN(monto) ? 0 : monto); // Sumar solo si es válido
+    }, 0);
+  }
+  
 
   generatePDF() {
     const doc = new jsPDF();

@@ -15,6 +15,11 @@
       <ion-row>
         <ion-col size-md="12">
 
+          <ion-item *ngIf="isMassiveAssignMode">
+            <ion-label>Total de montos seleccionados:</ion-label>
+            <ion-text>{{ totalMontoSeleccionado | currency:'MXN':'symbol' }}</ion-text>
+          </ion-item>
+
           <!-- Selección del tipo de cuenta que recibe -->
           <ion-item>
             <ion-label position="stacked">Tipo de Cuenta</ion-label>
@@ -127,7 +132,6 @@
               <ion-input style="width: 30rem;" [(ngModel)]="newSubcategoria" name="newSubcategoria" placeholder="Nueva Subcategoría" required></ion-input>
             </div>
           </ion-item>
-
 
 
         </ion-col>
