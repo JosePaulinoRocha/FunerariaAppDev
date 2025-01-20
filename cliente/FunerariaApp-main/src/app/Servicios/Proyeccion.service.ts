@@ -25,23 +25,27 @@ export class ProyeccionServices {
   }
 
 
-  ObtenerIngresosPorFiltros(selectedSegmentos: any, selectedCategorias: any, selectedSubcategorias: any, selectedConceptos: any): Observable<any> {
+  ObtenerIngresosPorFiltros(selectedSegmentos: any, selectedCategorias: any, selectedSubcategorias: any, selectedConceptos: any, selectedInitialDateIngresos: any, selectedFinalDateIngresos:any): Observable<any> {
     const filtros = {
-      segmento: selectedSegmentos || [],
-      categoria: selectedCategorias || [],
-      subcategoria: selectedSubcategorias || [],
-      concepto: selectedConceptos || []
+      segmento: selectedSegmentos || null,
+      categoria: selectedCategorias || null,
+      subcategoria: selectedSubcategorias || null,
+      concepto: selectedConceptos || null,
+      fechaInicial: selectedInitialDateIngresos || null,
+      fechaFinal: selectedFinalDateIngresos || null
     };
 
     return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}ObtenerIngresosPorFiltros/`,  filtros );
   }
 
-  ObtenerEgresosPorFiltros(selectedSegmentos: any, selectedCategorias: any, selectedSubcategorias: any, selectedConceptos: any): Observable<any> {
+  ObtenerEgresosPorFiltros(selectedSegmentos: any, selectedCategorias: any, selectedSubcategorias: any, selectedConceptos: any, selectedInitialDateIngresos: any, selectedFinalDateIngresos:any): Observable<any> {
     const filtros = {
-      segmento: selectedSegmentos || [],
-      categoria: selectedCategorias || [],
-      subcategoria: selectedSubcategorias || [],
-      concepto: selectedConceptos || []
+      segmento: selectedSegmentos || null,
+      categoria: selectedCategorias || null,
+      subcategoria: selectedSubcategorias || null,
+      concepto: selectedConceptos || null,
+      fechaInicial: selectedInitialDateIngresos || null,
+      fechaFinal: selectedFinalDateIngresos || null
     };
 
     return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}ObtenerEgresosPorFiltros/`,  filtros );

@@ -31,21 +31,25 @@ export const ObtenerIngresosPorFiltros = async (req:any, res:any) => {
     let result : any = [];
 
     // Obtener los filtros del cuerpo de la solicitud
-    const { segmento, categoria, subcategoria, concepto } = req.body;
+    const { segmento, categoria, subcategoria, concepto, fechaInicial, fechaFinal } = req.body;
 
     try {
         con = await connect(); // Conectar a la base de datos
 
         // Llamar al procedimiento almacenado con los filtros recibidos
-        const query = 'CALL Get_Ingresos_Por_Filtros(?, ?, ?, ?)';
+        const query = 'CALL Get_Ingresos_Por_Filtros(?, ?, ?, ?, ?, ?)';
 
         const [rows] = await con.query(query, [
-            segmento,
-            categoria ,
-            subcategoria ,
-            concepto
+            segmento ? segmento : null,
+            categoria ? categoria : null ,
+            subcategoria ?subcategoria  : null ,
+            concepto ? concepto  : null ,
+            fechaInicial ? fechaInicial : null ,
+            fechaFinal ? fechaFinal : null 
+
+        
         ]);
-        // console.log(rows)
+        console.log(rows)
         result = rows; // Almacenar el resultado de la consulta
     } catch (error) {
         console.error('Error ejecutando el procedimiento almacenado Get_Egresos_Por_Filtros');
@@ -62,19 +66,22 @@ export const ObtenerEgresosPorFiltros = async (req:any, res:any) => {
     let result : any = [];
 
     // Obtener los filtros del cuerpo de la solicitud
-    const { segmento, categoria, subcategoria, concepto } = req.body;
+    const { segmento, categoria, subcategoria, concepto, fechaInicial, fechaFinal } = req.body;
 
     try {
         con = await connect(); // Conectar a la base de datos
 
         // Llamar al procedimiento almacenado con los filtros recibidos
-        const query = 'CALL Get_Egresos_Por_Filtros(?, ?, ?, ?)';
+        const query = 'CALL Get_Egresos_Por_Filtros(?, ?, ?, ?, ?, ?)';
 
         const [rows] = await con.query(query, [
-            segmento,
-            categoria ,
-            subcategoria ,
-            concepto
+            segmento ? segmento : null,
+            categoria ? categoria : null ,
+            subcategoria ?subcategoria  : null ,
+            concepto ? concepto  : null ,
+            fechaInicial ? fechaInicial : null ,
+            fechaFinal ? fechaFinal : null 
+
         ]);
         // console.log(rows)
         result = rows; // Almacenar el resultado de la consulta

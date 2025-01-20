@@ -24,6 +24,13 @@
   gap: 2rem;
 }
 
+.dateContent{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+
+}
+
 .chart-container {
   position: relative;
   width: 100%;

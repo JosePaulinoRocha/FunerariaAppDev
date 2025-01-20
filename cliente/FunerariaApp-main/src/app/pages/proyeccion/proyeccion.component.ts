@@ -33,22 +33,36 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   egresosPlaneadosExtraordinariosTotales: number = 0;
   filtros: any = {};
 
-  selectedSegmentos: any[] = [];
-  selectedCategorias: any[] = [];
-  selectedSubcategorias: any[] = [];
-  selectedConceptos: any[] = [];
-  selectedSegmentosIngresos: any[] = [];
-  selectedCategoriasIngresos: any[] = [];
-  selectedSubcategoriasIngresos: any[] = [];
-  selectedConceptosIngresos: any[] = [];
-  ingresosPorFiltrosData: any[] = []; //
-  EgresosPorFiltrosData: any[] = []; //
+  selectedSegmentos: any = null;
+  selectedCategorias: any = null;
+  selectedSubcategorias: any = null;
+  selectedConceptos: any = null;
+  selectedSegmentosIngresos: any = null;
+  selectedCategoriasIngresos: any = null;
+  selectedSubcategoriasIngresos: any = null;
+  selectedConceptosIngresos: any = null;
+  selectedSegmentosUtilidad: any = null;
+  selectedCategoriasUtilidad: any = null;
+  selectedSubcategoriasUtilidad: any = null;
+  selectedConceptosUtilidad: any = null;
+
+  ingresosPorFiltrosData: any = null; //
+  EgresosPorFiltrosData: any = null; //
+  selectedFecha: string | null = null;
+  selectedInitialDateIngresos: any = null
+  selectedFinalDateIngresos: any = null
+  selectedInitialDateEgresos: any = null
+  selectedFinalDateEgresos: any = null
+  chartInstance: Chart | null = null;
+  chartInstanceIngresos: Chart | null = null;
+
 
   totalEgresos: number = 0;
 
   private isSemanalLoaded: boolean = false;
   private isFrecuenciaLoaded: boolean = false;
   private isExtraordinarioLoaded: boolean = false;
+
 
   ingresosMensualesData: number[] = [];
 
@@ -107,6 +121,10 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
 
   onFilterIngresosChange() : void {
     this.LoadIngresosporFiltros()
+  }
+
+  onFilterChangeUtilidad(): void {
+    console.log("Esto funciona")
   }
 
   ngOnDestroy() {
@@ -216,8 +234,8 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   LoadIngresosporFiltros() {
-    console.log(this.selectedSegmentosIngresos, this.selectedCategoriasIngresos, this.selectedSubcategoriasIngresos, this.selectedConceptosIngresos)
-    this._proyeccionServ.ObtenerIngresosPorFiltros(this.selectedSegmentosIngresos, this.selectedCategoriasIngresos, this.selectedSubcategoriasIngresos, this.selectedConceptosIngresos).subscribe(
+    console.log(this.selectedSegmentosIngresos, this.selectedCategoriasIngresos, this.selectedSubcategoriasIngresos, this.selectedConceptosIngresos, this.selectedInitialDateIngresos, this.selectedFinalDateIngresos)
+    this._proyeccionServ.ObtenerIngresosPorFiltros(this.selectedSegmentosIngresos, this.selectedCategoriasIngresos, this.selectedSubcategoriasIngresos, this.selectedConceptosIngresos, this.selectedInitialDateIngresos, this.selectedFinalDateIngresos).subscribe(
       (data: any) => {
         console.log("Egresos recibidos desde el SP:", data);
         this.ingresosPorFiltrosData = data;
@@ -238,16 +256,24 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   graficarIngresosPorFiltros(ingresos: any[]) {
-    console.log(ingresos[0])
-    // Implementa la lógica de graficación aquí usando la librería Chart.js o la que uses.
+    console.log(ingresos[0]);
+
+    // Si la gráfica ya existe, la destruimos antes de crear una nueva
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+    }
+
+    // Obtener el contexto del canvas donde se dibuja la gráfica
     const ctx = document.getElementById('barChartIngresosPorFiltros') as HTMLCanvasElement;
-    const chart = new Chart(ctx, {
+
+    // Crear una nueva instancia de la gráfica
+    this.chartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ingresos[0].map((item:any) => item.Descripcion), // Etiquetas basadas en 'Descripcion'
+        labels: ingresos[0].map((item: any) => item.Descripcion), // Etiquetas basadas en 'Descripcion'
         datasets: [{
           label: 'Monto',
-          data: ingresos[0].map((item:any) => parseFloat(item.Monto)), // Monto de los ingresos
+          data: ingresos[0].map((item: any) => parseFloat(item.Monto)), // Monto de los ingresos
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
           borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1
@@ -264,8 +290,8 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   ObtenerEgresosPorFiltros() {
-    console.log(this.selectedSegmentos, this.selectedCategorias, this.selectedSubcategorias, this.selectedConceptos)
-    this._proyeccionServ.ObtenerEgresosPorFiltros(this.selectedSegmentos, this.selectedCategorias, this.selectedSubcategorias, this.selectedConceptos).subscribe(
+    console.log(this.selectedSegmentos, this.selectedCategorias, this.selectedSubcategorias, this.selectedConceptos, this.selectedInitialDateEgresos, this.selectedFinalDateEgresos)
+    this._proyeccionServ.ObtenerEgresosPorFiltros(this.selectedSegmentos, this.selectedCategorias, this.selectedSubcategorias, this.selectedConceptos, this.selectedInitialDateEgresos, this.selectedFinalDateEgresos).subscribe(
       (data: any) => {
         this.EgresosPorFiltrosData = data;
 
@@ -286,16 +312,24 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
 
 
   graficarEgresosPorFiltros(egresos: any[]) {
-    console.log(egresos[0])
-    // Implementa la lógica de graficación aquí usando la librería Chart.js o la que uses.
+    console.log(egresos[0]);
+
+    // Si la gráfica ya existe, la destruimos antes de crear una nueva
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+    }
+
+    // Obtener el contexto del canvas donde se dibuja la gráfica
     const ctx = document.getElementById('barChartEgresosPorFiltros') as HTMLCanvasElement;
-    const chart = new Chart(ctx, {
+
+    // Crear una nueva instancia de la gráfica
+    this.chartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: egresos[0].map((item:any) => item.Descripcion), // Etiquetas basadas en 'Descripcion'
+        labels: egresos[0].map((item: any) => item.Descripcion), // Etiquetas basadas en 'Descripcion'
         datasets: [{
           label: 'Monto',
-          data: egresos[0].map((item:any) => parseFloat(item.Monto)), // Monto de los ingresos
+          data: egresos[0].map((item: any) => parseFloat(item.Monto)), // Monto de los ingresos
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
           borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1
@@ -310,7 +344,6 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       }
     });
   }
-
   actualizarDatos() {
     console.log('Filtros:', this.filtros[0].resultados);
   }
