@@ -36,16 +36,17 @@
       </ion-button>
     </div>
 
+
     <div class="selectsProyecciones">
-      <ion-grid>
-        <ion-row>
-          <!-- Filtrar Egreso por segmentos -->
+      <ion-grid style="display: flex;">
+        <!-- Primera fila: Segmentos y Categorías -->
+        <ion-row class="aligned-row">
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedSegmentos"
               (ionChange)="onFilterChange()"
               multiple="false"
-              placeholder="Filtrar Egreso por segmentos"
+              placeholder="Segmentos"
               interface="popover">
               <ion-select-option *ngFor="let segmento of filtros.segmentos" [value]="segmento.SegmentoID">
                 {{ segmento.Nombre }}
@@ -53,27 +54,28 @@
             </ion-select>
           </ion-col>
 
-          <!-- Filtrar Egreso por categorías -->
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedCategorias"
               (ionChange)="onFilterChange()"
               multiple="false"
-              placeholder="Filtrar Egreso por categorias"
+              placeholder="Categorías"
               interface="popover">
               <ion-select-option *ngFor="let categoria of filtros.categorias" [value]="categoria.CategoriaID">
                 {{ categoria.Nombre }}
               </ion-select-option>
             </ion-select>
           </ion-col>
+        </ion-row>
 
-          <!-- Filtrar Egreso por subcategorías -->
-          <ion-col size="12" size-md="6" size-lg="3">
+        <!-- Segunda fila: Subcategorías y Conceptos -->
+        <ion-row class="aligned-row">
+          <ion-col style="margin-left: 2rem;" size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedSubcategorias"
               (ionChange)="onFilterChange()"
               multiple="false"
-              placeholder="Filtrar Egreso por subcategoria"
+              placeholder="Subcategoría"
               interface="popover">
               <ion-select-option *ngFor="let subcategoria of filtros.subcategorias" [value]="subcategoria.SubcategoriaID">
                 {{ subcategoria.Nombre }}
@@ -81,13 +83,12 @@
             </ion-select>
           </ion-col>
 
-          <!-- Filtrar Egreso por conceptos -->
-          <ion-col size="12" size-md="6" size-lg="3">
+          <ion-col style="margin-left: 2rem;" size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedConceptos"
               (ionChange)="onFilterChange()"
               multiple="false"
-              placeholder="Filtrar Egreso por concepto"
+              placeholder="Concepto"
               interface="popover">
               <ion-select-option *ngFor="let concepto of filtros.conceptos" [value]="concepto.ConceptoID">
                 {{ concepto.Nombre }}
@@ -100,9 +101,8 @@
 
     <div class="dateContent">
       <ion-grid>
-        <ion-row>
-          <!-- Fecha de inicio -->
-          <ion-col size="12" size-md="6">
+        <ion-row style="display: flex; justify-content: space-evenly;">
+          <!-- <ion-col size="12" size-md="6" class="centered"> -->
             <ion-datetime-button
               datetime="InitialdatetimeEgresos"
               [(ngModel)]="selectedInitialDateEgresos">
@@ -121,10 +121,9 @@
                 </ion-datetime>
               </ng-template>
             </ion-modal>
-          </ion-col>
+          <!-- </ion-col> -->
 
-          <!-- Fecha final -->
-          <ion-col size="12" size-md="6">
+          <!-- <ion-col size="12" size-md="6" class="centered"> -->
             <ion-datetime-button
               datetime="finalDateEgresos"
               [(ngModel)]="selectedFinalDateEgresos">
@@ -143,10 +142,11 @@
                 </ion-datetime>
               </ng-template>
             </ion-modal>
-          </ion-col>
+          <!-- </ion-col>ss -->
         </ion-row>
       </ion-grid>
     </div>
+
 
 
     <!-- Gráficas de Egresos -->
@@ -224,57 +224,57 @@
     </div>
 
     <div class="selectsProyecciones">
-      <ion-grid>
+      <ion-grid style="display: flex;">
+        <!-- Primera fila: Segmentos y Categorías -->
         <ion-row>
-          <!-- Filtrar Egreso por segmentos -->
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedSegmentosIngresos"
               (ionChange)="onFilterIngresosChange()"
               multiple="false"
-              placeholder="Filtrar Egreso por segmentos"
+              placeholder="Segmentos"
               interface="popover">
               <ion-select-option *ngFor="let segmento of filtros.segmentos" [value]="segmento.SegmentoID">
                 {{ segmento.Nombre }}
               </ion-select-option>
             </ion-select>
           </ion-col>
-
-          <!-- Filtrar Egreso por categorías -->
+    
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedCategoriasIngresos"
               (ionChange)="onFilterIngresosChange()"
               multiple="false"
-              placeholder="Filtrar Egreso por categorias"
+              placeholder="Categorias"
               interface="popover">
               <ion-select-option *ngFor="let categoria of filtros.categorias" [value]="categoria.CategoriaID">
                 {{ categoria.Nombre }}
               </ion-select-option>
             </ion-select>
           </ion-col>
-
-          <!-- Filtrar Egreso por subcategorías -->
-          <ion-col size="12" size-md="6" size-lg="3">
+        </ion-row>
+    
+        <!-- Segunda fila: Subcategorías y Conceptos -->
+        <ion-row>
+          <ion-col style="margin-left: 2rem;" size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedSubcategoriasIngresos"
               (ionChange)="onFilterIngresosChange()"
               multiple="false"
-              placeholder="Filtrar Egreso por subcategoria"
+              placeholder="Subcategoria"
               interface="popover">
               <ion-select-option *ngFor="let subcategoria of filtros.subcategorias" [value]="subcategoria.SubcategoriaID">
                 {{ subcategoria.Nombre }}
               </ion-select-option>
             </ion-select>
           </ion-col>
-
-          <!-- Filtrar Egreso por conceptos -->
-          <ion-col size="12" size-md="6" size-lg="3">
+    
+          <ion-col style="margin-left: 2rem;" size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedConceptosIngresos"
               (ionChange)="onFilterIngresosChange()"
               multiple="false"
-              placeholder="Filtrar Egreso por concepto"
+              placeholder="Concepto"
               interface="popover">
               <ion-select-option *ngFor="let concepto of filtros.conceptos" [value]="concepto.ConceptoID">
                 {{ concepto.Nombre }}
@@ -284,11 +284,12 @@
         </ion-row>
       </ion-grid>
     </div>
+    
 
     <div class="dateContent">
       <ion-grid>
-        <ion-row>
-          <ion-col size="12" size-md="6">
+        <ion-row style="display: flex; justify-content: space-evenly;">
+          <!-- <ion-col size="12" size-md="6"> -->
             <ion-datetime-button datetime="Initialdatetime"></ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
               <ng-template>
@@ -303,9 +304,9 @@
                 </ion-datetime>
               </ng-template>
             </ion-modal>
-          </ion-col>
+          <!-- </ion-col> -->
 
-          <ion-col size="12" size-md="6">
+          <!-- <ion-col size="12" size-md="6"> -->
             <ion-datetime-button datetime="finalDate"></ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
               <ng-template>
@@ -320,7 +321,7 @@
                 </ion-datetime>
               </ng-template>
             </ion-modal>
-          </ion-col>
+          <!-- </ion-col> -->
         </ion-row>
       </ion-grid>
     </div>
@@ -400,57 +401,57 @@
     </div>
 
     <div class="selectsProyecciones">
-      <ion-grid>
-        <ion-row>
-          <!-- Filtrar Utilidad por segmentos -->
+      <ion-grid style="display: flex;">
+        <!-- Primera fila: Segmentos y Categorías -->
+        <ion-row class="aligned-row">
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedSegmentosUtilidad"
               (ionChange)="onFilterChangeUtilidad()"
               multiple="false"
-              placeholder="Filtrar Utilidad por segmentos"
+              placeholder="Segmentos"
               interface="popover">
               <ion-select-option *ngFor="let segmento of filtros.segmentos" [value]="segmento.SegmentoID">
                 {{ segmento.Nombre }}
               </ion-select-option>
             </ion-select>
           </ion-col>
-
-          <!-- Filtrar Utilidad por categorías -->
+    
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedCategoriasUtilidad"
               (ionChange)="onFilterChangeUtilidad()"
               multiple="false"
-              placeholder="Filtrar Utilidad por categorias"
+              placeholder="Categorías"
               interface="popover">
               <ion-select-option *ngFor="let categoria of filtros.categorias" [value]="categoria.CategoriaID">
                 {{ categoria.Nombre }}
               </ion-select-option>
             </ion-select>
           </ion-col>
-
-          <!-- Filtrar Utilidad por subcategorías -->
-          <ion-col size="12" size-md="6" size-lg="3">
+        </ion-row>
+    
+        <!-- Segunda fila: Subcategorías y Conceptos -->
+        <ion-row class="aligned-row">
+          <ion-col style="margin-left: 2rem;" size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedSubcategoriasUtilidad"
               (ionChange)="onFilterChangeUtilidad()"
               multiple="false"
-              placeholder="Filtrar Utilidad por subcategoria"
+              placeholder="Subcategoría"
               interface="popover">
               <ion-select-option *ngFor="let subcategoria of filtros.subcategorias" [value]="subcategoria.SubcategoriaID">
                 {{ subcategoria.Nombre }}
               </ion-select-option>
             </ion-select>
           </ion-col>
-
-          <!-- Filtrar Utilidad por conceptos -->
-          <ion-col size="12" size-md="6" size-lg="3">
+    
+          <ion-col style="margin-left: 2rem;" size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedConceptosUtilidad"
               (ionChange)="onFilterChangeUtilidad()"
               multiple="false"
-              placeholder="Filtrar Utilidad por concepto"
+              placeholder="Concepto"
               interface="popover">
               <ion-select-option *ngFor="let concepto of filtros.conceptos" [value]="concepto.ConceptoID">
                 {{ concepto.Nombre }}
@@ -460,12 +461,13 @@
         </ion-row>
       </ion-grid>
     </div>
+    
 
     <div class="dateContent">
       <ion-grid>
-        <ion-row>
+        <ion-row style="display: flex; justify-content: space-evenly;">
           <!-- Fecha de inicio -->
-          <ion-col size="12" size-md="6">
+          <!-- <ion-col size="12" size-md="6"> -->
             <ion-datetime-button datetime="InitialdatetimeUtilidad"></ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
               <ng-template>
@@ -479,10 +481,10 @@
                 </ion-datetime>
               </ng-template>
             </ion-modal>
-          </ion-col>
+          <!-- </ion-col> -->
 
           <!-- Fecha final -->
-          <ion-col size="12" size-md="6">
+          <!-- <ion-col size="12" size-md="6"> -->
             <ion-datetime-button datetime="finalDateUtilidad"></ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
               <ng-template>
@@ -496,7 +498,7 @@
                 </ion-datetime>
               </ng-template>
             </ion-modal>
-          </ion-col>
+          <!-- </ion-col> -->
         </ion-row>
       </ion-grid>
     </div>
