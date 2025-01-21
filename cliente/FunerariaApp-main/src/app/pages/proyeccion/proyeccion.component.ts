@@ -270,10 +270,10 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     this.chartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ingresos[0].map((item: any) => item.Descripcion), // Etiquetas basadas en 'Descripcion'
+        labels: ingresos[0].map((item: any) => item.CategoriaID), // Etiquetas basadas en 'Descripcion'
         datasets: [{
           label: 'Monto',
-          data: ingresos[0].map((item: any) => parseFloat(item.Monto)), // Monto de los ingresos
+          data: ingresos[0].map((item: any) => parseFloat(item.TotalMonto)), // Monto de los ingresos
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
           borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1
@@ -313,23 +313,17 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
 
   graficarEgresosPorFiltros(egresos: any[]) {
     console.log(egresos[0]);
-
-    // Si la gráfica ya existe, la destruimos antes de crear una nueva
     if (this.chartInstance) {
       this.chartInstance.destroy();
     }
-
-    // Obtener el contexto del canvas donde se dibuja la gráfica
     const ctx = document.getElementById('barChartEgresosPorFiltros') as HTMLCanvasElement;
-
-    // Crear una nueva instancia de la gráfica
     this.chartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: egresos[0].map((item: any) => item.Descripcion), // Etiquetas basadas en 'Descripcion'
+        labels: egresos[0].map((item: any) => item.CategoriaID), // Etiquetas basadas en 'Descripcion'
         datasets: [{
           label: 'Monto',
-          data: egresos[0].map((item: any) => parseFloat(item.Monto)), // Monto de los ingresos
+          data: egresos[0].map((item: any) => parseFloat(item.TotalMonto)), // Monto de los ingresos
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
           borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1
@@ -344,6 +338,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       }
     });
   }
+
   actualizarDatos() {
     console.log('Filtros:', this.filtros[0].resultados);
   }
