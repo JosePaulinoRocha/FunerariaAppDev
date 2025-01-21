@@ -89,3 +89,27 @@
 .hidden {
   display: none;
 }
+
+
+
+.selectsProyecciones ion-row.aligned-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.selectsProyecciones ion-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.dateContent ion-row {
+  justify-content: center;
+  text-align: center;
+}
+
+.dateContent ion-col.centered {
+  display: flex;
+  justify-content: center;
+}

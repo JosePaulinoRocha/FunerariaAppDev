@@ -259,15 +259,15 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     console.log(ingresos[0]);
 
     // Si la gráfica ya existe, la destruimos antes de crear una nueva
-    if (this.chartInstance) {
-      this.chartInstance.destroy();
+    if (this.chartInstanceIngresos) {
+      this.chartInstanceIngresos.destroy();
     }
 
     // Obtener el contexto del canvas donde se dibuja la gráfica
     const ctx = document.getElementById('barChartIngresosPorFiltros') as HTMLCanvasElement;
 
     // Crear una nueva instancia de la gráfica
-    this.chartInstance = new Chart(ctx, {
+    this.chartInstanceIngresos = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: ingresos[0].map((item: any) => item.CategoriaID), // Etiquetas basadas en 'Descripcion'
