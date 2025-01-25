@@ -288,13 +288,17 @@
       <ion-grid>
         <ion-row style="display: flex; justify-content: space-evenly;">
           <!-- <ion-col size="12" size-md="6"> -->
-            <ion-datetime-button datetime="Initialdatetime"></ion-datetime-button>
+            <ion-datetime-button
+            datetime="Initialdatetime"
+            [(ngModel)]="selectedInitialDateIngresos">
+          </ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
               <ng-template>
                 <ion-datetime
                   id="Initialdatetime"
                   presentation="date"
                   value="2023-11-02T01:22:00"
+                  [(ngModel)]="selectedInitialDateIngresos"
                   (ionChange)="onFilterIngresosChange()"
                   [formatOptions]="{
                     date: { weekday: 'short', month: 'long', day: '2-digit' }
@@ -305,13 +309,14 @@
           <!-- </ion-col> -->
 
           <!-- <ion-col size="12" size-md="6"> -->
-            <ion-datetime-button datetime="finalDate"></ion-datetime-button>
+            <ion-datetime-button datetime="finalDate" [(ngModel)]="selectedFinalDateIngresos"></ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
               <ng-template>
                 <ion-datetime
                   id="finalDate"
                   presentation="date"
                   value="2023-11-02T01:22:00"
+                  [(ngModel)]="selectedFinalDateIngresos"
                   (ionChange)="onFilterIngresosChange()"
                   [formatOptions]="{
                     date: { weekday: 'short', month: 'long', day: '2-digit' }
@@ -404,7 +409,7 @@
         <ion-row class="aligned-row">
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-select
-              [(ngModel)]="selectedSegmentosUtilidad"
+              [(ngModel)]="selectedUtilidadesSegmentos"
               (ionChange)="onFilterChangeUtilidad()"
               multiple="false"
               placeholder="Segmentos"
@@ -417,7 +422,7 @@
 
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-select
-              [(ngModel)]="selectedCategoriasUtilidad"
+              [(ngModel)]="selectedUtilidadesCategorias"
               (ionChange)="onFilterChangeUtilidad()"
               multiple="false"
               placeholder="Categorías"
@@ -429,34 +434,7 @@
           </ion-col>
         </ion-row>
 
-        <!-- Segunda fila: Subcategorías y Conceptos -->
-        <ion-row class="aligned-row">
-          <ion-col style="margin-left: 2rem;" size="12" size-md="6" size-lg="3">
-            <ion-select
-              [(ngModel)]="selectedSubcategoriasUtilidad"
-              (ionChange)="onFilterChangeUtilidad()"
-              multiple="false"
-              placeholder="Subcategoría"
-              interface="popover">
-              <ion-select-option *ngFor="let subcategoria of filtros.subcategorias" [value]="subcategoria.SubcategoriaID">
-                {{ subcategoria.Nombre }}
-              </ion-select-option>
-            </ion-select>
-          </ion-col>
 
-          <ion-col style="margin-left: 2rem;" size="12" size-md="6" size-lg="3">
-            <ion-select
-              [(ngModel)]="selectedConceptosUtilidad"
-              (ionChange)="onFilterChangeUtilidad()"
-              multiple="false"
-              placeholder="Concepto"
-              interface="popover">
-              <ion-select-option *ngFor="let concepto of filtros.conceptos" [value]="concepto.ConceptoID">
-                {{ concepto.Nombre }}
-              </ion-select-option>
-            </ion-select>
-          </ion-col>
-        </ion-row>
       </ion-grid>
     </div>
 
@@ -466,13 +444,15 @@
         <ion-row style="display: flex; justify-content: space-evenly;">
           <!-- Fecha de inicio -->
           <!-- <ion-col size="12" size-md="6"> -->
-            <ion-datetime-button datetime="InitialdatetimeUtilidad"></ion-datetime-button>
+            <ion-datetime-button datetime="InitialdatetimeUtilidad" [(ngModel)]="selectedInitialDateUtilidades"></ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
               <ng-template>
                 <ion-datetime
                   id="InitialdatetimeUtilidad"
                   presentation="date"
                   value="2023-11-02T01:22:00"
+                  [(ngModel)]="selectedInitialDateUtilidades"
+                  (ionChange)="onFilterChangeUtilidad()"
                   [formatOptions]="{
                     date: { weekday: 'short', month: 'long', day: '2-digit' }
                   }">
@@ -483,13 +463,15 @@
 
           <!-- Fecha final -->
           <!-- <ion-col size="12" size-md="6"> -->
-            <ion-datetime-button datetime="finalDateUtilidad"></ion-datetime-button>
+            <ion-datetime-button datetime="finalDateUtilidad" [(ngModel)]="selectedFinalDateUtilidades"></ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
               <ng-template>
                 <ion-datetime
                   id="finalDateUtilidad"
                   presentation="date"
                   value="2023-11-02T01:22:00"
+                  [(ngModel)]="selectedFinalDateUtilidades"
+                  (ionChange)="onFilterChangeUtilidad()"
                   [formatOptions]="{
                     date: { weekday: 'short', month: 'long', day: '2-digit' }
                   }">
@@ -519,6 +501,13 @@
       <h2 class="chart-title">Utilidad Neta Semanal: Mes actual</h2>
       <div class="chart-container">
         <canvas id="utilidadNetaSemanalesChart"></canvas>
+      </div>
+    </div>
+
+    <div [class.hidden]="activeUtilidadChart !== 'barChartUtilidadPorFiltros'">
+      <h2 class="chart-title">Utilidad por Filtros</h2>
+      <div class="chart-container">
+        <canvas id="barChartUtilidadPorFiltros"></canvas>
       </div>
     </div>
 

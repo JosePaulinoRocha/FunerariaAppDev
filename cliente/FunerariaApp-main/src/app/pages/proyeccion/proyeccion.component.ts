@@ -21,6 +21,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   activeIngresoChart: string = 'actualVsPlaneado';
   activeUtilidadChart: string = 'actualVsPlaneado';
   activeEgresosChart: string = '';
+  activeUtilidadChartFiltros : string = '';
   ingresosSemanales: any[] = [];
   egresosSemanales: any[] = [];
   egresoActual: number = 0;
@@ -45,16 +46,25 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   selectedCategoriasUtilidad: any = null;
   selectedSubcategoriasUtilidad: any = null;
   selectedConceptosUtilidad: any = null;
+  selectedUtilidadesSegmentos: any = null;
+  selectedUtilidadesCategorias: any = null;
+  selectedUtilidadesSubcategorias: any = null;
+  selectedUtilidadesConceptos: any = null;
+
 
   ingresosPorFiltrosData: any = null; //
   EgresosPorFiltrosData: any = null; //
+  UtilidadesPorFiltrosData: any = null; //
   selectedFecha: string | null = null;
   selectedInitialDateIngresos: any = null
   selectedFinalDateIngresos: any = null
   selectedInitialDateEgresos: any = null
   selectedFinalDateEgresos: any = null
+  selectedInitialDateUtilidades: any = null
+  selectedFinalDateUtilidades: any = null
   chartInstance: Chart | null = null;
   chartInstanceIngresos: Chart | null = null;
+  chartInstanceUtilidades: Chart | null = null;
 
 
   totalEgresos: number = 0;
@@ -124,7 +134,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   onFilterChangeUtilidad(): void {
-    console.log("Esto funciona")
+    this.ObtenerUtilidadesPorFiltros()
   }
 
   ngOnDestroy() {
@@ -324,6 +334,60 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
         datasets: [{
           label: 'Monto',
           data: egresos[0].map((item: any) => parseFloat(item.TotalMonto)), // Monto de los ingresos
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+  ObtenerUtilidadesPorFiltros() {
+    console.log(this.selectedUtilidadesSegmentos,
+                this.selectedUtilidadesCategorias,
+                this.selectedUtilidadesSubcategorias,
+                this.selectedUtilidadesConceptos,
+                this.selectedInitialDateUtilidades,
+                this.selectedFinalDateUtilidades)
+    this._proyeccionServ.ObtenerUtilidadesPorFiltros(this.selectedUtilidadesSegmentos, this.selectedUtilidadesCategorias, this.selectedUtilidadesSubcategorias, this.selectedUtilidadesConceptos, this.selectedInitialDateUtilidades, this.selectedFinalDateUtilidades).subscribe(
+      (data: any) => {
+        this.UtilidadesPorFiltrosData = data;
+        console.log(this.UtilidadesPorFiltrosData);
+        if (this.UtilidadesPorFiltrosData && this.UtilidadesPorFiltrosData.length > 0) {
+          this.activeUtilidadChart = 'barChartUtilidadPorFiltros'; // Muestra la gráfica específica
+          this.graficarUtilidadPorFiltros(this.UtilidadesPorFiltrosData); // Llama la función para graficar los datos
+        } else {
+          this.activeUtilidadChartFiltros = ''; // No mostrar gráfica si no hay datos
+        }
+
+      },
+      (error) => {
+        console.error("Error al obtener los Utilidades:", error);
+        this.activeUtilidadChartFiltros = '';
+      }
+    );
+  }
+
+  graficarUtilidadPorFiltros(Utilidades: any[]) {
+    console.log(Utilidades[0]);
+    if (this.chartInstanceUtilidades) {
+      this.chartInstanceUtilidades.destroy();
+    }
+    const ctx = document.getElementById('barChartUtilidadPorFiltros') as HTMLCanvasElement;
+    this.chartInstanceUtilidades = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: Utilidades[0].map((item: any) => item.Mes), // Etiquetas basadas en 'Descripcion'
+        datasets: [{
+          label: 'Monto',
+          data: Utilidades[0].map((item: any) => parseFloat(item.UtilidadNeta)), // Monto de los ingresos
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
           borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1
