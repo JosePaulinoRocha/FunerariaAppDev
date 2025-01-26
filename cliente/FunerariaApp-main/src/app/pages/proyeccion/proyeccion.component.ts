@@ -386,9 +386,9 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       data: {
         labels: Utilidades[0].map((item: any) => item.Mes), // Etiquetas basadas en 'Descripcion'
         datasets: [{
-          label: 'Monto',
+          label: 'Utilidad neta',
           data: Utilidades[0].map((item: any) => parseFloat(item.UtilidadNeta)), // Monto de los ingresos
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          backgroundColor: 'rgba(166, 6, 54, 0.47)',
           borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1
         }]
