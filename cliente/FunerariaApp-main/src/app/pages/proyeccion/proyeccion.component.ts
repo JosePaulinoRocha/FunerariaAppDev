@@ -410,7 +410,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
 
         // Invertimos el orden de los registros
         const reversedData = data.reverse();
-        console.log("Datos invertidos:", reversedData);
+        console.log("Datos invertidos de ingresos mensuales:", reversedData);
 
         // Llenamos la gráfica con los ingresos mensuales
         this.updateRevenueChart(reversedData);
@@ -615,7 +615,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     }
 
     // Extraemos los nombres de los meses y los ingresos obtenidos del array de datos
-    const labels = data.map(item => item.Mes); // Mes en el eje X
+    const labels = data.map(item => `${item.MesNumero} / ${item.Anio}`);
     const ingresos = data.map(item => parseFloat(item.IngresoTotal)); // IngresoTotal en el eje Y
 
     const dataForChart: ChartConfiguration['data'] = {

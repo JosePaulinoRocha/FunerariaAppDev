@@ -92,4 +92,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/proyeccion/proyeccion.component').then((m) => m.ProyeccionComponent),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'reportes',
+    loadComponent: () => import('./pages/reportes/reportes.component').then((m) => m.ReportesComponent),
+    canActivate: [AuthGuard],
+  },
 ];

@@ -15,6 +15,7 @@ import Presupuesto from "./routes/Presupuesto.routes"
 import PresupuestoMensualFrecuencia from "./routes/Presupuesto-Mensual-Frecuencia.routes"
 import PresupuestoMensualCuentas from "./routes/Presupuesto-Mensual-Cuentas.routes"
 import Transferencias from "./routes/Transferencias.routes"
+import Reportes from "./routes/Reportes.routes"
 import Proyeccion from "./routes/Proyeccion.routes"
 
 
@@ -74,6 +75,7 @@ export class App {
         this.app.use('/api/presupuesto-mensual-frecuencia', PresupuestoMensualFrecuencia);
         this.app.use('/api/presupuesto-mensual-cuentas', PresupuestoMensualCuentas);
         this.app.use('/api/transferencias', Transferencias);
+        this.app.use('/api/reportes', Reportes);
         this.app.use('/api/proyeccion', Proyeccion);
 
 

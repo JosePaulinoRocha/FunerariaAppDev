@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>{{ isEditMode ? 'Modificar Usuario' : 'Añadir Usuario' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form (ngSubmit)="saveUser()">
+    <ion-list>
+      <ion-item style="margin-top: 16px;">
+        <ion-label position="stacked">Usuario ID</ion-label>
+        <ion-input [(ngModel)]="user.userId" name="userId" disabled></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Nombre Completo</ion-label>
+        <ion-input [(ngModel)]="user.fullName" name="fullName" required></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Correo Electrónico</ion-label>
+        <ion-input [(ngModel)]="user.email" name="email" type="email" required></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Teléfono</ion-label>
+        <ion-input [(ngModel)]="user.phone" name="phone" type="tel" required></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Rol</ion-label>
+        <ion-select [(ngModel)]="user.RolID" name="rol" required interface="alert" searchbar="true">
+          <ion-select-option *ngFor="let item of rol" [value]="item.RolID">{{ item.NombreRol }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Administrador</ion-label>
+        <ion-checkbox [(ngModel)]="user.isAdmin" name="isAdmin"></ion-checkbox>
+      </ion-item>
+    </ion-list>
+
+    <ion-footer>
+      <ion-button expand="full" type="submit">{{ isEditMode ? 'Modificar' : 'Añadir' }}</ion-button>
+    </ion-footer>
+  </form>
+</ion-content>

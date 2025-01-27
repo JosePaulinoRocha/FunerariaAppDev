@@ -12,7 +12,6 @@ export async function connect() {
 }
 
 
-
 // export async function connect() {
 //     return mysql.createConnection({
 //         host: 'localhost',
