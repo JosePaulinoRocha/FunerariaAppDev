@@ -51,6 +51,19 @@ export class ProyeccionServices {
     return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}ObtenerEgresosPorFiltros/`,  filtros );
   }
 
+  ObtenerUtilidadesPorFiltros(selectedUtilidadesSegmentos: any, selectedUtilidadesCategorias: any, selectedUtilidadesSubcategorias: any, selectedUtilidadesConceptos: any, selectedUtilidadesInitialDateUtilidades: any, selectedUtilidadesFinalDateUtilidades:any): Observable<any> {
+    const filtros = {
+      segmento: selectedUtilidadesSegmentos || null,
+      categoria: selectedUtilidadesCategorias || null,
+      subcategoria: selectedUtilidadesSubcategorias || null,
+      concepto: selectedUtilidadesConceptos || null,
+      fechaInicial: selectedUtilidadesInitialDateUtilidades || null,
+      fechaFinal: selectedUtilidadesFinalDateUtilidades || null
+    };
+
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}ObtenerUtilidadesPorFiltros/`,  filtros );
+  }
+
   getEgresoMensual(): Observable<any[]> {
     return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresoActual/`);
   }

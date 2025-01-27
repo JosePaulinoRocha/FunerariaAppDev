@@ -32,7 +32,7 @@ export const ObtenerIngresosPorFiltros = async (req:any, res:any) => {
 
     // Obtener los filtros del cuerpo de la solicitud
     const { segmento, categoria, subcategoria, concepto, fechaInicial, fechaFinal } = req.body;
-
+    console.log(segmento, fechaInicial, fechaFinal)
     try {
         con = await connect(); // Conectar a la base de datos
 
@@ -49,7 +49,7 @@ export const ObtenerIngresosPorFiltros = async (req:any, res:any) => {
 
         
         ]);
-        console.log(rows)
+        
         result = rows; // Almacenar el resultado de la consulta
     } catch (error) {
         console.error('Error ejecutando el procedimiento almacenado Get_Egresos_Por_Filtros');
@@ -94,6 +94,41 @@ export const ObtenerEgresosPorFiltros = async (req:any, res:any) => {
         return res.json(result); // Devolver el resultado como JSON
     }
 };
+
+export const ObtenerUtilidadesPorFiltros = async (req:any, res:any) => {
+    let con;
+    let result : any = [];
+
+    // Obtener los filtros del cuerpo de la solicitud
+    const { segmento, categoria, subcategoria, concepto, fechaInicial, fechaFinal } = req.body;
+
+    try {
+        con = await connect(); // Conectar a la base de datos
+
+        // Llamar al procedimiento almacenado con los filtros recibidos
+        const query = 'CALL Get_Utilidades_Por_Filtros(?, ?, ?, ?, ?, ?)';
+
+        const [rows] = await con.query(query, [
+            segmento ? segmento : null,
+            categoria ? categoria : null ,
+            subcategoria ?subcategoria  : null ,
+            concepto ? concepto  : null ,
+            fechaInicial ? fechaInicial : null ,
+            fechaFinal ? fechaFinal : null 
+
+        ]);
+        // console.log(rows)
+        result = rows; // Almacenar el resultado de la consulta
+    } catch (error) {
+        console.error('Error ejecutando el procedimiento almacenado Get_Egresos_Por_Filtros');
+        console.error(error);
+        result = null;
+    } finally {
+        await con?.end(); // Cerrar la conexión
+        return res.json(result); // Devolver el resultado como JSON
+    }
+};
+
 
 export const ObtenerEgresoActual = async (req: Request, res: Response) => {
     let con;
