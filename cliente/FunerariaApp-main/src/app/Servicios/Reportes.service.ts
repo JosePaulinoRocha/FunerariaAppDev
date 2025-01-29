@@ -1,4 +1,5 @@
-import { Presupuesto } from '../Modelos/Presupuesto';
+import { Presupuesto, Gastos, Estatus, PasoUsuario, Periodos, PresupuestoMensualSemanal } from '../Modelos/Presupuesto';
+import { GastoMensualPorFrecuencia, GastoPresupuestoFrecuenciaGuardados, GastoMensualPorFrecuenciaAprobados, Ingreso } from '../Modelos/Presupuesto';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -34,6 +35,19 @@ export class ReportesServices {
       .set('anio', anio);
   
     return this.http.get<any>(`${this.myAppUrl}${this.MyApiUrl}GetReportePorFecha/`, { params });
+  }
+
+
+  getReportePresupuestoSemanal(): Observable<PresupuestoMensualSemanal[]> {
+    return this.http.get<PresupuestoMensualSemanal[]>(`${this.myAppUrl}${this.MyApiUrl}GetReportePresupuestoSemanal/`);
+  }
+
+  getReportePresupuestoPeriodico(): Observable<GastoMensualPorFrecuenciaAprobados[]> {
+    return this.http.get<GastoMensualPorFrecuenciaAprobados[]>(`${this.myAppUrl}${this.MyApiUrl}GetReportePresupuestoPeriodico/`);
+  }
+
+  getReportePresupuestoExtraordinario(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetReportePresupuestoExtraordinario/`);
   }
   
 

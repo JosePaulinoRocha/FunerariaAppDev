@@ -7,6 +7,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { ReportesModalComponent } from './modal/reportes-modal.component';
 import { ProyeccionServices } from 'src/app/Servicios/Proyeccion.service';
 import { ReportesServices } from 'src/app/Servicios/Reportes.service';
+import { PresupuestoServices } from 'src/app/Servicios/Presupuesto.service';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -19,10 +20,86 @@ interface Registros {
   NombreSubcategoria: string;
   ConceptoID: number;
   NombreConcepto: string;
-  PromedioPiezas: number;
+  TotalPiezas: number;
   FrecuenciaPromedio: number;
   UltimaFecha: string; 
-  PromedioMonto: string;
+  TotalMonto: string;
+}
+
+interface PresupuestoSemanal {
+  SegmentoID: number;
+  NombreSegmento: string;
+  CategoriaID: number;
+  NombreCategoria: string;
+  SubcategoriaID: number;
+  NombreSubcategoria: string;
+  ConceptoID: number;
+  NombreConcepto: string;
+  PromedioMonto: number;
+  PromedioPiezas: number;
+  FrecuenciaPromedio: number;
+  UltimaFecha: string;
+  FrecuenciaDictaminada: number;
+  MontoDictaminado: number;
+  CuentaID: number;
+  NombreCuenta: string;
+  DiaLimite: number;
+  PeriodoID: number | null;
+  PeriodoCongelado: string | null;
+  [key: string]: any; // Permite la extensión de la interfaz con otros campos si es necesario
+}
+
+interface GastoMensualPorFrecuencia {
+  SegmentoID: number;
+  NombreSegmento: string;
+  CategoriaID: number;
+  NombreCategoria: string;
+  SubcategoriaID: number;
+  NombreSubcategoria: string;
+  ConceptoID: number;
+  NombreConcepto: string;
+  MontoDictaminado: number;
+  FrecuenciaDictaminada: number;
+  CuentaID: number | null;
+  NombreCuenta: string | null;
+  CajaChica: any;
+  DiaLimite: number | null;
+  PromedioMonto: number | null;
+  PromedioPiezas: number | null;
+  FrecuenciaPromedio: number | null;
+  UltimaFecha: string | null;  // Fecha en formato ISO
+  FechaSiguienteGasto: string | null;  // Fecha en formato ISO
+  DiasPendientes: number | null;
+  PeriodoID: number | null;
+  PeriodoCongelado: string | null; // Rango de fecha como "YYYY-MM-DD al YYYY-MM-DD"
+  Guardado: number;
+  [key: string]: any;
+}
+
+interface GastoMensualPorFrecuenciaExtraordinaria {
+  GastoID: number;
+  FechaPreautorizada: string;
+  Concepto: string;
+  Monto: number;
+  ProveedorID: number;
+  NombreProveedor: string;
+  SegmentoID: number;
+  NombreSegmento: string;
+  EstatusPresupuestoID: number;
+  Estatus: string;
+  CuentaID: number;
+  TipoCuentaID: number;
+  TipoCuenta: string;
+  NombreCuenta: string;
+  RFC: string;
+  Fecha: string;
+  CategoriaID: number;
+  NombreCategoria: string;
+  SubcategoriaID: number;
+  NombreSubcategoria: string;
+  ConceptoID: number;
+  NombreConcepto: string;
+  [key: string]: any;
 }
 
 @Component({
@@ -33,6 +110,10 @@ interface Registros {
   imports: [IonicModule, FormsModule, CommonModule, HttpClientModule, ReportesModalComponent],
 })
 export class ReportesComponent  implements OnInit {
+
+  presupuestoSemanal: PresupuestoSemanal[] = [];
+  gastoMensualFrecuencia: GastoMensualPorFrecuencia[] = [];
+  gastoMensualFrecuenciaExtraordinaria: GastoMensualPorFrecuenciaExtraordinaria[] = [];
 
   selectedMonth: string = '';
   selectedYear: string = '';
@@ -62,7 +143,8 @@ export class ReportesComponent  implements OnInit {
   constructor(
     private modalController: ModalController,
     private _proyeccionServ: ProyeccionServices,
-    private _reportesServ: ReportesServices
+    private _reportesServ: ReportesServices,
+    private _presupuestoServ: PresupuestoServices
   ) {}
 
   ngOnInit() {
@@ -71,6 +153,99 @@ export class ReportesComponent  implements OnInit {
     this.loadReportesEgresos();
     this.loadReportesIngresos();
     this.populateYears();
+    this.loadPresupuestoSemanal();
+    this.loadPresupuestoPeriodico();
+    this.loadPresupuestoExtraordinario();
+  }
+
+  loadPresupuestoExtraordinario() {
+    this.loading = true;
+    this._reportesServ.getReportePresupuestoExtraordinario().subscribe(
+      (data: any[]) => {
+        this.gastoMensualFrecuenciaExtraordinaria = data.map(gastoMensualFrecuenciaExtraordinaria => ({
+          ...gastoMensualFrecuenciaExtraordinaria,
+          Fecha: gastoMensualFrecuenciaExtraordinaria.Fecha ? gastoMensualFrecuenciaExtraordinaria.Fecha.split('T')[0] : null, // Extrae solo la parte de la fecha
+          FechaPreautorizada: gastoMensualFrecuenciaExtraordinaria.FechaPreautorizada ? gastoMensualFrecuenciaExtraordinaria.FechaPreautorizada.split('T')[0] : null
+        }));
+        this.loading = false;
+        console.log("Esta es la data de gastos por frecuencia extraordinaria:", this.gastoMensualFrecuenciaExtraordinaria);
+      },
+      (error) => {
+        console.error('Error fetching egresos:', error);
+        this.errorMessage = 'Error al cargar los egresos. Por favor, inténtalo de nuevo.';
+        this.loading = false;
+      }
+    );
+  }
+  
+
+  loadPresupuestoPeriodico() {
+    this._reportesServ.getReportePresupuestoPeriodico().subscribe(
+      (data: GastoMensualPorFrecuencia[]) => {
+        this.gastoMensualFrecuencia = data.map(gasto => {
+          if (gasto.CajaChica == 1) {
+            gasto.CuentaID = null; // Si es Caja Chica, asignar CuentaID a null
+          }
+  
+          return {
+            ...gasto,
+            UltimaFecha: gasto.UltimaFecha ? new Date(gasto.UltimaFecha).toISOString().split('T')[0] : null,
+            PeriodoCongeladoOriginal: gasto.PeriodoCongelado, // Mantener el valor original del periodo congelado
+            PeriodoCongelado: gasto.PeriodoCongelado ? this.formatPeriodoCongelado(gasto.PeriodoCongelado) : null, // Formatear el periodo
+          };
+        });
+  
+        console.log("esta es la data de gastos por frecuencia: ", this.gastoMensualFrecuencia);
+      },
+      error => {
+        console.error('Error fetching incomes', error);
+      }
+    );
+  }
+
+  loadPresupuestoSemanal() {
+    this._reportesServ.getReportePresupuestoSemanal().subscribe((data: PresupuestoSemanal[]) => {
+      // Transformar la fecha y asignar la data inicial
+      this.presupuestoSemanal = data.map(presupuestoSemanal => ({
+        ...presupuestoSemanal,
+        UltimaFecha: new Date(presupuestoSemanal.UltimaFecha).toISOString().split('T')[0],
+        PeriodoCongeladoOriginal: presupuestoSemanal.PeriodoCongelado, // Mantener el valor original del periodo congelado
+        PeriodoCongelado: presupuestoSemanal.PeriodoCongelado ? this.formatPeriodoCongelado(presupuestoSemanal.PeriodoCongelado) : null
+      }));
+  
+      console.log("esta es la data de presupuesto semanal: ", this.presupuestoSemanal);
+      }, (error) => {
+      console.error('Error fetching presupuesto', error); 
+    });
+  }
+
+  formatPeriodoCongelado(periodo: string): string {
+    const [start, end] = periodo.split(' al ');
+  
+    let fechaInicio = new Date(start);
+    let fechaFin = new Date(end);
+  
+    // Ajustamos las fechas sumando un día
+    fechaInicio.setDate(fechaInicio.getDate() + 1);
+    fechaFin.setDate(fechaFin.getDate() + 1);
+  
+    // Formato manual para cada fecha
+    const fechaInicioFormateada = `${this.getDiaSemana(fechaInicio)}, ${fechaInicio.getDate()} de ${this.getMesNombre(fechaInicio)} del ${fechaInicio.getFullYear()}`;
+    const fechaFinFormateada = `${this.getDiaSemana(fechaFin)}, ${fechaFin.getDate()} de ${this.getMesNombre(fechaFin)} del ${fechaFin.getFullYear()}`;
+  
+    return `${fechaInicioFormateada} a ${fechaFinFormateada}`;
+  }
+  
+  // Función para obtener el nombre del día en español
+  getDiaSemana(fecha: Date): string {
+    const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+    return dias[fecha.getDay()];
+  }
+  
+  // Función para obtener el nombre del mes en español
+  getMesNombre(fecha: Date): string {
+    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    return meses[fecha.getMonth()];
   }
 
   populateYears() {
@@ -124,12 +299,12 @@ export class ReportesComponent  implements OnInit {
         doc.text('Ingresos:', 14, ingresosStartY);
         doc.autoTable({
           startY: ingresosStartY + 5,
-          head: [['Segmento', 'Categoría', 'Subcategoría', 'Monto Promedio', 'Última Fecha']],
+          head: [['Segmento', 'Categoría', 'Subcategoría', 'Monto Total', 'Última Fecha']],
           body: this.ingresos.map(ingreso => [
             ingreso.NombreSegmento,
             ingreso.NombreCategoria,
             ingreso.NombreSubcategoria,
-            `$${parseFloat(ingreso.PromedioMonto || '0').toFixed(2)}`,
+            `$${parseFloat(ingreso.TotalMonto || '0').toFixed(2)}`,
             ingreso.UltimaFecha.split('T')[0], // Formato YYYY-MM-DD
           ]),
           styles: { fontSize: 10 },
@@ -140,12 +315,12 @@ export class ReportesComponent  implements OnInit {
         doc.text('Egresos:', 14, egresosStartY);
         doc.autoTable({
           startY: egresosStartY + 5,
-          head: [['Segmento', 'Categoría', 'Subcategoría', 'Monto Promedio', 'Última Fecha']],
+          head: [['Segmento', 'Categoría', 'Subcategoría', 'Monto Total', 'Última Fecha']],
           body: this.egresos.map(egreso => [
             egreso.NombreSegmento,
             egreso.NombreCategoria,
             egreso.NombreSubcategoria,
-            `$${parseFloat(egreso.PromedioMonto || '0').toFixed(2)}`,
+            `$${parseFloat(egreso.TotalMonto || '0').toFixed(2)}`,
             egreso.UltimaFecha.split('T')[0], // Formato YYYY-MM-DD
           ]),
           styles: { fontSize: 10 },
@@ -232,39 +407,33 @@ export class ReportesComponent  implements OnInit {
   
     // Cálculo de la ganancia neta
     const gananciaNeta = this.ingresoPasado - this.egresoPasado;
-  
+
+    const totalEgresosEsperados = 
+    this.presupuestoSemanal.reduce((sum, p) => sum + parseFloat(String(p.MontoDictaminado) || '0'), 0) +
+    this.gastoMensualFrecuencia.reduce((sum, g) => sum + parseFloat(String(g.MontoDictaminado) || '0'), 0) +
+    this.gastoMensualFrecuenciaExtraordinaria.reduce((sum, e) => sum + parseFloat(String(e.Monto) || '0'), 0);
+
+    // Cálculo de la diferencia entre el presupuesto esperado y el gasto real
+    const diferenciaPresupuestal = totalEgresosEsperados - this.egresoPasado;
+
     // Configuración inicial
     doc.setFontSize(18);
     doc.text('Reporte de Ingresos y Egresos', 14, 20);
-  
+
     // Tabla de totales
     const totalesStartY = 30;
     doc.autoTable({
-      startY: totalesStartY,
-      head: [['Descripción', 'Monto']],
-      body: [
-        ['Total Ingresos', `$${this.ingresoPasado.toFixed(2)}`],
-        ['Total Egresos', `$${this.egresoPasado.toFixed(2)}`],
-        ['Ganancia Neta', `$${gananciaNeta.toFixed(2)}`],
-      ],
-      styles: { fontSize: 12 },
-      theme: 'grid',
-    });
-  
-    // Ingresos
-    const ingresosStartY = (doc as any).lastAutoTable.finalY + 10;
-    doc.text('Ingresos:', 14, ingresosStartY);
-    doc.autoTable({
-      startY: ingresosStartY + 5,
-      head: [['Segmento', 'Categoría', 'Subcategoría', 'Monto Promedio', 'Última Fecha']],
-      body: this.ingresos.map(ingreso => [
-        ingreso.NombreSegmento,
-        ingreso.NombreCategoria,
-        ingreso.NombreSubcategoria,
-        `$${parseFloat(ingreso.PromedioMonto || '0').toFixed(2)}`, // Conversión a número con valor predeterminado
-        ingreso.UltimaFecha.split('T')[0], // Formato YYYY-MM-DD
-      ]),
-      styles: { fontSize: 10 },
+        startY: totalesStartY,
+        head: [['Descripción', 'Monto']],
+        body: [
+            ['Total Ingresos', `$${this.ingresoPasado.toFixed(2)}`],
+            ['Total Egresos', `$${this.egresoPasado.toFixed(2)}`],
+            ['Total Egresos Esperados', `$${totalEgresosEsperados.toFixed(2)}`],
+            // ['Diferencia Presupuestal', `$${diferenciaPresupuestal.toFixed(2)}`],
+            ['Ganancia Neta', `$${gananciaNeta.toFixed(2)}`],
+        ],
+        styles: { fontSize: 12 },
+        theme: 'grid',
     });
   
     // Egresos
@@ -272,15 +441,65 @@ export class ReportesComponent  implements OnInit {
     doc.text('Egresos:', 14, egresosStartY);
     doc.autoTable({
       startY: egresosStartY + 5,
-      head: [['Segmento', 'Categoría', 'Subcategoría', 'Monto Promedio', 'Última Fecha']],
+      head: [['Segmento', 'Categoría', 'Subcategoría', 'Monto Total', 'Última Fecha']],
       body: this.egresos.map(egreso => [
         egreso.NombreSegmento,
         egreso.NombreCategoria,
         egreso.NombreSubcategoria,
-        `$${parseFloat(egreso.PromedioMonto || '0').toFixed(2)}`, // Conversión a número con valor predeterminado
+        `$${parseFloat(egreso.TotalMonto || '0').toFixed(2)}`,
         egreso.UltimaFecha.split('T')[0], // Formato YYYY-MM-DD
       ]),
-      styles: { fontSize: 10 },
+      styles: { fontSize: 9 }, // Reducir tamaño de fuente
+    });
+  
+    // Egresos esperados (presupuesto semanal)
+    const presupuestoStartY = (doc as any).lastAutoTable.finalY + 15;
+    doc.text('Egresos Esperados (Presupuesto Semanal):', 14, presupuestoStartY);
+    doc.autoTable({
+      startY: presupuestoStartY + 5,
+      head: [['Segmento', 'Categoría', 'Subcategoría', 'Monto Dictaminado', 'Periodo Congelado']],
+      body: this.presupuestoSemanal.map(presupuesto => [
+        presupuesto.NombreSegmento,
+        presupuesto.NombreCategoria,
+        presupuesto.NombreSubcategoria,
+        `$${(presupuesto.MontoDictaminado)}`,
+        presupuesto['PeriodoCongeladoOriginal'],
+      ]),
+      styles: { fontSize: 9 },
+    });
+  
+    // Gastos por Frecuencia
+    const frecuenciaStartY = (doc as any).lastAutoTable.finalY + 15;
+    doc.text('Gastos por Frecuencia:', 14, frecuenciaStartY);
+    doc.autoTable({
+      startY: frecuenciaStartY + 5,
+      head: [['Segmento', 'Categoría', 'Subcategoría', 'Monto Dictaminado', 'Última Fecha', 'Frecuencia Dictaminada']],
+      body: this.gastoMensualFrecuencia.map(gasto => [
+        gasto.NombreSegmento,
+        gasto.NombreCategoria,
+        gasto.NombreSubcategoria,
+        `$${(gasto.MontoDictaminado)}`,
+        gasto.UltimaFecha ? gasto.UltimaFecha.split('T')[0] : 'N/A',
+        `${(gasto.FrecuenciaDictaminada)} días`,
+      ]),
+      styles: { fontSize: 9 },
+    });
+  
+    // **NUEVO: Gastos Extraordinarios**
+    const extraordinariosStartY = (doc as any).lastAutoTable.finalY + 15;
+    doc.text('Gastos Extraordinarios:', 14, extraordinariosStartY);
+    doc.autoTable({
+      startY: extraordinariosStartY + 5,
+      head: [['Segmento', 'Categoría', 'Subcategoría', 'Fecha', 'Monto', 'Estatus']],
+      body: this.gastoMensualFrecuenciaExtraordinaria.map(gasto => [
+        gasto.NombreSegmento,
+        gasto.NombreCategoria,
+        gasto.NombreSubcategoria,
+        gasto.Fecha ? gasto.Fecha.split('T')[0] : 'N/A', // Formato YYYY-MM-DD o 'N/A'
+        `$${(gasto.Monto)}`,
+        gasto.Estatus,
+      ]),
+      styles: { fontSize: 9 }, // Reducir tamaño de fuente
     });
   
     // Guardar el PDF
@@ -290,6 +509,6 @@ export class ReportesComponent  implements OnInit {
   
 
   isButtonDisabled(): boolean {
-    return this.loading || !this.ingresos.length || !this.egresos.length;
+    return this.loading;
   }
 }

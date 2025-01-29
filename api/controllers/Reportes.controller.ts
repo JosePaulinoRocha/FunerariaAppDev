@@ -79,3 +79,62 @@ export const ObtenerReportePorFecha = async (req: Request, res: Response) => {
 };
 
 
+
+export const ObtenerReportePresupuestoSemanal = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM reporte_gastos_semanales_vw';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en gastos');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+
+export const ObtenerReportePresupuestoPeriodico = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM reporte_gastos_periodicos_vw';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en gastos');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+
+
+export const ObtenerReportePresupuestoExtraordinario = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM reporte_gastos_extraordinarios_vw';
+        const gastos = (await con.query(query))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en gastos');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};

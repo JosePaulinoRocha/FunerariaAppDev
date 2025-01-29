@@ -38,7 +38,7 @@
 
 
     <div class="selectsProyecciones">
-      <ion-grid style="display: flex;">
+      <ion-grid style="display: flex; justify-content: space-around;">
         <!-- Primera fila: Segmentos y Categorías -->
         <ion-row class="aligned-column">
           <ion-col size="35" size-md="6" size-lg="15">
@@ -54,6 +54,13 @@
             </ion-select>
           </ion-col>
 
+
+        </ion-row>
+
+        <!-- Segunda fila: Subcategorías y Conceptos -->
+        <ion-row class="aligned-row">
+
+
           <ion-col size="62" size-md="6" size-lg="15">
             <ion-select
               [(ngModel)]="selectedCategorias"
@@ -66,36 +73,9 @@
               </ion-select-option>
             </ion-select>
           </ion-col>
+
+
         </ion-row>
-
-        <!-- Segunda fila: Subcategorías y Conceptos -->
-        <!-- <ion-row class="aligned-row">
-          <ion-col style="margin-left: 2rem;" size="12" size-md="6" size-lg="3">
-            <ion-select
-              [(ngModel)]="selectedSubcategorias"
-              (ionChange)="onFilterChange()"
-              multiple="false"
-              placeholder="Subcategoría"
-              interface="popover">
-              <ion-select-option *ngFor="let subcategoria of filtros.subcategorias" [value]="subcategoria.SubcategoriaID">
-                {{ subcategoria.Nombre }}
-              </ion-select-option>
-            </ion-select>
-          </ion-col>
-
-          <ion-col style="margin-left: 2rem;" size="12" size-md="6" size-lg="3">
-            <ion-select
-              [(ngModel)]="selectedConceptos"
-              (ionChange)="onFilterChange()"
-              multiple="false"
-              placeholder="Concepto"
-              interface="popover">
-              <ion-select-option *ngFor="let concepto of filtros.conceptos" [value]="concepto.ConceptoID">
-                {{ concepto.Nombre }}
-              </ion-select-option>
-            </ion-select>
-          </ion-col>
-        </ion-row> -->
       </ion-grid>
     </div>
 
@@ -223,10 +203,11 @@
       </ion-button>
     </div>
 
+
     <div class="selectsProyecciones">
-      <ion-grid style="display: flex;">
+      <ion-grid style="display: flex; justify-content: space-around;">
         <!-- Primera fila: Segmentos y Categorías -->
-        <ion-row>
+        <ion-row class="aligned-column">
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-select
               [(ngModel)]="selectedSegmentosIngresos"
@@ -239,6 +220,13 @@
               </ion-select-option>
             </ion-select>
           </ion-col>
+
+
+        </ion-row>
+
+        <!-- Segunda fila: Subcategorías y Conceptos -->
+        <ion-row class="aligned-row">
+
 
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-select
@@ -253,32 +241,7 @@
             </ion-select>
           </ion-col>
 
-          <!-- Filtrar Egreso por subcategorías -->
-          <!-- <ion-col size="12" size-md="6" size-lg="3">
-            <ion-select
-              [(ngModel)]="selectedSubcategoriasIngresos"
-              (ionChange)="onFilterIngresosChange()"
-              multiple="false"
-              placeholder="Subcategoria"
-              interface="popover">
-              <ion-select-option *ngFor="let subcategoria of filtros.subcategorias" [value]="subcategoria.SubcategoriaID">
-                {{ subcategoria.Nombre }}
-              </ion-select-option>
-            </ion-select>
-          </ion-col>
 
-          <ion-col size="12" size-md="6" size-lg="3">
-            <ion-select
-              [(ngModel)]="selectedConceptosIngresos"
-              (ionChange)="onFilterIngresosChange()"
-              multiple="false"
-              placeholder="Concepto"
-              interface="popover">
-              <ion-select-option *ngFor="let concepto of filtros.conceptos" [value]="concepto.ConceptoID">
-                {{ concepto.Nombre }}
-              </ion-select-option>
-            </ion-select>
-          </ion-col> -->
         </ion-row>
       </ion-grid>
     </div>
@@ -403,9 +366,8 @@
       </ion-button>
     </div>
 
-    <div class="selectsProyecciones">
+    <!-- <div class="selectsProyecciones">
       <ion-grid style="display: flex;">
-        <!-- Primera fila: Segmentos y Categorías -->
         <ion-row class="aligned-row">
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-select
@@ -442,8 +404,7 @@
     <div class="dateContent">
       <ion-grid>
         <ion-row style="display: flex; justify-content: space-evenly;">
-          <!-- Fecha de inicio -->
-          <!-- <ion-col size="12" size-md="6"> -->
+
             <ion-datetime-button datetime="InitialdatetimeUtilidad" [(ngModel)]="selectedInitialDateUtilidades"></ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
               <ng-template>
@@ -459,10 +420,7 @@
                 </ion-datetime>
               </ng-template>
             </ion-modal>
-          <!-- </ion-col> -->
 
-          <!-- Fecha final -->
-          <!-- <ion-col size="12" size-md="6"> -->
             <ion-datetime-button datetime="finalDateUtilidad" [(ngModel)]="selectedFinalDateUtilidades"></ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
               <ng-template>
@@ -478,10 +436,10 @@
                 </ion-datetime>
               </ng-template>
             </ion-modal>
-          <!-- </ion-col> -->
         </ion-row>
       </ion-grid>
-    </div>
+    </div> -->
+
         <!-- Gráficas de Utilidad Neta -->
     <div [class.hidden]="activeUtilidadChart !== 'actualVsPlaneado'">
       <h2 class="chart-title">Utilidad Neta: Actual vs Planeado</h2>
