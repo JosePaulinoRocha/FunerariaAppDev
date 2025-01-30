@@ -121,7 +121,7 @@ export class IngresosEgresosModalComponent implements OnInit {
 
   loadSegmentos() {
     this._ingresoServ.getSegmentos().subscribe((data: Segmento[]) => {
-      this.segmento = data;
+      this.segmento = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
     }, (error) => {
       this.presentAlert('Error fetching segments');
     });
@@ -129,7 +129,7 @@ export class IngresosEgresosModalComponent implements OnInit {
 
   loadCategorias() {
     this._ingresoServ.getCategorias().subscribe((data: Categoria[]) => {
-      this.categoria = data;
+      this.categoria = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
     }, (error) => {
       this.presentAlert('Error fetching categories');
     });
@@ -137,7 +137,7 @@ export class IngresosEgresosModalComponent implements OnInit {
 
   loadSubcategorias() {
     this._ingresoServ.getSubcategorias().subscribe((data: Subcategoria[]) => {
-      this.subcategoria = data;
+      this.subcategoria = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
     }, (error) => {
       this.presentAlert('Error fetching subcategories');
     });

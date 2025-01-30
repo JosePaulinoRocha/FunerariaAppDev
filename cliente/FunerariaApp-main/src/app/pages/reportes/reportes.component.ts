@@ -435,6 +435,22 @@ export class ReportesComponent  implements OnInit {
         styles: { fontSize: 12 },
         theme: 'grid',
     });
+
+    // Ingresos
+    const ingresosStartY = (doc as any).lastAutoTable.finalY + 10;
+    doc.text('Ingresos:', 14, ingresosStartY);
+    doc.autoTable({
+      startY: ingresosStartY + 5,
+      head: [['Segmento', 'Categoría', 'Subcategoría', 'Monto Total', 'Última Fecha']],
+      body: this.ingresos.map(ingreso => [
+        ingreso.NombreSegmento,
+        ingreso.NombreCategoria,
+        ingreso.NombreSubcategoria,
+        `$${parseFloat(ingreso.TotalMonto || '0').toFixed(2)}`, // Conversión a número con valor predeterminado
+        ingreso.UltimaFecha.split('T')[0], // Formato YYYY-MM-DD
+      ]),
+      styles: { fontSize: 10 },
+    });
   
     // Egresos
     const egresosStartY = (doc as any).lastAutoTable.finalY + 10;

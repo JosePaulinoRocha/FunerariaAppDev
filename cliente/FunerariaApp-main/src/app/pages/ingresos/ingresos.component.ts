@@ -137,8 +137,6 @@ export class IngresosComponent implements OnInit {
     this._ingresoServ.getIngresosNoReconciliados(this.currentPage, this.itemsPerPage).subscribe((response: any) => {
         const data = response.data;
 
-        data.sort((a: any, b : any) => b.IngresoID - a.IngresoID);
-
         this.incomes = data.map((income:any) => ({
             ...income,
             Fecha: new Date(income.Fecha).toISOString().split('T')[0],

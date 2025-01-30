@@ -177,7 +177,7 @@ export const ObtenerIngresosNoReconciliados = async (req: any, res: Response) =>
         const offset = (page - 1) * limit;  // Desplazamiento según la página
         
         // Consulta SQL con LIMIT y OFFSET
-        const query = 'SELECT * FROM vistaingresos WHERE Reconciliado = 0 LIMIT ? OFFSET ?';
+        const query = 'SELECT * FROM vistaingresos WHERE Reconciliado = 0 ORDER BY ReconciliacionID DESC LIMIT ? OFFSET ?';
         
         // Ejecutar la consulta con los parámetros
         const ingresos = (await con.query(query, [limit, offset]))[0] as any[];
@@ -753,7 +753,7 @@ export const ObtenerConceptos = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM conceptos';
+        let query = 'SELECT * FROM conceptos ORDER BY Nombre ASC';
         const conceptos = (await con.query(query))[0] as any[];
         result = conceptos;
     } catch (error) {
@@ -826,7 +826,7 @@ export const ObtenerProveedores = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM proveedores_vw';
+        let query = 'SELECT * FROM proveedores_vw ORDER BY Proveedor ASC';
         const proveedores = (await con.query(query))[0] as any[];
         result = proveedores;
     } catch (error) {
@@ -844,7 +844,7 @@ export const ObtenerUsuarios = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM usuarios';
+        let query = 'SELECT * FROM usuarios ORDER BY fullName ASC';
         const usuarios = (await con.query(query))[0] as any[];
         result = usuarios;
     } catch (error) {
@@ -862,7 +862,7 @@ export const ObtenerCuentas = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM cuentas';
+        let query = 'SELECT * FROM cuentas ORDER BY NombreCuenta ASC';
         const usuarios = (await con.query(query))[0] as any[];
         result = usuarios;
     } catch (error) {
