@@ -138,3 +138,23 @@ export const ObtenerReportePresupuestoExtraordinario = async (req: Request, res:
         return res.json(result);
     }
 };
+
+
+
+export const ObtenerReporteMesActual = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        con = await connect();
+        let query = 'SELECT * FROM reporte_mes_actual_vw';
+        const proveedores = (await con.query(query))[0] as any[];
+        result = proveedores;
+    } catch (error) {
+        console.log('Error en reportes');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};

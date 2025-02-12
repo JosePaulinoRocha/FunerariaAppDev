@@ -102,6 +102,26 @@ interface GastoMensualPorFrecuenciaExtraordinaria {
   [key: string]: any;
 }
 
+interface ReporteMesActual {
+  SegmentoID: number;
+  NombreSegmento: string;
+  CategoriaID: number;
+  NombreCategoria: string;
+  SubcategoriaID: number;
+  NombreSubcategoria: string;
+  ConceptoID: number;
+  NombreConcepto: string;
+  MontoDictaminado: number;
+  MontoTotal: number;
+  PiezasTotal: number;
+  DesfaceMonto: number;
+  PresupuestoPorcentaje: number;
+  DesfacePorcentaje: number;
+  PromedioSemanas: number;
+  UltimaFecha: string | null; // Fecha en formato ISO
+  [key: string]: any;
+}
+
 @Component({
   selector: 'app-reportes',
   templateUrl: './reportes.component.html',
@@ -114,6 +134,14 @@ export class ReportesComponent  implements OnInit {
   presupuestoSemanal: PresupuestoSemanal[] = [];
   gastoMensualFrecuencia: GastoMensualPorFrecuencia[] = [];
   gastoMensualFrecuenciaExtraordinaria: GastoMensualPorFrecuenciaExtraordinaria[] = [];
+  reporteMesActual: ReporteMesActual[] = [];
+
+  paginatedPresupuesto: ReporteMesActual[] = [];
+  currentPage: number = 1;
+  itemsPerPageOptions: number[] = [10, 20, 50, 100, 200, 500, 1000, 2000];
+  itemsPerPage: number = 10;
+  totalPages: number = 0;
+
 
   selectedMonth: string = '';
   selectedYear: string = '';
@@ -156,7 +184,31 @@ export class ReportesComponent  implements OnInit {
     this.loadPresupuestoSemanal();
     this.loadPresupuestoPeriodico();
     this.loadPresupuestoExtraordinario();
+    this.loadReporteMesActual();
+
   }
+
+  loadReporteMesActual() {
+    this.loading = true;
+    this._reportesServ.getReporteMesActual().subscribe(
+      (data: any[]) => {
+        this.reporteMesActual = data.map(reporteMesActual => ({
+          ...reporteMesActual,
+          UltimaFecha: reporteMesActual.UltimaFecha ? reporteMesActual.UltimaFecha.split('T')[0] : null
+        }));
+        this.loading = false;
+        console.log("Esta es la data del reporte del mes actual:", this.reporteMesActual);
+        this.totalPages = Math.ceil(this.reporteMesActual.length / this.itemsPerPage);
+        this.updatePaginated();
+      },
+      (error) => {
+        console.error('Error fetching egresos:', error);
+        this.errorMessage = 'Error al cargar los egresos. Por favor, inténtalo de nuevo.';
+        this.loading = false;
+      }
+    );
+  }
+
 
   loadPresupuestoExtraordinario() {
     this.loading = true;
@@ -522,9 +574,40 @@ export class ReportesComponent  implements OnInit {
     doc.save('Reporte_Ingresos_Egresos.pdf');
   }
   
-  
 
   isButtonDisabled(): boolean {
     return this.loading;
   }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginated();
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePaginated();
+    }
+  }
+
+  
+  updatePaginated() {
+    this.totalPages = Math.ceil(this.reporteMesActual.length / this.itemsPerPage);
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    this.paginatedPresupuesto = this.reporteMesActual.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  onItemsPerPageChange() {
+    this.currentPage = 1; // Resetea la paginación al cambiar los registros por página
+    this.updateTotalPages();
+    this.updatePaginated();
+  }
+
+  updateTotalPages() {
+    this.totalPages = Math.ceil(this.reporteMesActual.length / this.itemsPerPage);
+  }
+
 }

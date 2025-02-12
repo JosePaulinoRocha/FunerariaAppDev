@@ -14,35 +14,45 @@
 
 <ion-content>
   <div style="padding: 10px;">
-    <ion-item>
-      <ion-label>Mes</ion-label>
-      <ion-select interface="popover" placeholder="Seleccionar Mes" [(ngModel)]="selectedMonth">
-        <ion-select-option *ngFor="let month of months" [value]="month.value">{{ month.label }}</ion-select-option>
-      </ion-select>
-    </ion-item>
 
-    <ion-item>
-      <ion-label>Año</ion-label>
-      <ion-select interface="popover" placeholder="Seleccionar Año" [(ngModel)]="selectedYear">
-        <ion-select-option *ngFor="let year of years" [value]="year">{{ year }}</ion-select-option>
-      </ion-select>
-    </ion-item>
+    <ion-grid>
+      <ion-row>
+        <ion-col style="padding-right: 2rem;" size="6">
+          <ion-item>
+            <ion-label>Mes</ion-label>
+            <ion-select interface="popover" placeholder="Seleccionar Mes" [(ngModel)]="selectedMonth">
+              <ion-select-option *ngFor="let month of months" [value]="month.value">{{ month.label }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-col>
 
-    <ion-button 
-      expand="block" 
-      color="secondary" 
-      style="margin-top: 10px;" 
-      (click)="generateReportByDate()" 
-      [disabled]="!selectedMonth || !selectedYear">
-      <ion-icon style="margin-right: 0.5rem;" name="calendar-outline"></ion-icon>
-      Descargar Reporte por Fecha
-    </ion-button>
+        <ion-col style="padding-right: 2rem;"  size="6">
+          <ion-item>
+            <ion-label>Año</ion-label>
+            <ion-select interface="popover" placeholder="Seleccionar Año" [(ngModel)]="selectedYear">
+              <ion-select-option *ngFor="let year of years" [value]="year">{{ year }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="6">
+          <ion-button expand="block" color="secondary" (click)="generateReportByDate()" 
+            [disabled]="!selectedMonth || !selectedYear">
+            <ion-icon style="margin-right: 0.5rem;" name="calendar-outline"></ion-icon>
+            Reporte por Fecha
+          </ion-button>
+        </ion-col>
+        <ion-col size="6">
+          <ion-button expand="block" (click)="generarPDF()" [disabled]="isButtonDisabled()">
+            <ion-icon style="margin-right: 0.5rem;" name="add-circle-outline"></ion-icon>
+            Reporte Mensual
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </div>
-
-  <ion-button expand="block" style="margin: 10px;" [disabled]="isButtonDisabled()" (click)="generarPDF()">
-    <ion-icon style="margin-right: 0.5rem;" name="add-circle-outline"></ion-icon>
-    Generar Reporte del Mes Concluido
-  </ion-button>
 
   <!-- Totales y Ganancia Neta -->
   <div style="padding: 20px; background-color: #f8f9fa; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin-top: 20px;">
@@ -68,4 +78,65 @@
       </div>
     </div>
   </div>
+
+
+  <!-- tabla -->
+
+  <div style="margin-top: 2rem;" class="table-container">
+    <table class="table">
+      <thead class="header-row">
+        <tr class="color_header_tabla">
+          <th><span style="margin-left: 4rem;"></span>Segmento<span style="margin-left: 4rem;"></span></th>
+          <th><span style="margin-left: 6rem;"></span>Categoría<span style="margin-left: 6rem;"></span></th>
+          <th><span style="margin-left: 6rem;"></span>Subcategoría<span style="margin-left: 6rem;"></span></th>
+          <th><span style="margin-left: 10rem;"></span>Concepto<span style="margin-left: 10rem;"></span></th>
+          <th>Monto Dictaminado</th>
+          <th>Monto Total</th>
+          <th>Piezas Total</th>
+          <th>Desfase Monto</th>
+          <th>Presupuesto %</th>
+          <th>Desfase %</th>
+          <th>Promedio Semanas</th>
+          <th>Última Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let reporte of paginatedPresupuesto" class="data-row">
+          <td>{{ reporte.NombreSegmento }}</td>
+          <td>{{ reporte.NombreCategoria }}</td>
+          <td>{{ reporte.NombreSubcategoria }}</td>
+          <td>{{ reporte.NombreConcepto }}</td>
+          <td>{{ reporte.MontoDictaminado | currency }}</td>
+          <td>{{ reporte.MontoTotal | currency }}</td>
+          <td>{{ reporte.PiezasTotal }}</td>
+          <td>{{ reporte.DesfaceMonto | currency }}</td>
+          <td>{{ reporte.PresupuestoPorcentaje }} %</td>
+          <td>{{ reporte.DesfacePorcentaje }} %</td>
+          <td>{{ reporte.PromedioSemanas }}</td>
+          <td>{{ reporte.UltimaFecha }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ion-footer class="margin_footer">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="prevPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+        <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
+      </ion-buttons>
+
+      <div class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </div>
+
+      <ion-select interface="popover" slot="end" style="margin-right: 2rem;" placeholder="Registros por página" [(ngModel)]="itemsPerPage" (ionChange)="onItemsPerPageChange()">
+        <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">
+          {{ option }}
+        </ion-select-option>
+      </ion-select>
+    </ion-toolbar>
+  </ion-footer>
+
+
 </ion-content>

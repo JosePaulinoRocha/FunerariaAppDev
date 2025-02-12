@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateJWT } from '../middlewares/authMiddleware';
-import { ObtenerReporteEgresos, ObtenerReportePresupuestoExtraordinario, ObtenerReporteIngresos, ObtenerReportePorFecha, ObtenerReportePresupuestoSemanal, ObtenerReportePresupuestoPeriodico } from '../controllers/Reportes.controller';
+import { ObtenerReporteEgresos, ObtenerReporteMesActual, ObtenerReportePresupuestoExtraordinario, ObtenerReporteIngresos, ObtenerReportePorFecha, ObtenerReportePresupuestoSemanal, ObtenerReportePresupuestoPeriodico } from '../controllers/Reportes.controller';
 
 const router = Router();
 
@@ -15,6 +15,8 @@ router.get('/GetReportePresupuestoSemanal', authenticateJWT, ObtenerReportePresu
 router.get('/GetReportePresupuestoPeriodico', authenticateJWT, ObtenerReportePresupuestoPeriodico);
 
 router.get('/GetReportePresupuestoExtraordinario', authenticateJWT, ObtenerReportePresupuestoExtraordinario);
+
+router.get('/GetReporteMesActual', authenticateJWT, ObtenerReporteMesActual);
 
 
 export default router;

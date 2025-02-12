@@ -50,5 +50,8 @@ export class ReportesServices {
     return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetReportePresupuestoExtraordinario/`);
   }
   
+  getReporteMesActual(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetReporteMesActual/`);
+  }
 
 }

@@ -181,7 +181,7 @@ export class IncomeModalComponent implements OnInit {
   allProveedores: Proveedor[] = [];
 
   excludedSegmentos: string[] = [
-    'Cobranza',
+    // 'Cobranza',
     'Cuentas Establecidas',
     'Sala ventas',
     'Inversiones Iniciales',
@@ -393,6 +393,7 @@ export class IncomeModalComponent implements OnInit {
       (data: Segmento[]) => {
         // Ordenar los segmentos alfabéticamente por el campo 'Nombre'
         this.segmento = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
+        console.log('segmentos:', this.segmento)
       },
       (error) => {
         this.presentAlert('Error fetching segments');
