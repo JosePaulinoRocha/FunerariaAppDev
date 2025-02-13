@@ -158,3 +158,55 @@ export const ObtenerReporteMesActual = async (req: Request, res: Response) => {
         return res.json(result);
     }
 };
+
+
+
+export const ActualizarObservacion = async (req: Request, res: Response) => {
+    // Log para ver qué datos recibimos en los parámetros y cuerpo
+    console.log('Parametros:', req.params);
+    console.log('Cuerpo:', req.body);
+
+    const { segmentoID, categoriaID, subcategoriaID, conceptoID, observacion } = req.body; // Se obtienen todos del cuerpo
+
+    if (!observacion) {
+        return res.status(400).json({ error: 'La observación es obligatoria' });
+    }
+
+    let con;
+    try {
+        // Log para verificar si la conexión a la base de datos se establece correctamente
+        console.log('Intentando conectar a la base de datos...');
+        con = await connect();
+        console.log('Conexión exitosa');
+
+        const query = `
+            UPDATE presupuesto_manual
+            SET Observaciones = ?  -- Aquí se cambia "Observacion" por "Observaciones"
+            WHERE SegmentoID = ? AND CategoriaID = ? AND SubcategoriaID = ? AND ConceptoID = ?
+        `;
+        console.log('Consulta SQL:', query);
+        console.log('Datos para la consulta:', [observacion, segmentoID, categoriaID, subcategoriaID, conceptoID]);
+
+        const [result] = await con.query<ResultSetHeader>(query, [observacion, segmentoID, categoriaID, subcategoriaID, conceptoID]);
+
+        console.log('Resultado de la consulta:', result);
+
+        // Verificar si hubo filas afectadas
+        if (result.affectedRows > 0) {
+            res.json({ message: 'Observación actualizada exitosamente', affectedRows: result.affectedRows });
+        } else {
+            res.status(404).json({ message: 'No se encontró el registro a actualizar' });
+        }
+    } catch (error: unknown) {
+        console.error('Error durante la ejecución:', error);
+        if (error instanceof Error) {
+            res.status(500).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: 'Unknown error occurred' });
+        }
+    } finally {
+        if (con) con.end();
+    }
+};
+
+

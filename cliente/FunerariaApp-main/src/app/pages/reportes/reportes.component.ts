@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { UsuariosServices } from 'src/app/Servicios/Usuarios.service';
 import { HttpClientModule } from '@angular/common/http';
 import { ReportesModalComponent } from './modal/reportes-modal.component';
+import { ObservacionesModalComponent } from './modal-observaciones/modal-observaciones-reporte.component';
 import { ProyeccionServices } from 'src/app/Servicios/Proyeccion.service';
 import { ReportesServices } from 'src/app/Servicios/Reportes.service';
 import { PresupuestoServices } from 'src/app/Servicios/Presupuesto.service';
@@ -112,6 +113,7 @@ interface ReporteMesActual {
   ConceptoID: number;
   NombreConcepto: string;
   MontoDictaminado: number;
+  FrecuenciaDictaminada: number;
   MontoTotal: number;
   PiezasTotal: number;
   DesfaceMonto: number;
@@ -119,6 +121,7 @@ interface ReporteMesActual {
   DesfacePorcentaje: number;
   PromedioSemanas: number;
   UltimaFecha: string | null; // Fecha en formato ISO
+  Observaciones: string;
   [key: string]: any;
 }
 
@@ -127,9 +130,11 @@ interface ReporteMesActual {
   templateUrl: './reportes.component.html',
   styleUrls: ['./reportes.component.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule, ReportesModalComponent],
+  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule, ReportesModalComponent, ObservacionesModalComponent],
 })
 export class ReportesComponent  implements OnInit {
+
+  isAdmin: boolean = false;
 
   presupuestoSemanal: PresupuestoSemanal[] = [];
   gastoMensualFrecuencia: GastoMensualPorFrecuencia[] = [];
@@ -185,7 +190,50 @@ export class ReportesComponent  implements OnInit {
     this.loadPresupuestoPeriodico();
     this.loadPresupuestoExtraordinario();
     this.loadReporteMesActual();
+    this.checkAdminStatus();
 
+  }
+
+  async openObservacionModal(registro: any) {
+    const modal = await this.modalController.create({
+      component: ObservacionesModalComponent,
+      componentProps: {
+        segmentoID: registro.SegmentoID,
+        categoriaID: registro.CategoriaID,
+        subcategoriaID: registro.SubcategoriaID,
+        conceptoID: registro.ConceptoID,
+      }
+    });
+  
+    modal.onDidDismiss().then((result) => {
+      if (result.data && result.data.success) { 
+        this.loadReporteMesActual(); 
+      }
+    });
+  
+    return await modal.present();
+  }
+  
+  
+  async asignarMonto_Frecuencia(reporteMesActual?: ReporteMesActual) {
+
+    console.log("estos son los datos de edicion: ", reporteMesActual)
+
+    const modal = await this.modalController.create({
+      component: ReportesModalComponent,
+      componentProps: {
+        reporteMesActual: reporteMesActual ? { ...reporteMesActual } : this.getEmptyIncome(),
+        isEditMode: !!reporteMesActual
+      }
+    });
+  
+    modal.onDidDismiss().then((result) => {
+      if (result.data && result.role === 'success') {
+        this.loadReporteMesActual();
+      }
+    });
+  
+    return await modal.present();
   }
 
   loadReporteMesActual() {
@@ -609,5 +657,34 @@ export class ReportesComponent  implements OnInit {
   updateTotalPages() {
     this.totalPages = Math.ceil(this.reporteMesActual.length / this.itemsPerPage);
   }
+
+  checkAdminStatus() {
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    this.isAdmin = user.isAdmin === 1;
+  }
+
+  getEmptyIncome(): ReporteMesActual {
+    return {
+      SegmentoID: 0,
+      NombreSegmento: '',
+      CategoriaID: 0,
+      NombreCategoria: '',
+      SubcategoriaID: 0,
+      NombreSubcategoria: '',
+      ConceptoID: 0,
+      NombreConcepto: '',
+      MontoDictaminado: 0,
+      FrecuenciaDictaminada: 0,
+      MontoTotal: 0,
+      PiezasTotal: 0,
+      DesfaceMonto: 0,
+      PresupuestoPorcentaje: 0,
+      DesfacePorcentaje: 0,
+      PromedioSemanas: 0,
+      UltimaFecha: '',
+      Observaciones: '',
+    };
+  }
+  
 
 }

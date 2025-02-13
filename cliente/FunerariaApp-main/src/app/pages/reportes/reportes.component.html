@@ -90,7 +90,9 @@
           <th><span style="margin-left: 6rem;"></span>Categoría<span style="margin-left: 6rem;"></span></th>
           <th><span style="margin-left: 6rem;"></span>Subcategoría<span style="margin-left: 6rem;"></span></th>
           <th><span style="margin-left: 10rem;"></span>Concepto<span style="margin-left: 10rem;"></span></th>
+          <th *ngIf="isAdmin">Dictaminar</th>
           <th>Monto Dictaminado</th>
+          <th>Frecuencia Dictaminada</th>
           <th>Monto Total</th>
           <th>Piezas Total</th>
           <th>Desfase Monto</th>
@@ -98,6 +100,8 @@
           <th>Desfase %</th>
           <th>Promedio Semanas</th>
           <th>Última Fecha</th>
+          <th></th>
+          <th><span style="margin-left: 10rem;"></span>Observaciones<span style="margin-left: 10rem;"></span></th>
         </tr>
       </thead>
       <tbody>
@@ -106,7 +110,19 @@
           <td>{{ reporte.NombreCategoria }}</td>
           <td>{{ reporte.NombreSubcategoria }}</td>
           <td>{{ reporte.NombreConcepto }}</td>
+          <td *ngIf="isAdmin">
+            <ion-icon 
+              name="create-outline" 
+              (click)="asignarMonto_Frecuencia(reporte)"
+              [style.cursor]="'pointer'"
+              [style.color]="'blue'"
+              aria-label="Editar">
+            </ion-icon>
+          </td>
           <td>{{ reporte.MontoDictaminado | currency }}</td>
+          <td>
+            {{ reporte.FrecuenciaDictaminada == -1 ? 'Extraordinario' : reporte.FrecuenciaDictaminada + ' días' }}
+          </td>
           <td>{{ reporte.MontoTotal | currency }}</td>
           <td>{{ reporte.PiezasTotal }}</td>
           <td>{{ reporte.DesfaceMonto | currency }}</td>
@@ -114,6 +130,12 @@
           <td>{{ reporte.DesfacePorcentaje }} %</td>
           <td>{{ reporte.PromedioSemanas }}</td>
           <td>{{ reporte.UltimaFecha }}</td>
+          <td>
+            <ion-button (click)="openObservacionModal(reporte)" fill="clear">
+              <ion-icon name="search-sharp"></ion-icon>
+            </ion-button>
+          </td>
+          <td>{{ reporte.Observaciones }}</td>
         </tr>
       </tbody>
     </table>

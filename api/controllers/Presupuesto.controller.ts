@@ -7,7 +7,7 @@ export const ObtenerPresupuesto = async (req: Request, res: Response) => {
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM presupuesto_vw';
+        let query = 'SELECT * FROM presupuesto_vw ORDER BY UltimaFecha DESC;';
         const proveedores = (await con.query(query))[0] as any[];
         result = proveedores;
     } catch (error) {

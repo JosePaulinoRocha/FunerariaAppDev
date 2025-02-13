@@ -1,0 +1,18 @@
+<ion-header>
+    <ion-toolbar class="custom-header">
+      <ion-title class="custom-title">Agregar Observación</ion-title>
+      <ion-buttons slot="end">
+        <ion-button style="color: #FFFFFF;" (click)="dismiss()">Cerrar</ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content>
+    <ion-item>
+        <div class="contenedor-observaciones">
+            <ion-label style="margin: 1rem 0 0.5rem 0;">Observación:</ion-label>
+            <textarea [(ngModel)]="observacion" class="custom-textarea"></textarea>
+        </div>
+    </ion-item>
+    <ion-button expand="block" (click)="saveObservacion()" class="custom-button">Guardar</ion-button>
+  </ion-content>
+  

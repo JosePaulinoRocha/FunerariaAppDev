@@ -1,8 +1,8 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>{{ isEditMode ? 'Modificar Usuario' : 'Añadir Usuario' }}</ion-title>
+    <ion-title>{{ isEditMode ? 'Editar monto y frecuencia' : 'Editar Monto y Frecuencia' }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="closeModal()">
+      <ion-button (click)="closeModal(false)">
         <ion-icon name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -10,43 +10,35 @@
 </ion-header>
 
 <ion-content>
-  <form (ngSubmit)="saveUser()">
-    <ion-list>
-      <ion-item style="margin-top: 16px;">
-        <ion-label position="stacked">Usuario ID</ion-label>
-        <ion-input [(ngModel)]="user.userId" name="userId" disabled></ion-input>
-      </ion-item>
+  <form (ngSubmit)="dictaminarMonto_Frecuencia()" class="ion-padding">
+    <ion-grid>
+      <ion-row>
+        <ion-col size-md="12">
 
-      <ion-item>
-        <ion-label position="stacked">Nombre Completo</ion-label>
-        <ion-input [(ngModel)]="user.fullName" name="fullName" required></ion-input>
-      </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Monto Dictaminado</ion-label>
+            <ion-input placeholder="Monto" style="width: 32rem;" [(ngModel)]="reporteMesActual.MontoDictaminado" name="monto" type="number" required></ion-input>
+          </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">Correo Electrónico</ion-label>
-        <ion-input [(ngModel)]="user.email" name="email" type="email" required></ion-input>
-      </ion-item>
+          <ion-item style="width: 34rem;">
+            <ion-label position="stacked">Frecuencia Dictaminada</ion-label>
+            <ion-select placeholder="Frecuencia Dictaminada" [(ngModel)]="reporteMesActual.FrecuenciaDictaminada" name="frecuenciaDictaminada" required interface="popover" searchbar="true">
+              <ion-select-option [value]="7">7</ion-select-option>
+              <ion-select-option [value]="14">14</ion-select-option>
+              <ion-select-option [value]="30">30</ion-select-option>
+              <ion-select-option [value]="60">60</ion-select-option>
+              <ion-select-option [value]="90">90</ion-select-option>
+              <ion-select-option [value]="180">180</ion-select-option>
+              <ion-select-option [value]="-1">Extra Ordinario</ion-select-option>
+            </ion-select>
+          </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">Teléfono</ion-label>
-        <ion-input [(ngModel)]="user.phone" name="phone" type="tel" required></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="stacked">Rol</ion-label>
-        <ion-select [(ngModel)]="user.RolID" name="rol" required interface="alert" searchbar="true">
-          <ion-select-option *ngFor="let item of rol" [value]="item.RolID">{{ item.NombreRol }}</ion-select-option>
-        </ion-select>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>Administrador</ion-label>
-        <ion-checkbox [(ngModel)]="user.isAdmin" name="isAdmin"></ion-checkbox>
-      </ion-item>
-    </ion-list>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
 
     <ion-footer>
-      <ion-button expand="full" type="submit">{{ isEditMode ? 'Modificar' : 'Añadir' }}</ion-button>
+      <ion-button [disabled]="reporteMesActual.MontoDictaminado <= 0 || reporteMesActual.FrecuenciaDictaminada == null || reporteMesActual.FrecuenciaDictaminada == 0" style="margin-bottom: 1rem;" expand="full" type="submit">Guardar</ion-button>
     </ion-footer>
   </form>
 </ion-content>

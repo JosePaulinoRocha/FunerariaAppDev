@@ -54,4 +54,17 @@ export class ReportesServices {
     return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetReporteMesActual/`);
   }
 
+
+  updateObservacion(
+    segmentoID: number,
+    categoriaID: number,
+    subcategoriaID: number,
+    conceptoID: number,
+    observacion: string
+  ): Observable<any> {
+    const body = { segmentoID, categoriaID, subcategoriaID, conceptoID, observacion };
+    return this.http.put(`${this.myAppUrl}${this.MyApiUrl}UpdateObservacion`, body);
+  }
+  
+
 }

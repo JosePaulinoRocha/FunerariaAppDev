@@ -1,0 +1,38 @@
+.custom-header {
+    --background: #0054E9;
+  }
+  
+  .custom-title {
+    color: white;
+  }
+  
+  ion-item {
+    --inner-padding-top: 10px;
+    --inner-padding-bottom: 10px;
+  }
+  
+  .custom-textarea {
+    width: 100%;
+    height: 250px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .custom-button {
+    display: block;
+    margin: 10px auto;
+    width: fit-content;
+    text-align: center;
+  }
+  
+  ion-modal {
+    --height: auto;
+  }
+
+.contenedor-observaciones {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
