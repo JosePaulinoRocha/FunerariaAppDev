@@ -7,6 +7,7 @@ import { Chart, ChartConfiguration, ChartOptions, registerables } from 'chart.js
 import { ProyeccionServices } from 'src/app/Servicios/Proyeccion.service';
 import { PresupuestoServices } from 'src/app/Servicios/Presupuesto.service';
 import { PresupuestoMensualFrecuenciaServices } from 'src/app/Servicios/Presupuesto-mensual-frecuencia.service';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
 
 @Component({
@@ -14,7 +15,13 @@ import { PresupuestoMensualFrecuenciaServices } from 'src/app/Servicios/Presupue
   templateUrl: './proyeccion.component.html',
   styleUrls: ['./proyeccion.component.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, CommonModule, HttpClientModule],
+  imports: [
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    HttpClientModule,
+    ReactiveFormsModule,  // 🔹 Asegúrate de importar esto
+  ],
 })
 export class ProyeccionComponent implements OnInit, OnDestroy {
   activeEgresoChart: string = 'actualVsPlaneado';
@@ -86,7 +93,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     Chart.register(...registerables);
 
     // Primero, cargamos los datos
-    this.loadFiltros()
+    this.loadFiltros();
     this.loadEgresoActual();
     this.loadEgresoPasado();
     this.loadIngresoActual();

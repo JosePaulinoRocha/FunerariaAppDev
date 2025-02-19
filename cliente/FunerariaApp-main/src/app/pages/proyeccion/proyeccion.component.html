@@ -82,47 +82,42 @@
     <div class="dateContent">
       <ion-grid>
         <ion-row style="display: flex; justify-content: space-evenly;">
-          <!-- <ion-col size="12" size-md="6" class="centered"> -->
-            <ion-datetime-button
-              datetime="InitialdatetimeEgresos"
-              [(ngModel)]="selectedInitialDateEgresos">
-            </ion-datetime-button>
-
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="InitialdatetimeEgresos"
-                  presentation="date"
-                  [(ngModel)]="selectedInitialDateEgresos"
-                  (ionChange)="onFilterChange()"
-                  [formatOptions]="{
-                    date: { weekday: 'short', month: 'long', day: '2-digit' }
-                  }">
-                </ion-datetime>
-              </ng-template>
-            </ion-modal>
-          <!-- </ion-col> -->
-
-          <!-- <ion-col size="12" size-md="6" class="centered"> -->
-            <ion-datetime-button
-              datetime="finalDateEgresos"
-              [(ngModel)]="selectedFinalDateEgresos">
-            </ion-datetime-button>
-
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="finalDateEgresos"
-                  presentation="date"
-                  [(ngModel)]="selectedFinalDateEgresos"
-                  (ionChange)="onFilterChange()"
-                  [formatOptions]="{
-                    date: { weekday: 'short', month: 'long', day: '2-digit' }
-                  }">
-                </ion-datetime>
-              </ng-template>
-            </ion-modal>
-          <!-- </ion-col>ss -->
+    
+          <!-- Botón para abrir el selector de fecha -->
+          <ion-datetime-button datetime="InitialdatetimeEgresos"></ion-datetime-button>
+    
+          <!-- Modal con el ion-datetime -->
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="InitialdatetimeEgresos"
+                presentation="date"
+                [value]="selectedInitialDateEgresos" 
+                (ionValueChange)="selectedInitialDateEgresos = $event.detail.value; onFilterChange()"
+                [formatOptions]="{
+                  date: { weekday: 'short', month: 'long', day: '2-digit' }
+                }">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+    
+          <!-- Botón para abrir el selector de fecha final -->
+          <ion-datetime-button datetime="finalDateEgresos"></ion-datetime-button>
+    
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="finalDateEgresos"
+                presentation="date"
+                [value]="selectedFinalDateEgresos" 
+                (ionValueChange)="selectedFinalDateEgresos = $event.detail.value; onFilterChange()"
+                [formatOptions]="{
+                  date: { weekday: 'short', month: 'long', day: '2-digit' }
+                }">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+    
         </ion-row>
       </ion-grid>
     </div>
@@ -250,47 +245,42 @@
     <div class="dateContent">
       <ion-grid>
         <ion-row style="display: flex; justify-content: space-evenly;">
-          <!-- <ion-col size="12" size-md="6"> -->
-            <ion-datetime-button
-            datetime="Initialdatetime"
-            [(ngModel)]="selectedInitialDateIngresos">
-          </ion-datetime-button>
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="Initialdatetime"
-                  presentation="date"
-                  value="2023-11-02T01:22:00"
-                  [(ngModel)]="selectedInitialDateIngresos"
-                  (ionChange)="onFilterIngresosChange()"
-                  [formatOptions]="{
-                    date: { weekday: 'short', month: 'long', day: '2-digit' }
-                  }">
-                </ion-datetime>
-              </ng-template>
-            </ion-modal>
-          <!-- </ion-col> -->
-
-          <!-- <ion-col size="12" size-md="6"> -->
-            <ion-datetime-button datetime="finalDate" [(ngModel)]="selectedFinalDateIngresos"></ion-datetime-button>
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="finalDate"
-                  presentation="date"
-                  value="2023-11-02T01:22:00"
-                  [(ngModel)]="selectedFinalDateIngresos"
-                  (ionChange)="onFilterIngresosChange()"
-                  [formatOptions]="{
-                    date: { weekday: 'short', month: 'long', day: '2-digit' }
-                  }">
-                </ion-datetime>
-              </ng-template>
-            </ion-modal>
-          <!-- </ion-col> -->
+    
+          <ion-datetime-button datetime="Initialdatetime"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="Initialdatetime"
+                presentation="date"
+                [value]="selectedInitialDateIngresos"
+                (ionValueChange)="selectedInitialDateIngresos = $event.detail.value; onFilterIngresosChange()"
+                [formatOptions]="{
+                  date: { weekday: 'short', month: 'long', day: '2-digit' }
+                }">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+    
+          <ion-datetime-button datetime="finalDate"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="finalDate"
+                presentation="date"
+                [value]="selectedFinalDateIngresos"
+                (ionValueChange)="selectedFinalDateIngresos = $event.detail.value; onFilterIngresosChange()"
+                [formatOptions]="{
+                  date: { weekday: 'short', month: 'long', day: '2-digit' }
+                }">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+    
         </ion-row>
       </ion-grid>
     </div>
+
+
         <!-- Gráficas de Ingresos -->
     <div [class.hidden]="activeIngresoChart !== 'actualVsPlaneado'">
       <h2 class="chart-title">Ingresos: Actual vs Planeado</h2>
