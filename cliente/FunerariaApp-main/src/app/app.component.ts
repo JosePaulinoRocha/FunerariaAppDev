@@ -64,6 +64,8 @@ interface Ingreso_Importado {
 })
 export class AppComponent {
 
+  isMobileDevice: boolean = false;
+
   readonly BATCH_SIZE = 100;
 
   isLoading: boolean = false;
@@ -124,6 +126,8 @@ export class AppComponent {
   }
 
   ngOnInit() {
+    this.isMobileDevice = this.isMobile();
+
     this.authService.isLoggedIn$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(isLoggedIn => {
@@ -141,6 +145,12 @@ export class AppComponent {
       .subscribe(isAdmin => {
         this.isAdmin = isAdmin;
     });
+  }
+
+
+  private isMobile(): boolean {
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
   }
   
 

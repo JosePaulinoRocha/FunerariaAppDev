@@ -37,6 +37,8 @@ export interface Ingreso {
   ReconciliacionID: number;
   CuentaID: number;
   CuentaContable: number;
+  MontoParcial: number;
+  MontoParcialBandera: number;
 }
 
 export interface Concepto {

@@ -25,6 +25,7 @@ interface Ingreso {
   Cuenta2ID: number;
   RFC2: string;
   Monto: number;
+  MontoParcial: number;
   CategoriaID: number;
   SubcategoriaID: number;
   Fecha: string;
@@ -68,6 +69,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     RFC: '',
     RFC2: '',
     Monto: 0,
+    MontoParcial: 0,
     CategoriaID: 0,
     SubcategoriaID: 0,
 
@@ -77,6 +79,15 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     TipoIngreso: { data: [], type: '' },
     NombreSegmento: '',
   };
+
+  isMontoParcial: boolean = false;
+
+  ingresoParcial = {
+    MontoParcial: 0,
+    // Agrega otros campos si es necesario
+  };
+
+  initialMontoParcial: number = 0;
 
   @Input() isMassiveAssignMode: boolean = false;
   @Input() selectedRecords: number[] = [];
@@ -125,6 +136,8 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
 
     this.initialMonto = this.ingreso.Monto;
+
+    this.ingreso.MontoParcial = this.initialMonto;
   
     if (this.bulkAssignment) {
       this.isMassiveAssignMode = true;
@@ -318,6 +331,10 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
         SegmentoID: this.ingreso.SegmentoID,
         Descripcion: this.ingreso.Descripcion,
         TipoIngreso: this.ingreso.TipoIngreso.data,
+
+        // Nuevos campos para manejar montos parciales
+        EsMontoParcial: this.isMontoParcial,  // true si es parcial, false si es total
+        MontoParcial: this.isMontoParcial ? this.ingreso.MontoParcial : 0, // Solo envía el monto parcial si se eligió esa opción
       };
 
       console.log("Informacion de la actualizacion de cuenta y datos: ", incomeData);

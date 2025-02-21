@@ -15,12 +15,12 @@
             <ion-label icon="home">Home</ion-label>
           </ion-item>
 
-          <ion-item routerLink="/ingresos" routerDirection="root">
+          <ion-item *ngIf="!isMobileDevice" routerLink="/ingresos" routerDirection="root">
             <ion-icon slot="start" name="analytics"></ion-icon>
             <ion-label>Captura de ingresos y egresos</ion-label>
           </ion-item>
 
-          <ion-item routerLink="/ingresos-egresos" routerDirection="root">
+          <ion-item *ngIf="!isMobileDevice" routerLink="/ingresos-egresos" routerDirection="root">
             <ion-icon slot="start" name="bar-Chart"></ion-icon>
             <ion-label>Ingresos / Egresos</ion-label>
           </ion-item>
@@ -30,42 +30,42 @@
             <ion-label>Importar ingresos</ion-label>
           </ion-item> -->
 
-          <ion-item routerLink="/reconciliaciones" routerDirection="root">
+          <ion-item *ngIf="!isMobileDevice" routerLink="/reconciliaciones" routerDirection="root">
             <ion-icon slot="start" name="folder"></ion-icon>
             <ion-label>Reconciliaciones</ion-label>
           </ion-item>
 
-          <ion-item routerLink="/reconciliaciones-historial" routerDirection="root">
+          <ion-item *ngIf="!isMobileDevice" routerLink="/reconciliaciones-historial" routerDirection="root">
             <ion-icon slot="start" name="folder"></ion-icon>
             <ion-label>Reconciliaciones historial</ion-label>
           </ion-item>
 
-          <ion-item routerLink="/transferencias" routerDirection="root">
+          <ion-item *ngIf="!isMobileDevice" routerLink="/transferencias" routerDirection="root">
             <ion-icon slot="start" name="swap-horizontal-outline"></ion-icon>
             <ion-label>Transferencias</ion-label>
           </ion-item>
 
-          <ion-item routerLink="/combinaciones" routerDirection="root">
+          <ion-item *ngIf="!isMobileDevice" routerLink="/combinaciones" routerDirection="root">
             <ion-icon slot="start" name="git-compare"></ion-icon>
             <ion-label>Combinaciones</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="isAdmin" button (click)="navigateTo('proveedores')">
+          <ion-item *ngIf="isAdmin && !isMobileDevice" button (click)="navigateTo('proveedores')">
             <ion-icon slot="start" [name]="'people-outline'"></ion-icon>
             <ion-label>Proveedores</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="isAdmin" button (click)="navigateTo('presupuesto')">
+          <ion-item *ngIf="isAdmin && !isMobileDevice" button (click)="navigateTo('presupuesto')">
             <ion-icon slot="start" [name]="'cash-outline'"></ion-icon>
             <ion-label>Presupuesto</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="isAdmin" button (click)="navigateTo('presupuesto-mensual')">
+          <ion-item *ngIf="isAdmin && !isMobileDevice" button (click)="navigateTo('presupuesto-mensual')">
             <ion-icon slot="start" [name]="'cash-outline'"></ion-icon>
             <ion-label>Presupuesto mensual</ion-label>
           </ion-item>
 
-          <ion-item routerLink="/reportes" routerDirection="root">
+          <ion-item *ngIf="isAdmin && !isMobileDevice" routerLink="/reportes" routerDirection="root">
             <ion-icon slot="start" name="bar-Chart"></ion-icon>
             <ion-label>Reportes</ion-label>
           </ion-item>
@@ -75,10 +75,10 @@
             <ion-label>Usuarios</ion-label>
           </ion-item>
 
-          <!-- <ion-item routerLink="/proyeccion" routerDirection="root">
+          <ion-item *ngIf="isMobileDevice" routerLink="/proyeccion" routerDirection="root">
             <ion-icon slot="start" name="home"></ion-icon>
             <ion-label icon="home">Proyeccion</ion-label>
-          </ion-item> -->
+          </ion-item>
 
           <ion-item style="margin-top: 2rem;" (click)="logout()" lines="none">
             <ion-icon slot="start" name="log-out" color="danger"></ion-icon>

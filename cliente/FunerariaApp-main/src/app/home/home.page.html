@@ -13,7 +13,7 @@
   </div>
 
   <div class="card-container">
-    <ion-card (click)="navigateTo('ingresos')">
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('ingresos')">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
         <ion-card-title>Capturas de ingresos y egresos</ion-card-title>
@@ -23,7 +23,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card (click)="navigateTo('ingresos-egresos')">
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('ingresos-egresos')">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
         <ion-card-title>Ingresos / Egresos</ion-card-title>
@@ -53,7 +53,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card (click)="navigateTo('reconciliaciones')">
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('reconciliaciones')">
       <ion-card-content>
         <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>
         <ion-card-title>Reconciliaciones</ion-card-title>
@@ -63,7 +63,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card (click)="navigateTo('reconciliaciones-historial')">
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('reconciliaciones-historial')">
       <ion-card-content>
         <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>
         <ion-card-title>Reconciliaciones historial</ion-card-title>
@@ -73,7 +73,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card (click)="navigateTo('combinaciones')">
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('combinaciones')">
       <ion-card-content>
         <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>
         <ion-card-title>Combinaciones de ingresos/egresos</ion-card-title>
@@ -83,7 +83,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="isAdmin" (click)="navigateTo('proveedores')">
+    <ion-card *ngIf="isAdmin && !isMobileDevice" (click)="navigateTo('proveedores')">
       <ion-card-content>
         <ion-icon color="primary" name="people-outline" slot="start"></ion-icon>
         <ion-card-title>Proveedores</ion-card-title>
@@ -93,7 +93,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card (click)="navigateTo('transferencias')">
+    <ion-card  *ngIf="!isMobileDevice" (click)="navigateTo('transferencias')">
       <ion-card-content>
         <ion-icon color="primary" name="swap-horizontal-outline" slot="start"></ion-icon>
         <ion-card-title>Transferencias</ion-card-title>
@@ -103,7 +103,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="isAdmin" (click)="navigateTo('presupuesto')">
+    <ion-card *ngIf="isAdmin && !isMobileDevice" (click)="navigateTo('presupuesto')">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
         <ion-card-title>Presupuesto Semetral (Datos)</ion-card-title>
@@ -113,7 +113,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="isAdmin" (click)="navigateTo('presupuesto-mensual')">
+    <ion-card *ngIf="isAdmin && !isMobileDevice" (click)="navigateTo('presupuesto-mensual')">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
         <ion-card-title>Presupuesto Mensual</ion-card-title>
@@ -123,7 +123,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card (click)="navigateTo('reportes')">
+    <ion-card  *ngIf="!isMobileDevice" (click)="navigateTo('reportes')">
       <ion-card-content>
         <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>
         <ion-card-title>Reportes</ion-card-title>
@@ -133,7 +133,7 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- <ion-card (click)="navigateTo('proyeccion')">
+    <ion-card  *ngIf="isMobileDevice" (click)="navigateTo('proyeccion')">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
         <ion-card-title>Proyeccion</ion-card-title>
@@ -141,7 +141,7 @@
       <ion-card-content>
         <p>Aquí puedes ver graficas y estadisticas relevantes de egresos e ingresos.</p>
       </ion-card-content>
-    </ion-card> -->
+    </ion-card>
 
   </div>
 </ion-content>

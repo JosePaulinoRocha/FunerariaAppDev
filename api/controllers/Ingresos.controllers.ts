@@ -1079,14 +1079,17 @@ const calcularSaldoCuenta = async (CuentaID: number | string, nuevoMonto: number
 export const asignarCuenta = async (req: Request, res: Response) => {
     let con: any;
     let result: any;
-    const { IngresoID, TipoCuentaID, CuentaID, TipoCuenta2ID, CuentaID2, RFC, RFC2, CategoriaID, SubcategoriaID, Monto, Fecha, Descripcion, SegmentoID } = req.body;
+    const { 
+        IngresoID, TipoCuentaID, CuentaID, TipoCuenta2ID, CuentaID2, RFC, RFC2, 
+        CategoriaID, SubcategoriaID, Monto, MontoParcial, EsMontoParcial, 
+        Fecha, Descripcion, SegmentoID 
+    } = req.body;
 
     try {
         con = await connect();
         await con.beginTransaction();
         console.log('Transacción iniciada');
 
-        // Actualizar el registro existente
         if (TipoCuenta2ID && CuentaID2) {
             // Restar monto de la cuenta principal
             const montoSecundario = parseFloat(Monto);
@@ -1096,7 +1099,7 @@ export const asignarCuenta = async (req: Request, res: Response) => {
                 throw new Error('El monto asignado excede el monto disponible en la cuenta principal.');
             }
 
-            // Actualizar el registro existente con el nuevo monto
+            // Actualizar el monto restante en la cuenta principal
             const updateIngresoQuery = `
                 UPDATE ingresos
                 SET Monto = ?, CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?
@@ -1126,10 +1129,15 @@ export const asignarCuenta = async (req: Request, res: Response) => {
             // Si no hay cuenta secundaria, actualizar como antes
             const updateIngresoQuery = `
                 UPDATE ingresos
-                SET CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?, Monto = ?
+                SET CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?, Monto = ?, 
+                    MontoParcialBandera = ?, MontoParcial = ?
                 WHERE IngresoID = ?
             `;
-            await con.query(updateIngresoQuery, [CuentaID, TipoCuentaID, CategoriaID, SubcategoriaID, Monto, IngresoID]);
+            await con.query(updateIngresoQuery, [
+                CuentaID, TipoCuentaID, CategoriaID, SubcategoriaID, Monto, 
+                EsMontoParcial ? 1 : 0, EsMontoParcial ? MontoParcial : 0, 
+                IngresoID
+            ]);
 
             // Calcular y actualizar saldo
             const saldoFinal = await calcularSaldoCuenta(CuentaID, parseFloat(Monto), true, con);

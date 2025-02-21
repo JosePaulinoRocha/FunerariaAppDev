@@ -60,6 +60,11 @@ interface Income {
 
   CuentaContable: number;
 
+  MontoParcial: number;
+
+  MontoParcialBandera: number;
+
+
   [key: string]: any; // Para permitir acceso dinámico
 }
 

@@ -166,6 +166,7 @@
           </th>
           <th>RFC</th>
           <th>Monto</th>
+          <th>Monto Parcial</th>
           <th>Saldo</th>
           <th *ngIf="!mostrarIngresos"><span style="margin-left: 1rem;"></span>Comprobante<span style="margin-left: 1rem;"></span></th>
           <th *ngIf="!mostrarIngresos"><span style="margin-left: 4rem;"></span>Estatus<span style="margin-left: 4rem;"></span></th>
@@ -237,6 +238,9 @@
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.NombreCuenta }}</td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.RFC }}</td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.Monto }}</td>
+          <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">
+            {{ income.MontoParcialBandera === 0 ? 'N/A' : income.MontoParcial }}
+          </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">
             {{ income.Reconciliado === 0 ? income.Saldo : income.SaldoReconciliacion }}
           </td>

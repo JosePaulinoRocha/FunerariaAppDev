@@ -17,10 +17,14 @@ import { ChangePasswordModalComponent } from './modal/modal.component';
 export class HomePage implements OnInit {
   isAdmin: boolean = false;
   user: any;
+  isMobileDevice: boolean = false;
 
   constructor(private router: Router, private authService: AuthService, private modalController: ModalController) {}
 
   ngOnInit() {
+
+    this.isMobileDevice = this.isMobile();
+
     this.authService.isAdminSubject.subscribe((isAdmin) => {
       this.isAdmin = isAdmin;
     });
@@ -31,6 +35,10 @@ export class HomePage implements OnInit {
 
   }
 
+  private isMobile(): boolean {
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+  }
 
   async checkPasswordChange() {
     const isDefaultPassword = this.user.CambioContra?.data[0] === 0;

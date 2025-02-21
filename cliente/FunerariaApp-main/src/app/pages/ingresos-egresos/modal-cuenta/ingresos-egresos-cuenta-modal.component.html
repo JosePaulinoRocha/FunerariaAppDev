@@ -19,6 +19,36 @@
             <ion-label>Total de montos seleccionados:</ion-label>
             <ion-text>{{ totalMontoSeleccionado | currency:'MXN':'symbol' }}</ion-text>
           </ion-item>
+
+          <!-- Tipo de Ingreso (Total o Parcial) -->
+          <ion-item *ngIf="!isMassiveAssignMode">
+            <ion-label position="stacked">Tipo de Ingreso</ion-label>
+            <ion-radio-group style="display: flex;" [(ngModel)]="isMontoParcial" name="isMontoParcial">
+              <ion-item>
+                <ion-label>Monto Total</ion-label>
+                <ion-radio slot="start" [value]="false"></ion-radio>
+              </ion-item>
+              <ion-item>
+                <ion-label>Monto Parcial</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+          </ion-item>
+
+          <!-- Campo de monto parcial si se selecciona "Monto Parcial" -->
+          <ion-item *ngIf="isMontoParcial">
+            <ion-label position="stacked">Monto Parcial</ion-label>
+            <ion-input
+              placeholder="Ingrese el monto parcial"
+              [(ngModel)]="ingreso.MontoParcial"
+              name="montoParcial"
+              type="number"
+              min="0"
+              [max]="initialMonto"
+              required
+            ></ion-input>
+          </ion-item>
+
  
           <!-- Selección del tipo de cuenta que recibe -->
           <ion-item>
@@ -48,7 +78,7 @@
 
 
           <!-- Selección del tipo de cuenta que recibe -->
-          <ion-item *ngIf="!isMassiveAssignMode">
+          <ion-item *ngIf="!isMassiveAssignMode && !isMontoParcial">
             <ion-label position="stacked">Tipo de Cuenta 2 (opcional)</ion-label>
             <ion-select 
               style="width: 32rem;" 
@@ -66,7 +96,7 @@
 
 
           <!-- Selección de la cuenta que recibe -->
-          <ion-item *ngIf="!isMassiveAssignMode">
+          <ion-item *ngIf="!isMassiveAssignMode && !isMontoParcial">
             <ion-label position="stacked">{{ ingreso.TipoCuenta2ID === 1 ? 'Caja Chica (opcional)' : 'Cuenta (opcional)' }}</ion-label>
             <ion-select placeholder="Seleccione cuenta" style="width: 32rem;" [(ngModel)]="ingreso.Cuenta2ID" name="cuenta2ID" required interface="popover" searchbar="true">
               <ion-select-option *ngFor="let item of filteredCuentasRecibe" [value]="item.CuentaID">{{ item.NombreCuenta }}</ion-select-option>
@@ -139,7 +169,7 @@
     </ion-grid>
 
     <ion-footer>
-      <ion-button [disabled]=" ingreso.Monto < 0 || ingreso.Monto > initialMonto || ingreso.CategoriaID == 0 || ingreso.CategoriaID == null || ingreso.SubcategoriaID == 0 || ingreso.SubcategoriaID == null || ingreso.TipoCuentaID == 0 || ingreso.TipoCuentaID == null || (ingreso.CuentaID == 0 && newNombreCuenta == '') || (ingreso.CuentaID == null && newNombreCuenta == '')" style="margin-bottom: 1rem;" expand="full" type="submit">Asignar Cuenta</ion-button>
+      <ion-button [disabled]=" ingreso.Monto < 0 || ingreso.Monto > initialMonto || ingreso.MontoParcial > initialMonto || ingreso.MontoParcial < 0 || ingreso.CategoriaID == 0 || ingreso.CategoriaID == null || ingreso.SubcategoriaID == 0 || ingreso.SubcategoriaID == null || ingreso.TipoCuentaID == 0 || ingreso.TipoCuentaID == null || (ingreso.CuentaID == 0 && newNombreCuenta == '') || (ingreso.CuentaID == null && newNombreCuenta == '')" style="margin-bottom: 1rem;" expand="full" type="submit">Asignar Cuenta</ion-button>
     </ion-footer>
   </form>
 </ion-content>
