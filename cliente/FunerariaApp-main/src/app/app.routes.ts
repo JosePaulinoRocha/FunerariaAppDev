@@ -97,4 +97,19 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/reportes/reportes.component').then((m) => m.ReportesComponent),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'resumen-presupuesto',
+    loadComponent: () => import('./pages/resumen-presupuesto/resumen-presupuesto.component').then((m) => m.ResumenPresupuestoComponent),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'resumen-presupuesto-segmentos',
+    loadComponent: () => import('./pages/resumen-presupuesto-segmentos/resumen-presupuesto-segmentos.component').then((m) => m.ResumenPresupuestoSegmentosComponent),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'resumen-presupuesto-categorias',
+    loadComponent: () => import('./pages/resumen-presupuesto-categorias/resumen-presupuesto-categorias.component').then((m) => m.ResumenPresupuestoCategoriasComponent),
+    canActivate: [AuthGuard],
+  },
 ];

@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Resumen Por Segmentos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="resumen-container">
+    <div class="table-title">Resumen Por Segmentos</div>
+
+    <!-- Tarjetas dinámicas con los datos obtenidos -->
+    <ion-card *ngFor="let segmento of segmentos" (click)="openSegmentDetail(segmento)">
+      <ion-grid>
+        
+        <!-- Fila 1: Nombre del Segmento -->
+        <ion-row>
+          <ion-col size="12" class="segmento-nombre">
+            <ion-label>{{ segmento.nombre }}</ion-label>
+          </ion-col>
+        </ion-row>
+
+        <!-- Fila 2: Presupuesto, Actual y Desfase -->
+        <ion-row class="segmento-detalles">
+          <ion-col size="4">
+            <ion-label class="concepto">Presupuesto</ion-label>
+            <ion-text color="success" class="valor">$ {{ segmento.presupuesto | number:'1.2-2' }}</ion-text>
+          </ion-col>
+          <ion-col size="4">
+            <ion-label class="concepto">Actual</ion-label>
+            <ion-text color="primary" class="valor">$ {{ segmento.actual | number:'1.2-2' }}</ion-text>
+          </ion-col>
+          <ion-col size="4">
+            <ion-label class="concepto">Desfase</ion-label>
+            <ion-text [color]="segmento.desfase >= 0 ? 'success' : 'danger'" class="valor">
+              $ {{ segmento.desfase | number:'1.2-2' }}
+            </ion-text>
+          </ion-col>
+        </ion-row>
+
+      </ion-grid>
+    </ion-card>
+
+
+  </div>
+</ion-content>
+
+
+    <!-- Barra de carga con barra de progreso -->
+    <div style="margin-top: 60%;" *ngIf="isLoading" class="loading-bar">
+      <ion-progress-bar type="indeterminate"></ion-progress-bar>
+      <p>Cargando registros, por favor espere...</p>
+    </div>
+
+
+

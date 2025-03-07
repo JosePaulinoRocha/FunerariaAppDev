@@ -1,0 +1,45 @@
+.resumen-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .titulo-resumen {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--ion-color-primary);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  ion-card {
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+  }
+  ion-item {
+    --inner-padding-end: 0;
+    justify-content: space-between;
+  }
+  .animated-button {
+    font-size: 18px;
+    padding: 14px;
+    border-radius: 8px;
+    transition: transform 0.2s ease-in-out;
+  }
+  .animated-button:active {
+    transform: scale(0.95);
+  }
+  
+  .table-title {
+    font-size: 1.5rem;         /* Tamaño de la fuente para destacar */
+    font-weight: bold;         /* Negrita para el título */
+    text-align: center;        /* Centrar el texto */
+    margin: 1rem 0;            /* Espaciado superior e inferior */
+    padding: 0.5rem;           /* Relleno interno */
+    background-color: #f0f8ff; /* Color de fondo suave */
+    color: #333;               /* Color del texto */
+    border: 2px solid #007bff; /* Borde en color azul */
+    border-radius: 8px;        /* Bordes redondeados */
+  }
+  

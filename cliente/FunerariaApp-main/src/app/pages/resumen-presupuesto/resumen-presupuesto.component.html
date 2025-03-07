@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Resumen Presupuesto</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="resumen-container">
+    <div class="table-title">Resumen Presupuesto</div>
+    <ion-card>
+      <ion-card-content>
+        <ion-item>
+          <ion-label>Presupuesto Otorgado:</ion-label>
+          <ion-text color="secondary">$ {{ egresoOtorgado }}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Presupuesto Empleado:</ion-label>
+          <ion-text color="success">$ {{ egresoActual }}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Desfase General:</ion-label>
+          <ion-text color="danger">$ {{ egresoOtorgado - egresoActual }}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Ingreso Acumulado:</ion-label>
+          <ion-text color="success">$ {{ ingresoActual }}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Utilidad Neta:</ion-label>
+          <ion-text color="warning">$ {{ ingresoActual - egresoActual }}</ion-text>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botón inicial -->
+    <ion-button 
+      *ngIf="!mostrarOpciones"
+      expand="full"
+      color="primary"
+      class="animated-button"
+      (click)="mostrarBotones()">
+      Revisar Detalles
+    </ion-button>
+
+    <!-- Nuevos botones que aparecen después -->
+    <div *ngIf="mostrarOpciones" class="botones-opciones">
+      <ion-button expand="full" color="secondary" (click)="navigateTo('resumen-presupuesto-segmentos')">
+        Segmentos
+      </ion-button>
+      <ion-button style="margin-top: 3rem;" expand="full" color="tertiary" (click)="navigateTo('resumen-presupuesto-categorias')">
+        Categorías Unificadas
+      </ion-button>
+    </div>
+
+  </div>
+</ion-content>
