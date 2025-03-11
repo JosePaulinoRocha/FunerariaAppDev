@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Conceptos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="modal-container">
+    <div class="table-title">
+      {{ nombreSegmento }} > {{ nombreCategoria }} > {{ nombreSubcategoria }}
+    </div>
+
+    <ion-card *ngFor="let concepto of conceptos" class="categoria-card">
+      <ion-card-title>{{ concepto.NombreConcepto }}</ion-card-title>
+      
+      <div class="categoria-detalles">
+        <div class="detalle-row">
+          <div class="detalle-label">Monto Actual:</div>
+          <div class="detalle-valor">${{ concepto.Actual | number }}</div>
+        </div>
+
+        <div class="detalle-row">
+          <div class="detalle-label">Monto Planeado:</div>
+          <div class="detalle-valor">${{ concepto.Planeado | number }}</div>
+        </div>
+
+        <div class="desfase" 
+          [ngClass]="{
+            'negativo': calcularDesfase(concepto.Actual, concepto.Planeado) >= 0,
+            'positivo': calcularDesfase(concepto.Actual, concepto.Planeado) < 0
+          }">
+          Desfase: {{ calcularDesfase(concepto.Planeado, concepto.Actual) | number:'1.0-2' }}
+        </div>
+      </div>
+    </ion-card>
+  </div>
+</ion-content>

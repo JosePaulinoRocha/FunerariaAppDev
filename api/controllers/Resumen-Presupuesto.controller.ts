@@ -254,3 +254,124 @@ export const ObtenerEgresosMensualesCategoria = async (req: Request, res: Respon
     }
 };
 
+
+
+
+// -------------------------------------filtro por subcategorias-----------------------------------------------
+
+
+
+export const ObtenerGastoExtraordinarioSubcategoria = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        const segmentoID = parseInt(req.params.segmentoID);
+        const categoriaID = parseInt(req.params.categoriaID);
+        const subcategoriaID = parseInt(req.params.subcategoriaID);
+
+        if (isNaN(segmentoID) || isNaN(categoriaID) || isNaN(subcategoriaID)) {
+            return res.status(400).json({ error: "SegmentoID o CategoriaID inválido" });
+        }
+
+        con = await connect();
+        let query = `
+            SELECT * FROM gastos_presupuesto_vw 
+            WHERE EstatusPresupuestoID = 1 
+            AND SegmentoID = ? 
+            AND CategoriaID = ?
+            AND SubcategoriaID = ?
+            AND Fecha BETWEEN DATE_FORMAT(CURDATE(), "%Y-%m-01") AND LAST_DAY(CURDATE())
+        `;
+        const gastos = (await con.query(query, [segmentoID, categoriaID, subcategoriaID]))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en gasto extraordinario por categoría:', error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+export const ObtenerPresupuestoSemanalSubcategoria = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        const segmentoID = parseInt(req.params.segmentoID);
+        const categoriaID = parseInt(req.params.categoriaID);
+        const subcategoriaID = parseInt(req.params.subcategoriaID);
+
+
+        if (isNaN(segmentoID) || isNaN(categoriaID) || isNaN(subcategoriaID)) {
+            return res.status(400).json({ error: "SegmentoID o CategoriaID inválido" });
+        }
+
+        con = await connect();
+        let query = `SELECT * FROM gastos_mensuales_semanales_vw WHERE SegmentoID = ? AND CategoriaID = ? AND SubcategoriaID = ?`;
+        const gastos = (await con.query(query, [segmentoID, categoriaID, subcategoriaID]))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en presupuesto semanal por categoría:', error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+export const ObtenerPresupuestoFrecuenciaSubcategoria = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        const segmentoID = parseInt(req.params.segmentoID);
+        const categoriaID = parseInt(req.params.categoriaID);
+        const subcategoriaID = parseInt(req.params.subcategoriaID);
+
+        if (isNaN(segmentoID) || isNaN(categoriaID) || isNaN(subcategoriaID)) {
+            return res.status(400).json({ error: "SegmentoID o CategoriaID inválido" });
+        }
+
+        con = await connect();
+        let query = `
+            SELECT * FROM gastos_mensuales_por_frecuencia_vw
+            WHERE Guardado = 1 
+            AND FechaSiguienteGasto BETWEEN DATE_FORMAT(CURDATE(), "%Y-%m-01") AND LAST_DAY(CURDATE())
+            AND SegmentoID = ?
+            AND CategoriaID = ?
+            AND SubcategoriaID = ?
+        `;
+        const gastos = (await con.query(query, [segmentoID, categoriaID, subcategoriaID]))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en presupuesto frecuencia por categoría:', error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+export const ObtenerEgresosMensualesSubcategoria = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        const segmentoID = parseInt(req.params.segmentoID);
+        const categoriaID = parseInt(req.params.categoriaID);
+        const subcategoriaID = parseInt(req.params.subcategoriaID);
+
+        if (isNaN(segmentoID) || isNaN(categoriaID) || isNaN(subcategoriaID)) {
+            return res.status(400).json({ error: "SegmentoID o CategoriaID inválido" });
+        }
+
+        con = await connect();
+        let query = `SELECT * FROM egreso_actual_por_segmento_categoria_subcategoria_concepto_vw WHERE SegmentoID = ? AND CategoriaID = ? AND SubcategoriaID = ?`;
+        const gastos = (await con.query(query, [segmentoID, categoriaID, subcategoriaID]))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en egresos mensuales por categoría:', error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};

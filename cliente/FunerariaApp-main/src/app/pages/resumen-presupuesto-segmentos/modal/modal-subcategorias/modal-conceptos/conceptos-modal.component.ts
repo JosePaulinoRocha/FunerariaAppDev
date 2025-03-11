@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { ResumenPresupuestoServices } from 'src/app/Servicios/Resumen-presupuesto.service';
-import { ConceptosModalComponent } from './modal-conceptos/conceptos-modal.component';
+
 
 interface GastosExtraordinarios {
   GastoID: number;
@@ -80,16 +80,32 @@ interface GastoMensualPorFrecuencia {
   [key: string]: any;
 }
 
+
+interface Concepto {
+  ConceptoID: number;
+  NombreConcepto: string;
+  NombreSubcategoria: string;
+  NombreCategoria: string;
+  NombreSegmento: string;
+  Actual: number;
+  Planeado: number;
+}
+
+
 @Component({
-  selector: 'app-subcategory-detail-modal',
-  templateUrl: './subcategory-detail-modal.component.html',
-  styleUrls: ['./subcategory-detail-modal.component.scss'],
+  selector: 'app-conceptos-modal',
+  templateUrl: './conceptos-modal.component.html',
+  styleUrls: ['./conceptos-modal.component.scss'],
   standalone: true,
   imports: [IonicModule, CommonModule]
 })
-export class SubcategoryDetailModalComponent {
-  @Input() segmentoID: number = 0;
-  @Input() categoriaID: number = 0;
+export class ConceptosModalComponent {
+  @Input() segmentoID!: number;
+  @Input() categoriaID!: number;
+  @Input() subcategoriaID!: number;
+  @Input() nombreSegmento!: string;
+  @Input() nombreCategoria!: string;
+  @Input() nombreSubcategoria!: string;
 
   gastosExtraordinarios: GastosExtraordinarios[] = [];
   presupuestoSemanal: PresupuestoSemanal[] = [];
@@ -99,142 +115,121 @@ export class SubcategoryDetailModalComponent {
 
   subcategorias: any[] = [];
 
-  constructor(
-    private modalController: ModalController,
-    private _resumenPresupuesto_Serv: ResumenPresupuestoServices
-  ) {}
+  conceptos: Concepto[] = [];
+
+  constructor(private _resumenPresupuesto_Serv: ResumenPresupuestoServices, private modalController: ModalController) {}
 
   ngOnInit() {
-    console.log("Segmento recibido en el modal:", this.segmentoID);
-    console.log("Categoria recibida en el modal:", this.categoriaID);
-  
+    // console.log("Props recibidos en el modal de conceptos:");
+    // console.log("Segmento ID:", this.segmentoID);
+    // console.log("Nombre Segmento:", this.nombreSegmento);
+    // console.log("Categoría ID:", this.categoriaID);
+    // console.log("Nombre Categoría:", this.nombreCategoria);
+    // console.log("Subcategoría ID:", this.subcategoriaID);
+    // console.log("Nombre Subcategoría:", this.nombreSubcategoria);
+
     this.loadGastoMensualExtraordinario();
     this.loadPresupuestoSemanal();
     this.loadGastosMensualesFrecuencia();
     this.loadEgresosMensuales();
   }
 
-  async openConceptosModal(subcategoria: any) {
-    console.log("Subcategoría seleccionada:", subcategoria);
-  
-    const modal = await this.modalController.create({
-      component: ConceptosModalComponent,
-      componentProps: {
-        segmentoID: this.segmentoID,
-        categoriaID: this.categoriaID,
-        subcategoriaID: subcategoria.SubcategoriaID, 
-        nombreSegmento: subcategoria.NombreSegmento,
-        nombreCategoria: subcategoria.NombreCategoria,
-        nombreSubcategoria: subcategoria.NombreSubcategoria
-      }
-    });
-  
-    await modal.present();
-  }
-  
-  
-  procesarSubcategorias() {
-    let subcategoriasAgrupadas: Record<number, { 
-      SubcategoriaID: number;  
-      NombreSubcategoria: string; 
-      NombreCategoria: string;  // Agregamos el nombre de la categoría
-      NombreSegmento: string;   // Agregamos el nombre del segmento
-      Actual: number; 
-      Planeado: number 
-    }> = {};
-  
+
+  procesarConceptos() {
+    let conceptosAgrupados: Record<number, Concepto> = {};
+
     // Procesar egresos actuales
     this.egresosMensuales.forEach((egreso: any) => {
-      let key = egreso.SubcategoriaID;
-      if (!subcategoriasAgrupadas[key]) {
-        subcategoriasAgrupadas[key] = {
-          SubcategoriaID: key,
-          NombreSubcategoria: egreso.NombreSubcategoria,
-          NombreCategoria: egreso.NombreCategoria,   // Guardar el nombre de la categoría
-          NombreSegmento: egreso.NombreSegmento,     // Guardar el nombre del segmento
+      let key = egreso.ConceptoID;
+      if (!conceptosAgrupados[key]) {
+        conceptosAgrupados[key] = {
+          ConceptoID: key,
+          NombreConcepto: egreso.NombreConcepto,
+          NombreSubcategoria: this.nombreSubcategoria,
+          NombreCategoria: this.nombreCategoria,
+          NombreSegmento: this.nombreSegmento,
           Actual: 0,
           Planeado: 0
         };
       }
-      subcategoriasAgrupadas[key].Actual += isNaN(Number(egreso.EgresoActual)) ? 0 : Number(egreso.EgresoActual);
+      conceptosAgrupados[key].Actual += isNaN(Number(egreso.EgresoActual)) ? 0 : Number(egreso.EgresoActual);
     });
-  
+
     // Procesar egresos planeados
     const egresosPlaneados = [...this.presupuestoSemanal, ...this.gastoMensualFrecuencia, ...this.gastosExtraordinarios];
-  
+
     egresosPlaneados.forEach((egreso) => {
-      let key = egreso.SubcategoriaID;
-      if (!subcategoriasAgrupadas[key]) {
-        subcategoriasAgrupadas[key] = {
-          SubcategoriaID: key,
-          NombreSubcategoria: egreso.NombreSubcategoria,
-          NombreCategoria: egreso.NombreCategoria,   // Guardar el nombre de la categoría
-          NombreSegmento: egreso.NombreSegmento,     // Guardar el nombre del segmento
+      let key = egreso.ConceptoID;
+      if (!conceptosAgrupados[key]) {
+        conceptosAgrupados[key] = {
+          ConceptoID: key,
+          NombreConcepto: egreso.NombreConcepto,
+          NombreSubcategoria: this.nombreSubcategoria,
+          NombreCategoria: this.nombreCategoria,
+          NombreSegmento: this.nombreSegmento,
           Actual: 0,
           Planeado: 0
         };
       }
       let monto = egreso.MontoDictaminado !== undefined ? Number(egreso.MontoDictaminado) : 
                   egreso.Monto !== undefined ? Number(egreso.Monto) : 0;
-      
-      subcategoriasAgrupadas[key].Planeado += isNaN(monto) ? 0 : monto;
+
+      conceptosAgrupados[key].Planeado += isNaN(monto) ? 0 : monto;
     });
-  
-    // Convertimos los objetos agrupados en un array
-    this.subcategorias = Object.values(subcategoriasAgrupadas);
-  
-    console.log("Subcategorías procesadas:", this.subcategorias); // Verifica que ahora incluyen los nombres de segmento y categoría
+
+    this.conceptos = Object.values(conceptosAgrupados);
+    console.log("Conceptos procesados:", this.conceptos);
   }
-  
 
 
 loadGastoMensualExtraordinario() {
-  this._resumenPresupuesto_Serv.getGastoExtraordinarioPorCategoria(this.segmentoID, this.categoriaID).subscribe(
+  this._resumenPresupuesto_Serv.getGastoExtraordinarioPorSubcategoria(this.segmentoID, this.categoriaID, this.subcategoriaID).subscribe(
     (data: GastosExtraordinarios[]) => {
       console.log("Gastos extraordinarios filtrados:", data);
       this.gastosExtraordinarios = data;
-      this.procesarSubcategorias();
+      this.procesarConceptos();
     },
     (error) => console.error('Error al obtener gastos por categoría', error)
   );
 }
 
 loadPresupuestoSemanal() {
-  this._resumenPresupuesto_Serv.getPresupuestoSemanalPorCategoria(this.segmentoID, this.categoriaID).subscribe(
+  this._resumenPresupuesto_Serv.getPresupuestoSemanalPorSubcategoria(this.segmentoID, this.categoriaID, this.subcategoriaID).subscribe(
     (data: PresupuestoSemanal[]) => {
       console.log("Presupuesto semanal filtrado:", data);
       this.presupuestoSemanal = data;
-      this.procesarSubcategorias();
+      this.procesarConceptos();
     },
     (error) => console.error('Error al obtener presupuesto semanal por categoría', error)
   );
 }
 
 loadGastosMensualesFrecuencia() {
-  this._resumenPresupuesto_Serv.getPresupuestoFrecuenciaPorCategoria(this.segmentoID, this.categoriaID).subscribe(
+  this._resumenPresupuesto_Serv.getPresupuestoFrecuenciaPorSubcategoria(this.segmentoID, this.categoriaID, this.subcategoriaID).subscribe(
     (data: GastoMensualPorFrecuencia[]) => {
       console.log("Gastos mensuales por frecuencia filtrados:", data);
       this.gastoMensualFrecuencia = data;
-      this.procesarSubcategorias();
+      this.procesarConceptos();
     },
     (error) => console.error('Error al obtener gastos mensuales por frecuencia por categoría', error)
   );
 }
 
 loadEgresosMensuales() {
-  this._resumenPresupuesto_Serv.getEgresosMensualesPorCategoria(this.segmentoID, this.categoriaID).subscribe(
+  this._resumenPresupuesto_Serv.getEgresosMensualesPorSubcategoria(this.segmentoID, this.categoriaID, this.subcategoriaID).subscribe(
     (data: any[]) => {
       console.log("Egresos mensuales filtrados:", data);
       this.egresosMensuales = data;
-      this.procesarSubcategorias();
+      this.procesarConceptos();
     },
     (error) => console.error('Error al obtener egresos mensuales por categoría', error)
   );
 }
 
-  calcularDesfase(actual: number, planeado: number): number {
-    return actual - planeado;
-  }
+calcularDesfase(planeado: number, actual: number): number {
+  return planeado - actual;
+}
+
 
   closeModal() {
     this.modalController.dismiss();

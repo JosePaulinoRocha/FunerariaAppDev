@@ -58,4 +58,23 @@ export class ResumenPresupuestoServices {
   }
 
 
+
+
+  getGastoExtraordinarioPorSubcategoria(segmentoID: number, categoriaID: number, subcategoriaID: number): Observable<Gastos[]> {
+    return this.http.get<Gastos[]>(`${this.myAppUrl}${this.MyApiUrl}gasto-extraordinario-subcategoria/${segmentoID}/${categoriaID}/${subcategoriaID}`);
+  }
+  
+  getPresupuestoSemanalPorSubcategoria(segmentoID: number, categoriaID: number, subcategoriaID: number): Observable<PresupuestoMensualSemanal[]> {
+    return this.http.get<PresupuestoMensualSemanal[]>(`${this.myAppUrl}${this.MyApiUrl}presupuesto-semanal-subcategoria/${segmentoID}/${categoriaID}/${subcategoriaID}`);
+  }
+
+  getPresupuestoFrecuenciaPorSubcategoria(segmentoID: number, categoriaID: number, subcategoriaID: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}presupuesto-frecuencia-subcategoria/${segmentoID}/${categoriaID}/${subcategoriaID}`);
+  }
+
+  getEgresosMensualesPorSubcategoria(segmentoID: number, categoriaID: number, subcategoriaID: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}egresos-mensuales-subcategoria/${segmentoID}/${categoriaID}/${subcategoriaID}`);
+  }
+
+
 }

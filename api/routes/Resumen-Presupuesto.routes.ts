@@ -1,6 +1,6 @@
 // routes/usuarios.routes.ts
 import { Router } from 'express';
-import {ObtenerEgresosMensualesCategoria, ObtenerPresupuestoFrecuenciaCategoria, ObtenerGastoExtraordinarioCategoria, ObtenerPresupuestoSemanalCategoria, ObtenerResumenSegmentos, ObtenerEgresoMensualSegmentos, ObtenerPresupuestoMensualExtraordinarioAprobado, ObtenerPresupuestoSemanal, ObtenerPresupuestoFrecuenciaAprobadosMesActual } from '../controllers/Resumen-Presupuesto.controller';
+import {ObtenerGastoExtraordinarioSubcategoria, ObtenerPresupuestoSemanalSubcategoria,ObtenerPresupuestoFrecuenciaSubcategoria,ObtenerEgresosMensualesSubcategoria, ObtenerEgresosMensualesCategoria, ObtenerPresupuestoFrecuenciaCategoria, ObtenerGastoExtraordinarioCategoria, ObtenerPresupuestoSemanalCategoria, ObtenerResumenSegmentos, ObtenerEgresoMensualSegmentos, ObtenerPresupuestoMensualExtraordinarioAprobado, ObtenerPresupuestoSemanal, ObtenerPresupuestoFrecuenciaAprobadosMesActual } from '../controllers/Resumen-Presupuesto.controller';
 import { authenticateJWT } from '../middlewares/authMiddleware';
 
 const router = Router();
@@ -20,6 +20,12 @@ router.get('/gasto-extraordinario/:segmentoID/:categoriaID', authenticateJWT, Ob
 router.get('/presupuesto-semanal/:segmentoID/:categoriaID', authenticateJWT, ObtenerPresupuestoSemanalCategoria);
 router.get('/presupuesto-frecuencia/:segmentoID/:categoriaID', authenticateJWT, ObtenerPresupuestoFrecuenciaCategoria);
 router.get('/egresos-mensuales/:segmentoID/:categoriaID', authenticateJWT, ObtenerEgresosMensualesCategoria);
+
+
+router.get('/gasto-extraordinario-subcategoria/:segmentoID/:categoriaID/:subcategoriaID', authenticateJWT, ObtenerGastoExtraordinarioSubcategoria);
+router.get('/presupuesto-semanal-subcategoria/:segmentoID/:categoriaID/:subcategoriaID', authenticateJWT, ObtenerPresupuestoSemanalSubcategoria);
+router.get('/presupuesto-frecuencia-subcategoria/:segmentoID/:categoriaID/:subcategoriaID', authenticateJWT, ObtenerPresupuestoFrecuenciaSubcategoria);
+router.get('/egresos-mensuales-subcategoria/:segmentoID/:categoriaID/:subcategoriaID', authenticateJWT, ObtenerEgresosMensualesSubcategoria);
 
 
 export default router;
