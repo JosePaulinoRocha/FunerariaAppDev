@@ -1,0 +1,181 @@
+.modal-container {
+  text-align: center;
+  padding: 15px;
+  background-color: #f4f4f9;
+  border-radius: 12px;
+}
+
+/* 🔹 Título del modal 🔹 */
+.table-title {
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 1rem 0;
+  padding: 12px;
+  background: linear-gradient(135deg, #007bff, #00d4ff);
+  color: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 🔹 Sección de montos 🔹 */
+.categoria-detalles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 12px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.detalle-row {
+  display: flex;
+  justify-content: space-between;
+  width: 90%;
+  padding: 12px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+}
+
+.detalle-label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #555;
+}
+
+.detalle-valor {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* 🔹 Desfase 🔹 */
+.desfase {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  width: 90%;
+}
+
+.desfase.positivo {
+  color: #28a745;
+  background-color: #d4edda;
+}
+
+.desfase.negativo {
+  color: #dc3545;
+  background-color: #f8d7da;
+}
+
+/* 🔹 Egresos 🔹 */
+.egresos-container {
+  margin-top: 20px;
+  padding: 10px;
+}
+
+.egresos-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #007bff;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.egreso-card {
+  width: 95%;
+  margin: 12px auto;
+  padding: 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.egreso-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.egreso-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.egreso-monto {
+  color: #28a745;
+}
+
+.egreso-fecha {
+  color: #555;
+}
+
+.egreso-observacion {
+  font-size: 1rem;
+  color: #666;
+  margin-top: 6px;
+}
+
+/* 🔹 Observaciones 🔹 */
+.observaciones-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #007bff;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.observacion-card {
+  width: 95%;
+  margin: 12px auto;
+  padding: 16px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.observacion-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0px 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.fecha {
+  font-size: 1rem;
+  color: #555;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.fecha ion-icon {
+  margin-right: 5px;
+  color: #007bff;
+}
+
+.no-observaciones {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #888;
+  text-align: center;
+  margin-top: 10px;
+}
+
+ion-content {
+  --background: #f9f9f9;
+}
+
+ion-card-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  text-align: center;
+  color: #007bff;
+}

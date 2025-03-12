@@ -1,6 +1,6 @@
 // routes/usuarios.routes.ts
 import { Router } from 'express';
-import {ObtenerGastoExtraordinarioSubcategoria, ObtenerPresupuestoSemanalSubcategoria,ObtenerPresupuestoFrecuenciaSubcategoria,ObtenerEgresosMensualesSubcategoria, ObtenerEgresosMensualesCategoria, ObtenerPresupuestoFrecuenciaCategoria, ObtenerGastoExtraordinarioCategoria, ObtenerPresupuestoSemanalCategoria, ObtenerResumenSegmentos, ObtenerEgresoMensualSegmentos, ObtenerPresupuestoMensualExtraordinarioAprobado, ObtenerPresupuestoSemanal, ObtenerPresupuestoFrecuenciaAprobadosMesActual } from '../controllers/Resumen-Presupuesto.controller';
+import {ObtenerEgresosMensualesConcepto, ObtenerGastoExtraordinarioSubcategoria, ObtenerPresupuestoSemanalSubcategoria,ObtenerPresupuestoFrecuenciaSubcategoria,ObtenerEgresosMensualesSubcategoria, ObtenerEgresosMensualesCategoria, ObtenerPresupuestoFrecuenciaCategoria, ObtenerGastoExtraordinarioCategoria, ObtenerPresupuestoSemanalCategoria, ObtenerResumenSegmentos, ObtenerEgresoMensualSegmentos, ObtenerPresupuestoMensualExtraordinarioAprobado, ObtenerPresupuestoSemanal, ObtenerPresupuestoFrecuenciaAprobadosMesActual } from '../controllers/Resumen-Presupuesto.controller';
 import { authenticateJWT } from '../middlewares/authMiddleware';
 
 const router = Router();
@@ -26,6 +26,10 @@ router.get('/gasto-extraordinario-subcategoria/:segmentoID/:categoriaID/:subcate
 router.get('/presupuesto-semanal-subcategoria/:segmentoID/:categoriaID/:subcategoriaID', authenticateJWT, ObtenerPresupuestoSemanalSubcategoria);
 router.get('/presupuesto-frecuencia-subcategoria/:segmentoID/:categoriaID/:subcategoriaID', authenticateJWT, ObtenerPresupuestoFrecuenciaSubcategoria);
 router.get('/egresos-mensuales-subcategoria/:segmentoID/:categoriaID/:subcategoriaID', authenticateJWT, ObtenerEgresosMensualesSubcategoria);
+
+
+router.get('/egresos-mensuales-concepto/:segmentoID/:categoriaID/:subcategoriaID/:conceptoID', authenticateJWT, ObtenerEgresosMensualesConcepto);
+
 
 
 export default router;

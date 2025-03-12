@@ -375,3 +375,33 @@ export const ObtenerEgresosMensualesSubcategoria = async (req: Request, res: Res
         return res.json(result);
     }
 };
+
+
+
+export const ObtenerEgresosMensualesConcepto = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        const segmentoID = parseInt(req.params.segmentoID);
+        const categoriaID = parseInt(req.params.categoriaID);
+        const subcategoriaID = parseInt(req.params.subcategoriaID);
+        const conceptoID = parseInt(req.params.conceptoID);
+
+
+        if (isNaN(segmentoID) || isNaN(categoriaID) || isNaN(subcategoriaID) || isNaN(conceptoID)) {
+            return res.status(400).json({ error: "SegmentoID o CategoriaID inválido" });
+        }
+
+        con = await connect();
+        let query = `SELECT * FROM egreso_actual_por_observaciones_vw WHERE SegmentoID = ? AND CategoriaID = ? AND SubcategoriaID = ? AND ConceptoID = ?`;
+        const gastos = (await con.query(query, [segmentoID, categoriaID, subcategoriaID, conceptoID]))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en egresos mensuales por concepto:', error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+

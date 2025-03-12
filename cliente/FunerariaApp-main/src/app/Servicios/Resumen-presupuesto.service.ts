@@ -77,4 +77,10 @@ export class ResumenPresupuestoServices {
   }
 
 
+
+  getEgresosMensualesPorConcepto(segmentoID: number, categoriaID: number, subcategoriaID: number, conceptoID: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}egresos-mensuales-concepto/${segmentoID}/${categoriaID}/${subcategoriaID}/${conceptoID}`);
+  }
+
+
 }

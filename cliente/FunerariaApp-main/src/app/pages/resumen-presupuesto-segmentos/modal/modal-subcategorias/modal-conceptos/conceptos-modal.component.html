@@ -15,7 +15,8 @@
       {{ nombreSegmento }} > {{ nombreCategoria }} > {{ nombreSubcategoria }}
     </div>
 
-    <ion-card *ngFor="let concepto of conceptos" class="categoria-card">
+    <ion-card *ngFor="let concepto of conceptos" class="categoria-card" (click)="openObservacionesModal(concepto)">
+
       <ion-card-title>{{ concepto.NombreConcepto }}</ion-card-title>
       
       <div class="categoria-detalles">

@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { ResumenPresupuestoServices } from 'src/app/Servicios/Resumen-presupuesto.service';
+import { ObservacionesModalComponent } from './modal-observaciones/observaciones-modal.component';
 
 
 interface GastosExtraordinarios {
@@ -134,6 +135,25 @@ export class ConceptosModalComponent {
     this.loadEgresosMensuales();
   }
 
+  async openObservacionesModal(concepto: Concepto) {
+    const modal = await this.modalController.create({
+      component: ObservacionesModalComponent,
+      componentProps: {
+        segmentoID: this.segmentoID,
+        nombreSegmento: this.nombreSegmento,
+        categoriaID: this.categoriaID,
+        nombreCategoria: this.nombreCategoria,
+        subcategoriaID: this.subcategoriaID,
+        nombreSubcategoria: this.nombreSubcategoria,
+        conceptoID: concepto.ConceptoID,
+        NombreConcepto: concepto.NombreConcepto,
+        planeado: concepto.Planeado,
+        actual: concepto.Actual
+      }
+    });
+    return await modal.present();
+  }
+  
 
   procesarConceptos() {
     let conceptosAgrupados: Record<number, Concepto> = {};
