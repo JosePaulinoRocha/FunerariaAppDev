@@ -2,8 +2,6 @@ import { Component, Input } from '@angular/core';
 import { ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { ResumenPresupuestoServices } from 'src/app/Servicios/Resumen-presupuesto.service';
-import { SubcategoriaModalComponent } from './modal-subcategorias/subcategory-detail-modal.component';
-
 
 interface GastosExtraordinarios {
   GastoID: number;
@@ -81,15 +79,15 @@ interface GastoMensualPorFrecuencia {
   [key: string]: any;
 }
 
-
 @Component({
-  selector: 'app-resumen-presupuesto-categorias',
-  templateUrl: './resumen-presupuesto-categorias.component.html',
-  styleUrls: ['./resumen-presupuesto-categorias.component.scss'],
+  selector: 'app-subcategory-detail-modal',
+  templateUrl: './subcategory-detail-modal.component.html',
+  styleUrls: ['./subcategory-detail-modal.component.scss'],
   standalone: true,
   imports: [IonicModule, CommonModule]
 })
-export class ResumenPresupuestoCategoriasComponent {
+export class SubcategoriaModalComponent {
+  @Input() categoriaID: number = 0;
 
   gastosExtraordinarios: GastosExtraordinarios[] = [];
   presupuestoSemanal: PresupuestoSemanal[] = [];
@@ -97,7 +95,7 @@ export class ResumenPresupuestoCategoriasComponent {
 
   egresosMensuales: any[] = [];
 
-  categorias: any[] = [];
+  subcategorias: any[] = [];
 
   constructor(
     private modalController: ModalController,
@@ -105,6 +103,7 @@ export class ResumenPresupuestoCategoriasComponent {
   ) {}
 
   ngOnInit() {
+    console.log("Categoria recibida en el modal:", this.categoriaID);
   
     this.loadGastoMensualExtraordinario();
     this.loadPresupuestoSemanal();
@@ -112,23 +111,12 @@ export class ResumenPresupuestoCategoriasComponent {
     this.loadEgresosMensuales();
   }
 
-  async openSubcategoryModal(categoria: any) {
-    console.log("Categoría seleccionada:", categoria);
-  
-    const modal = await this.modalController.create({
-      component: SubcategoriaModalComponent,
-      componentProps: {
-        categoriaID: categoria.CategoriaID
-      }
-    });
-  
-    return await modal.present();
-  }
-
-  procesarCategorias() {
-    let categoriasAgrupadas: Record<number, { 
-      CategoriaID: number;  
-      NombreCategoria: string;
+  procesarSubcategorias() {
+    let subcategoriasAgrupadas: Record<number, { 
+      SubcategoriaID: number;  
+      NombreSubcategoria: string; 
+      NombreCategoria: string;  // Agregamos el nombre de la categoría
+      NombreSegmento: string;   // Agregamos el nombre del segmento
       Actual: number; 
       Planeado: number;
       Desfase: number;
@@ -136,28 +124,32 @@ export class ResumenPresupuestoCategoriasComponent {
   
     // Procesar egresos actuales
     this.egresosMensuales.forEach((egreso: any) => {
-      let key = egreso.CategoriaID;
-      if (!categoriasAgrupadas[key]) {
-        categoriasAgrupadas[key] = {
-          CategoriaID: key,
-          NombreCategoria: egreso.NombreCategoria,
+      let key = egreso.SubcategoriaID;
+      if (!subcategoriasAgrupadas[key]) {
+        subcategoriasAgrupadas[key] = {
+          SubcategoriaID: key,
+          NombreSubcategoria: egreso.NombreSubcategoria,
+          NombreCategoria: egreso.NombreCategoria,   // Guardar el nombre de la categoría
+          NombreSegmento: egreso.NombreSegmento,     // Guardar el nombre del segmento
           Actual: 0,
           Planeado: 0,
           Desfase: 0
         };
       }
-      categoriasAgrupadas[key].Actual += isNaN(Number(egreso.EgresoActual)) ? 0 : Number(egreso.EgresoActual);
+      subcategoriasAgrupadas[key].Actual += isNaN(Number(egreso.EgresoActual)) ? 0 : Number(egreso.EgresoActual);
     });
   
     // Procesar egresos planeados
     const egresosPlaneados = [...this.presupuestoSemanal, ...this.gastoMensualFrecuencia, ...this.gastosExtraordinarios];
   
     egresosPlaneados.forEach((egreso) => {
-      let key = egreso.CategoriaID;
-      if (!categoriasAgrupadas[key]) {
-        categoriasAgrupadas[key] = {
-          CategoriaID: key,
-          NombreCategoria: egreso.NombreCategoria,
+      let key = egreso.SubcategoriaID;
+      if (!subcategoriasAgrupadas[key]) {
+        subcategoriasAgrupadas[key] = {
+          SubcategoriaID: key,
+          NombreSubcategoria: egreso.NombreSubcategoria,
+          NombreCategoria: egreso.NombreCategoria,   // Guardar el nombre de la categoría
+          NombreSegmento: egreso.NombreSegmento,     // Guardar el nombre del segmento
           Actual: 0,
           Planeado: 0,
           Desfase: 0
@@ -166,58 +158,63 @@ export class ResumenPresupuestoCategoriasComponent {
       let monto = egreso.MontoDictaminado !== undefined ? Number(egreso.MontoDictaminado) : 
                   egreso.Monto !== undefined ? Number(egreso.Monto) : 0;
       
-      categoriasAgrupadas[key].Planeado += isNaN(monto) ? 0 : monto;
+      subcategoriasAgrupadas[key].Planeado += isNaN(monto) ? 0 : monto;
     });
   
-    // Calcular el desfase (Planeado - Actual) y ordenar de menor a mayor
-    this.categorias = Object.values(categoriasAgrupadas)
-      .map(categoria => {
-        categoria.Desfase = categoria.Planeado - categoria.Actual;
-        return categoria;
+    // Calcular el desfase y ordenar de menor a mayor
+    this.subcategorias = Object.values(subcategoriasAgrupadas)
+      .map(subcategoria => {
+        subcategoria.Desfase = subcategoria.Planeado - subcategoria.Actual; // Planeado - Actual
+        return subcategoria;
       })
-      .sort((a, b) => a.Desfase - b.Desfase); // Orden de menor a mayor (más déficit primero)
+      .sort((a, b) => a.Desfase - b.Desfase); // Orden de menor a mayor
   
-    console.log("Categorías procesadas (ordenadas por desfase):", this.categorias);
+    console.log("Subcategorías procesadas (ordenadas por desfase):", this.subcategorias);
   }
-    
   
+
+
   loadGastoMensualExtraordinario() {
-    this._resumenPresupuesto_Serv.getGastoMensualExtraordinarioAprobadoCategoriaUnificada().subscribe(
-      (data: any[]) => {
+    this._resumenPresupuesto_Serv.getGastoExtraordinarioPorCategoriaUnificada(this.categoriaID).subscribe(
+      (data: GastosExtraordinarios[]) => {
+        console.log("Gastos extraordinarios filtrados:", data);
         this.gastosExtraordinarios = data;
-        console.log("gastos planeados extraordinarios: ", data);
-        this.procesarCategorias();
-      }
+        this.procesarSubcategorias();
+      },
+      (error) => console.error('Error al obtener gastos por categoría', error)
     );
   }
 
   loadPresupuestoSemanal() {
-    this._resumenPresupuesto_Serv.getPresupuestoSemanalCategoriaUnificada().subscribe(
-      (data: any[]) => {
+    this._resumenPresupuesto_Serv.getPresupuestoSemanalPorCategoriaUnificada(this.categoriaID).subscribe(
+      (data: PresupuestoSemanal[]) => {
+        console.log("Presupuesto semanal filtrado:", data);
         this.presupuestoSemanal = data;
-        console.log("gastos planeados semanales: ", data);
-        this.procesarCategorias();
-      }
+        this.procesarSubcategorias();
+      },
+      (error) => console.error('Error al obtener presupuesto semanal por categoría', error)
     );
   }
 
   loadGastosMensualesFrecuencia() {
-    this._resumenPresupuesto_Serv.getPresupuestoMensualFrecuenciaAprobadosMesActualCategoriaUnificada().subscribe(
-      (data: any[]) => {
+    this._resumenPresupuesto_Serv.getPresupuestoFrecuenciaPorCategoriaUnificada(this.categoriaID).subscribe(
+      (data: GastoMensualPorFrecuencia[]) => {
+        console.log("Gastos mensuales por frecuencia filtrados:", data);
         this.gastoMensualFrecuencia = data;
-        console.log("gastos planeados periodicos: ", data);
-        this.procesarCategorias();
-      }
+        this.procesarSubcategorias();
+      },
+      (error) => console.error('Error al obtener gastos mensuales por frecuencia por categoría', error)
     );
   }
 
   loadEgresosMensuales() {
-    this._resumenPresupuesto_Serv.getEgresosMensualCategoriaUnificada().subscribe(
+    this._resumenPresupuesto_Serv.getEgresosMensualesPorCategoriaUnificada(this.categoriaID).subscribe(
       (data: any[]) => {
+        console.log("Egresos mensuales filtrados:", data);
         this.egresosMensuales = data;
-        console.log("gastos actuales: ", data);
-        this.procesarCategorias();
-      }
+        this.procesarSubcategorias();
+      },
+      (error) => console.error('Error al obtener egresos mensuales por categoría', error)
     );
   }
 
@@ -229,4 +226,3 @@ export class ResumenPresupuestoCategoriasComponent {
     this.modalController.dismiss();
   }
 }
-

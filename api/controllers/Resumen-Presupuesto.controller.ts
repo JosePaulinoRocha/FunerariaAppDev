@@ -51,6 +51,30 @@ export const ObtenerPresupuestoMensualExtraordinarioAprobado = async (req: Reque
 };
 
 
+export const ObtenerPresupuestoMensualExtraordinarioAprobadoCategoriaUnificada = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+
+        con = await connect();
+        let query = `
+            SELECT * FROM gastos_presupuesto_vw 
+            WHERE EstatusPresupuestoID = 1 
+            AND Fecha >= DATE_FORMAT(CURDATE(), "%Y-%m-01") 
+            AND Fecha <= LAST_DAY(CURDATE())
+        `;
+        const gastos = (await con.query(query, []))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en gastos_presupuesto_vw', error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
 
 export const ObtenerPresupuestoSemanal = async (req: Request, res: Response) => {
     let con;
@@ -78,6 +102,27 @@ export const ObtenerPresupuestoSemanal = async (req: Request, res: Response) => 
     }
 };
 
+
+export const ObtenerPresupuestoSemanalCategoriaUnificada = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+
+        con = await connect();
+        let query = `
+            SELECT * FROM gastos_mensuales_semanales_vw
+        `;
+        const gastos = (await con.query(query, []))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en gastos');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
 
 
 export const ObtenerPresupuestoFrecuenciaAprobadosMesActual = async (req: Request, res: Response) => {
@@ -110,6 +155,29 @@ export const ObtenerPresupuestoFrecuenciaAprobadosMesActual = async (req: Reques
 };
 
 
+export const ObtenerPresupuestoFrecuenciaAprobadosMesActualCategoriaUnificada = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+
+        con = await connect();
+        let query = `
+            SELECT * FROM gastos_mensuales_por_frecuencia_vw
+            WHERE Guardado = 1 
+            AND FechaSiguienteGasto >= DATE_FORMAT(CURDATE(), "%Y-%m-01") 
+            AND FechaSiguienteGasto <= LAST_DAY(CURDATE())
+        `;
+        const gastos = (await con.query(query, []))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en gastos frecuencia');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
 
 
 export const ObtenerEgresoMensualSegmentos = async (req: Request, res: Response) => {
@@ -139,6 +207,26 @@ export const ObtenerEgresoMensualSegmentos = async (req: Request, res: Response)
 };
 
 
+export const ObtenerEgresoMensualSegmentosCategoriaUnificada = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+
+        con = await connect();
+        let query = `
+            SELECT * FROM egreso_actual_por_segmento_y_categoria_vw
+        `;
+        const gastos = (await con.query(query, []))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en egreso actual');
+        console.log(error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
 
 
 // -----------------------------------------------------------------------------
@@ -176,6 +264,35 @@ export const ObtenerGastoExtraordinarioCategoria = async (req: Request, res: Res
     }
 };
 
+
+export const ObtenerGastoExtraordinarioCategoriaCategoriaUnificada = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        const categoriaID = parseInt(req.params.categoriaID);
+
+        if (isNaN(categoriaID)) {
+            return res.status(400).json({ error: "SegmentoID o CategoriaID inválido" });
+        }
+
+        con = await connect();
+        let query = `
+            SELECT * FROM gastos_presupuesto_vw 
+            WHERE EstatusPresupuestoID = 1 
+            AND CategoriaID = ?
+            AND Fecha BETWEEN DATE_FORMAT(CURDATE(), "%Y-%m-01") AND LAST_DAY(CURDATE())
+        `;
+        const gastos = (await con.query(query, [categoriaID]))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en gasto extraordinario por categoría:', error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
 export const ObtenerPresupuestoSemanalCategoria = async (req: Request, res: Response) => {
     let con;
     let result;
@@ -199,6 +316,32 @@ export const ObtenerPresupuestoSemanalCategoria = async (req: Request, res: Resp
         return res.json(result);
     }
 };
+
+
+export const ObtenerPresupuestoSemanalCategoriaCategoriaUnificada = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        const categoriaID = parseInt(req.params.categoriaID);
+
+        if (isNaN(categoriaID)) {
+            return res.status(400).json({ error: "SegmentoID o CategoriaID inválido" });
+        }
+
+        con = await connect();
+        let query = `SELECT * FROM gastos_mensuales_semanales_vw WHERE CategoriaID = ?`;
+        const gastos = (await con.query(query, [categoriaID]))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en presupuesto semanal por categoría:', error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
 
 export const ObtenerPresupuestoFrecuenciaCategoria = async (req: Request, res: Response) => {
     let con;
@@ -230,6 +373,38 @@ export const ObtenerPresupuestoFrecuenciaCategoria = async (req: Request, res: R
     }
 };
 
+
+
+export const ObtenerPresupuestoFrecuenciaCategoriaCategoriaUnificada = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        const categoriaID = parseInt(req.params.categoriaID);
+
+        if (isNaN(categoriaID)) {
+            return res.status(400).json({ error: "SegmentoID o CategoriaID inválido" });
+        }
+
+        con = await connect();
+        let query = `
+            SELECT * FROM gastos_mensuales_por_frecuencia_vw
+            WHERE Guardado = 1 
+            AND FechaSiguienteGasto BETWEEN DATE_FORMAT(CURDATE(), "%Y-%m-01") AND LAST_DAY(CURDATE())
+            AND CategoriaID = ?
+        `;
+        const gastos = (await con.query(query, [categoriaID]))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en presupuesto frecuencia por categoría:', error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
+
+
+
 export const ObtenerEgresosMensualesCategoria = async (req: Request, res: Response) => {
     let con;
     let result;
@@ -254,6 +429,30 @@ export const ObtenerEgresosMensualesCategoria = async (req: Request, res: Respon
     }
 };
 
+
+
+export const ObtenerEgresosMensualesCategoriaCategoriaUnificada = async (req: Request, res: Response) => {
+    let con;
+    let result;
+    try {
+        const categoriaID = parseInt(req.params.categoriaID);
+
+        if (isNaN(categoriaID)) {
+            return res.status(400).json({ error: "SegmentoID o CategoriaID inválido" });
+        }
+
+        con = await connect();
+        let query = `SELECT * FROM egreso_actual_por_segmento_categoria_subcategoria_vw WHERE CategoriaID = ?`;
+        const gastos = (await con.query(query, [categoriaID]))[0] as any[];
+        result = gastos;
+    } catch (error) {
+        console.log('Error en egresos mensuales por categoría:', error);
+        result = null;
+    } finally {
+        await con?.end();
+        return res.json(result);
+    }
+};
 
 
 

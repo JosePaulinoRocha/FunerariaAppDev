@@ -157,8 +157,10 @@ export class SegmentDetailModalComponent {
       egresosAgrupados[key].MontoPlaneado += isNaN(monto) ? 0 : monto;
     });
   
-    // Convertimos los objetos agrupados en un array
-    this.egresosUnificados = Object.values(egresosAgrupados);
+    // Convertir en array y ordenar por desfase (MontoPlaneado - MontoActual)
+    this.egresosUnificados = Object.values(egresosAgrupados).sort((a, b) => 
+      (a.MontoPlaneado - a.MontoActual) - (b.MontoPlaneado - b.MontoActual)
+    );
   }
   
 

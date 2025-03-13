@@ -1,56 +1,40 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Resumen Presupuesto</ion-title>
+    <ion-title>Categorías</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="resumen-container">
-    <div class="table-title">Resumen Categorias Unificadas</div>
-    <ion-card>
-      <ion-card-content>
-        <ion-item>
-          <ion-label>Presupuesto Otorgado:</ion-label>
-          <ion-text color="secondary">$ {{ egresoOtorgado }}</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Presupuesto Empleado:</ion-label>
-          <ion-text color="success">$ {{ egresoActual }}</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Desfase General:</ion-label>
-          <ion-text color="danger">$ {{ egresoOtorgado - egresoActual }}</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Ingreso Acumulado:</ion-label>
-          <ion-text color="success">$ {{ ingresoActual }}</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Utilidad Neta:</ion-label>
-          <ion-text color="warning">$ {{ ingresoActual - egresoActual }}</ion-text>
-        </ion-item>
-      </ion-card-content>
+  <div class="modal-container">
+    <div class="table-title">Categorías Unificadas</div>
+
+    <ion-card *ngFor="let categoria of categorias" class="categoria-card" (click)="openSubcategoryModal(categoria)">
+      <ion-card-title>{{ categoria.NombreCategoria }}</ion-card-title>
+      
+      <div class="categoria-detalles">
+        <div class="detalle-row">
+          <div class="detalle-label">Actual:</div>
+          <div class="detalle-valor">${{ categoria.Actual | number }}</div>
+        </div>
+
+        <div class="detalle-row">
+          <div class="detalle-label">Planeado:</div>
+          <div class="detalle-valor">${{ categoria.Planeado | number }}</div>
+        </div>
+
+        <div class="desfase" 
+          [ngClass]="{
+            'negativo': calcularDesfase(categoria.Actual, categoria.Planeado) >= 0,
+            'positivo': calcularDesfase(categoria.Actual, categoria.Planeado) < 0
+          }">
+          Desfase: {{ calcularDesfase(categoria.Planeado, categoria.Actual) | number:'1.0-2' }}
+        </div>
+      </div>
     </ion-card>
-
-    <!-- Botón inicial -->
-    <ion-button 
-      *ngIf="!mostrarOpciones"
-      expand="full"
-      color="primary"
-      class="animated-button"
-      (click)="mostrarBotones()">
-      Revisar Detalles
-    </ion-button>
-
-    <!-- Nuevos botones que aparecen después -->
-    <div *ngIf="mostrarOpciones" class="botones-opciones">
-      <ion-button expand="full" color="secondary" (click)="navigateTo('resumen-presupuesto-segmentos')">
-        Segmentos
-      </ion-button>
-      <ion-button style="margin-top: 3rem;" expand="full" color="tertiary" (click)="navigateTo('resumen-presupuesto-categorias')">
-        Categorías Unificadas
-      </ion-button>
-    </div>
-
   </div>
 </ion-content>

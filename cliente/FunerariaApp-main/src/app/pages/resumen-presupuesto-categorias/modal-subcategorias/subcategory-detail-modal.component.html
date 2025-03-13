@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Subcategorías</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="modal-container">
+    <div class="table-title">Subcategorías</div>
+
+    <ion-card *ngFor="let subcategoria of subcategorias" class="categoria-card">
+      <ion-card-title>{{ subcategoria.NombreSubcategoria }}</ion-card-title>
+      
+      <div class="categoria-detalles">
+        <div class="detalle-row">
+          <div class="detalle-label">Actual:</div>
+          <div class="detalle-valor">${{ subcategoria.Actual | number }}</div>
+        </div>
+
+        <div class="detalle-row">
+          <div class="detalle-label">Planeado:</div>
+          <div class="detalle-valor">${{ subcategoria.Planeado | number }}</div>
+        </div>
+
+        <div class="desfase" 
+          [ngClass]="{
+            'negativo': calcularDesfase(subcategoria.Actual, subcategoria.Planeado) >= 0,
+            'positivo': calcularDesfase(subcategoria.Actual, subcategoria.Planeado) < 0
+          }">
+          Desfase: {{ calcularDesfase(subcategoria.Planeado, subcategoria.Actual) | number:'1.0-2' }}
+        </div>
+      </div>
+    </ion-card>
+  </div>
+</ion-content>

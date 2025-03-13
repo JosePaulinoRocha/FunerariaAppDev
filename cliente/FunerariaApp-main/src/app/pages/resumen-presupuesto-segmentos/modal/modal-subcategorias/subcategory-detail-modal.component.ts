@@ -180,8 +180,8 @@ export class SubcategoryDetailModalComponent {
       subcategoriasAgrupadas[key].Planeado += isNaN(monto) ? 0 : monto;
     });
   
-    // Convertimos los objetos agrupados en un array
-    this.subcategorias = Object.values(subcategoriasAgrupadas);
+    // Convertimos los objetos agrupados en un array y ordenamos de menor a mayor por Actual
+    this.subcategorias = Object.values(subcategoriasAgrupadas).sort((a, b) => a.Actual - b.Actual);
   
     console.log("Subcategorías procesadas:", this.subcategorias); // Verifica que ahora incluyen los nombres de segmento y categoría
   }

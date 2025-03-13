@@ -197,7 +197,7 @@ export class ConceptosModalComponent {
       conceptosAgrupados[key].Planeado += isNaN(monto) ? 0 : monto;
     });
 
-    this.conceptos = Object.values(conceptosAgrupados);
+    this.conceptos = Object.values(conceptosAgrupados).sort((a, b) => (a.Actual + a.Planeado) - (b.Actual + b.Planeado));
     console.log("Conceptos procesados:", this.conceptos);
   }
 

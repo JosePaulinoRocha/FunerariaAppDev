@@ -83,4 +83,41 @@ export class ResumenPresupuestoServices {
   }
 
 
+
+
+  getGastoMensualExtraordinarioAprobadoCategoriaUnificada(): Observable<Gastos[]> {
+    return this.http.get<Gastos[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoMensualExtraordinarioAprobado/`);
+  }
+  
+  getPresupuestoSemanalCategoriaUnificada(): Observable<PresupuestoMensualSemanal[]> {
+    return this.http.get<PresupuestoMensualSemanal[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoSemanal/`);
+  }
+
+  getPresupuestoMensualFrecuenciaAprobadosMesActualCategoriaUnificada(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetPresupuestoMensualFrecuenciaAprobadosMesActual/`);
+  }
+
+  getEgresosMensualCategoriaUnificada(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensualSegmentos/`);
+  }
+
+
+
+    getGastoExtraordinarioPorCategoriaUnificada(categoriaID: number): Observable<Gastos[]> {
+    return this.http.get<Gastos[]>(`${this.myAppUrl}${this.MyApiUrl}gasto-extraordinario-categoriaUnificada/${categoriaID}`);
+    }
+    
+    getPresupuestoSemanalPorCategoriaUnificada(categoriaID: number): Observable<PresupuestoMensualSemanal[]> {
+      return this.http.get<PresupuestoMensualSemanal[]>(`${this.myAppUrl}${this.MyApiUrl}presupuesto-semanal-categoriaUnificada/${categoriaID}`);
+    }
+
+    getPresupuestoFrecuenciaPorCategoriaUnificada(categoriaID: number): Observable<any[]> {
+      return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}presupuesto-frecuencia-categoriaUnificada/${categoriaID}`);
+    }
+
+    getEgresosMensualesPorCategoriaUnificada(categoriaID: number): Observable<any[]> {
+      return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}egresos-mensuales-categoriaUnificada/${categoriaID}`);
+    }
+
+
 }

@@ -39,7 +39,7 @@ export class ResumenPresupuestoSegmentosComponent implements OnInit {
           presupuesto: parseFloat(seg.MontoEsperado),
           actual: parseFloat(seg.MontoActual),
           desfase: parseFloat(seg.MontoEsperado) - parseFloat(seg.MontoActual)
-        }));
+        })).sort((a, b) => a.desfase - b.desfase); // Ordenar por desfase ascendente
         this.isLoading = false;
       },
       (error) => {
@@ -47,6 +47,7 @@ export class ResumenPresupuestoSegmentosComponent implements OnInit {
       }
     );
   }
+  
 
   async openSegmentDetail(segmento: any) {
     console.log("Segmento seleccionado:", segmento);
