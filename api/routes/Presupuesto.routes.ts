@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateJWT } from '../middlewares/authMiddleware';
-import { ObtenerPresupuesto, updatePresupuesto, updatePresupuestoCuenta, ObtenerPresupuestoMensual, PostGastos, PutGastos, ObtenerEstatusGasto, updateGastoEstatus, ObtenerPasoUsuario, InsertPasoUsuario, InsertPeriodosCongelados, ObtenerPeriodosCongelados, ObtenerPresupuestoSemanal, ObtenerPresupuestoMensualExtraordinarioAprobado } from '../controllers/Presupuesto.controller';
+import { EliminarPeriodoCongelado, ObtenerPresupuesto, updatePresupuesto, updatePresupuestoCuenta, ObtenerPresupuestoMensual, PostGastos, PutGastos, ObtenerEstatusGasto, updateGastoEstatus, ObtenerPasoUsuario, InsertPasoUsuario, InsertPeriodosCongelados, ObtenerPeriodosCongelados, ObtenerPresupuestoSemanal, ObtenerPresupuestoMensualExtraordinarioAprobado } from '../controllers/Presupuesto.controller';
 
 const router = Router();
 
@@ -34,6 +34,8 @@ router.get('/GetEstatus', authenticateJWT, ObtenerEstatusGasto);
 router.get('/GetPeriodosCongelados', authenticateJWT, ObtenerPeriodosCongelados);
 
 router.post('/InsertPeriodosCongelados', authenticateJWT, InsertPeriodosCongelados);
+
+router.delete('/DeletePeriodoCongelado', authenticateJWT, EliminarPeriodoCongelado);
 
 
 export default router;

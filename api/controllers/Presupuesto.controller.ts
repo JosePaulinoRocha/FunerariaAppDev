@@ -598,7 +598,7 @@ export const ObtenerPeriodosCongelados = async (req: Request, res: Response) => 
     let result;
     try {
         con = await connect();
-        let query = 'SELECT * FROM periodos_congelados';
+        let query = 'SELECT * FROM vista_periodos_congelados';
         const periodos = (await con.query(query))[0] as any[];
         result = periodos;
     } catch (error) {
@@ -640,6 +640,51 @@ export const InsertPeriodosCongelados = async (req: Request, res: Response) => {
         await con?.end();
     }
 };
+
+
+
+export const EliminarPeriodoCongelado = async (req: Request, res: Response) => {
+    let con;
+    const { PeriodoID } = req.body; // Recibimos el PeriodoID
+
+    if (!PeriodoID) {
+        return res.status(400).json({ error: "Se requiere PeriodoID" });
+    }
+
+    try {
+        con = await connect();
+        await con.beginTransaction(); // Iniciamos una transacción
+
+        // Eliminar registros de gastos_semanales_mensuales_cuentas con el mismo PeriodoID
+        const deleteGastosQuery = `DELETE FROM gastos_semanales_mensuales_cuentas WHERE PeriodoID = ?`;
+        const [gastosResult] = await con.query(deleteGastosQuery, [PeriodoID]) as ResultSetHeader[];
+
+        // Eliminar el periodo congelado
+        const deletePeriodoQuery = `DELETE FROM periodos_congelados WHERE PeriodoID = ?`;
+        const [periodoResult] = await con.query(deletePeriodoQuery, [PeriodoID]) as ResultSetHeader[];
+
+        if (periodoResult.affectedRows > 0) {
+            await con.commit(); // Confirmamos la transacción si todo salió bien
+            res.json({
+                message: "Periodo congelado eliminado correctamente",
+                detalles: {
+                    periodosEliminados: periodoResult.affectedRows,
+                    gastosEliminados: gastosResult.affectedRows
+                }
+            });
+        } else {
+            await con.rollback(); // Deshacemos los cambios si el PeriodoID no existía
+            res.status(404).json({ error: "No se encontró el periodo congelado" });
+        }
+    } catch (error) {
+        await con?.rollback(); // Deshacer cualquier cambio si hubo un error
+        console.error("Error al eliminar periodo congelado:", error);
+        res.status(500).json({ error: "Error en el servidor" });
+    } finally {
+        await con?.end();
+    }
+};
+
 
 
 

@@ -797,8 +797,10 @@ export class IngresosEgresosComponent implements OnInit {
   // }
 
   downloadFile(fileUrl: string) {
-    const baseUrl = 'https://systemabmxli.com/';
-    const fullUrl = `${baseUrl}${fileUrl}`;
+    // Asegurar que la URL de archivo no tenga rutas absolutas incorrectas
+    const cleanFileUrl = fileUrl.replace(/^\/?root\/Api_Funeraria_Git\/Api_Funeraria_Git\//, ''); 
+    const baseUrl = 'https://systemabmxlifuneraria.com';
+    const fullUrl = `${baseUrl}/${cleanFileUrl}`;
     window.open(fullUrl, '_blank');
   }
 

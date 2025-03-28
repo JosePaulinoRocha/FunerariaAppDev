@@ -324,6 +324,53 @@ export class PresupuestoMensualComponent  implements OnInit {
     this.modoFiltro === 'presupuestoMensual'
   }
 
+
+  eliminarPeriodoCongelado(periodo: any) {
+    console.log("Eliminando periodo congelado:", periodo);
+  
+    // Buscar el periodo congelado con la misma fecha de inicio y fin
+    const periodoAEliminar = this.periodosCongelados.find(p => {
+      const fechaInicioCongelado = new Date(p.FechaInicio);
+      const fechaFinCongelado = new Date(p.FechaFin);
+      const fechaInicioDisponible = new Date(periodo.start);
+      const fechaFinDisponible = new Date(periodo.end);
+  
+      // Normalizar horas para comparación
+      fechaInicioCongelado.setUTCHours(0, 0, 0, 0);
+      fechaFinCongelado.setUTCHours(0, 0, 0, 0);
+      fechaInicioDisponible.setUTCHours(0, 0, 0, 0);
+      fechaFinDisponible.setUTCHours(0, 0, 0, 0);
+  
+      return (
+        fechaInicioCongelado.getTime() === fechaInicioDisponible.getTime() &&
+        fechaFinCongelado.getTime() === fechaFinDisponible.getTime()
+      );
+    });
+  
+    if (!periodoAEliminar) {
+      console.warn("No se encontró un periodo congelado con estas fechas.");
+      return;
+    }
+  
+    // Mostrar qué información se va a enviar al servicio
+    console.log("Datos que se enviarán al servicio para eliminar el periodo:", periodoAEliminar);
+  
+    // Llamar al servicio para eliminar
+    this._presupuestoServ.deletePeriodoCongelado(periodoAEliminar).subscribe(
+      response => {
+        console.log("Periodo eliminado exitosamente:", response);
+        this.presentAlert("El periodo ha sido eliminado correctamente.", "Éxito");
+        this.loadPeriodosCongelados(); // Recargar periodos congelados
+      },
+      error => {
+        console.error("Error al eliminar el periodo:", error);
+        this.presentAlert("Hubo un error al eliminar el periodo. Intente nuevamente.");
+      }
+    );
+  }
+  
+
+
   loadPresupuestoSemanal() {
     this._presupuestoServ.getPresupuestoSemanal().subscribe((data: PresupuestoSemanal[]) => {
 

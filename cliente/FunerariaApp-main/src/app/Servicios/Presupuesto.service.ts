@@ -91,5 +91,11 @@ export class PresupuestoServices {
   }
 
 
+  deletePeriodoCongelado(periodo: { FechaInicio: string; FechaFin: string }): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}DeletePeriodoCongelado`;  // Correcta URL sin barra extra
+    return this.http.delete<any>(url, { body: periodo });
+  }
+  
+
   
 }
