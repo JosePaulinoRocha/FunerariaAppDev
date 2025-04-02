@@ -85,8 +85,7 @@ export class PresupuestoServices {
     return this.http.get<Periodos[]>(`${this.myAppUrl}${this.MyApiUrl}GetPeriodosCongelados/`);
   }
 
-  // Nuevo método para guardar los periodos congelados
-  savePeriodosCongelados(periodos: { fecha_inicio: Date; fecha_fin: Date }[]): Observable<any> {
+  savePeriodosCongelados(periodos: { fecha_inicio: string; fecha_fin: string }[]): Observable<any> {
     return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}InsertPeriodosCongelados`, periodos);
   }
 

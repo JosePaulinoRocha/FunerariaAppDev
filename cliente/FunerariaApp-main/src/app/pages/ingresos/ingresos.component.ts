@@ -6,6 +6,9 @@ import { IncomeModalComponent } from './modal/income-modal.component';
 import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
 import { LoadingController } from '@ionic/angular';
+import { IngresosArchivoServices } from 'src/app/Servicios/Importar-ingresos-archivo.service';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 
 interface Income {
@@ -57,6 +60,8 @@ interface Income {
   imports: [IonicModule, FormsModule, CommonModule, IncomeModalComponent, HttpClientModule],
 })
 export class IngresosComponent implements OnInit {
+
+  readonly BATCH_SIZE = 100;
 
   isLoading: boolean = false;
 
@@ -123,7 +128,7 @@ export class IngresosComponent implements OnInit {
   searchValues: { [key: string]: string } = {};
   dateSearchValues: { [key: string]: { startDate: string, endDate: string } } = {};
 
-  constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private loadingController: LoadingController) { }
+  constructor( private ingresosArchivoServices: IngresosArchivoServices, private modalController: ModalController, private _ingresoServ: IngresosServices, private loadingController: LoadingController) { }
 
 
 
@@ -131,6 +136,128 @@ export class IngresosComponent implements OnInit {
   ngOnInit() {
     this.loadIngresos();
   }
+
+
+  triggerFileInputEgresosNuevo() {
+    const fileInput = document.getElementById('fileInputEgresosNuevo') as HTMLInputElement;
+    fileInput.click();
+  }
+
+  onFileChangeEgresos(event: any) {
+    const file = event.target.files[0];
+
+    if (file) {
+      const fileReader = new FileReader();
+
+      fileReader.onload = (e: any) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        this.processExcelDataEgresos(jsonData);
+      };
+
+      fileReader.readAsArrayBuffer(file);
+    }
+    event.target.value = '';
+  }
+
+  processExcelDataEgresos(data: any[]) {
+    const headers = data[0];
+    const rows = data.slice(1);
+
+    const processedData = rows.map((row) => ({
+      Fecha: this.excelDateToJSDate(row[0]) || '',
+      Segmento: row[1] || '',
+      Categoria: row[2] || '',
+      Subcategoria: row[3] || '',
+      Concepto: row[4] || '',
+      Descripcion: row[5] || '',
+      Monto: row[6] || 0,
+      Cuenta: row[7] || '',
+      Proveedor: row[8] || '',
+      Piezas: row[9] || 0,
+    }));
+
+    console.log("Datos procesados de egresos con proveedor y piezas:", processedData);
+    this.sendEgresosInBatches(processedData);
+  }
+
+  sendEgresosInBatches(registros: any[]) {
+    const totalRegistros = registros.length;
+    let offset = 0;
+
+    const sendNextBatch = () => {
+      const batch = registros.slice(offset, offset + this.BATCH_SIZE);
+      if (batch.length === 0) {
+        console.log('Todos los registros han sido importados.');
+        this.isLoading = false;
+        this.loadIngresos();
+        return;
+      }
+
+      this.ingresosArchivoServices.importarEgresosArchivoImportacion(batch).subscribe(
+        () => {
+          console.log(`Batch de ${batch.length} registros importados correctamente`);
+          offset += this.BATCH_SIZE;
+          sendNextBatch();
+        },
+        (error: any) => {
+          console.error('Error al importar el batch de registros', error);
+          this.isLoading = false;
+        }
+      );
+    };
+
+    this.isLoading = true;
+    sendNextBatch();
+  }
+
+  excelDateToJSDate(value: any): string {
+    if (typeof value === 'number') {
+      // Manejo del número de serie de Excel
+      const utc_days = Math.floor(value - 25569) + 1; // Ajuste para fechas en Excel
+      const date_info = utc_days * 86400; // Convertir días a segundos
+      const date = new Date(date_info * 1000); // Crear la fecha en milisegundos
+      return this.formatDate(date);
+    } else if (typeof value === 'string') {
+      // Normalizar separadores a "/"
+      const normalizedValue = value.replace(/-/g, '/');
+  
+      // Intentar convertirlo directamente
+      let date = new Date(normalizedValue);
+      if (!isNaN(date.getTime())) {
+        return this.formatDate(date);
+      }
+  
+      // Intentar con formato DD/MM/YYYY o DD-MM-YYYY
+      const dateParts = normalizedValue.split('/');
+      if (dateParts.length !== 3) return ''; // Si no tiene tres partes, no es una fecha válida
+  
+      let [part1, part2, part3] = dateParts.map(part => parseInt(part, 10));
+  
+      // Determinar si está en formato YYYY/MM/DD o DD/MM/YYYY
+      if (part1 > 31) {
+        // Es YYYY/MM/DD
+        date = new Date(part1, part2 - 1, part3);
+      } else {
+        // Es DD/MM/YYYY o DD-MM-YYYY, intercambiamos el año y el día
+        date = new Date(part3, part2 - 1, part1);
+      }
+  
+      return isNaN(date.getTime()) ? '' : this.formatDate(date);
+    }
+    return ''; // Retornar vacío si la conversión falla
+  }
+  
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+
   loadIngresos() {
     this.isLoading = true;
 

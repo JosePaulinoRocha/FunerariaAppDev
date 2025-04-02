@@ -16,6 +16,16 @@
     Crear
   </ion-button>
 
+  <input
+  type="file"
+  accept=".xlsx, .xls"
+  (change)="onFileChangeEgresos($event)"
+  style="display: none"
+  id="fileInputEgresosNuevo"
+  />
+  <ion-button style="margin-left: 2rem;" color="success" (click)="triggerFileInputEgresosNuevo()">
+    Importar Egresos
+  </ion-button>
   
 
   <div class="search-container">

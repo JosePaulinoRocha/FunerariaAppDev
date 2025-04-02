@@ -215,3 +215,81 @@ const getOrCreateCuentaEgreso = async (con: any, cuenta: string, tipoCuentaID: n
     }
 };
 
+
+
+export const ImportarEgresosArchivoImportacion = async (req: Request, res: Response) => {
+    const con = await connect();
+    await con.beginTransaction();
+
+    try {
+        const egresosData = req.body; // Suponemos que es un array de egresos
+        console.log("Datos recibidos para importación:", egresosData);
+
+        for (const egreso of egresosData) {
+            console.log("Procesando egreso:", egreso);
+
+            // 1. Verificar o crear SegmentoID, CategoriaID, SubcategoriaID, ConceptoID y ProveedorID
+            const SegmentoID = egreso.Segmento ? await getOrCreateId(con, 'segmentos', egreso.Segmento) : null;
+            const CategoriaID = egreso.Categoria ? await getOrCreateId(con, 'categorias', egreso.Categoria) : null;
+            const SubcategoriaID = egreso.Subcategoria ? await getOrCreateId(con, 'subcategorias', egreso.Subcategoria) : null;
+            const ConceptoID = egreso.Concepto ? await getOrCreateId(con, 'conceptos', egreso.Concepto) : null;
+            const ProveedorID = egreso.Proveedor ? await getOrCreateProveedorId(con, egreso.Proveedor) : null; // Nueva función
+
+            // 2. Verificar o crear CuentaID
+            const TipoCuentaID = egreso.Cuenta.toLowerCase().includes('caja chica') ? 1 : 2;
+            const CuentaID = egreso.Cuenta ? await getOrCreateCuentaEgreso(con, egreso.Cuenta, TipoCuentaID) : null;
+
+            // 3. Obtener el monto sin modificaciones
+            const nuevoMonto = egreso.Monto;
+
+            // 4. Calcular el saldo nuevo basado en los ingresos y egresos no reconciliados
+            const saldoFinal = await calcularSaldoCuenta(con, CuentaID, nuevoMonto, false); // Es egreso
+            console.log(`Nuevo saldo calculado: ${saldoFinal}`);
+
+            // 5. Insertar el registro en la tabla ingresos (TipoIngreso = 1 para egreso)
+            const insertEgresoQuery = `
+                INSERT INTO ingresos (SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, ProveedorID, CuentaID, Monto, TipoIngreso, Descripcion, Fecha, Saldo, Piezas)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
+            `;
+
+            // 6. Ejecutar la inserción del egreso con el saldo actualizado
+            await con.query(insertEgresoQuery, [
+                SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, ProveedorID, CuentaID, nuevoMonto, egreso.Descripcion, egreso.Fecha, saldoFinal, egreso.Piezas
+            ]);
+            console.log("Egreso insertado correctamente");
+        }
+
+        await con.commit();
+        res.status(200).json({ message: 'Egresos importados exitosamente' });
+    } catch (error) {
+        await con.rollback();
+        const err = error as Error;
+        res.status(500).json({ error: 'Error al procesar la importación', detalle: err.message });
+    } finally {
+        con.end();
+    }
+};
+
+
+
+const getOrCreateProveedorId = async (con: any, proveedor: string) => {
+    try {
+        console.log(`Verificando existencia de proveedor: ${proveedor}`);
+        const query = `SELECT ProveedorID FROM proveedores WHERE LOWER(Proveedor) = LOWER(?) LIMIT 1`;
+        const [rows] = await con.query(query, [proveedor]);
+
+        if (Array.isArray(rows) && rows.length > 0) {
+            console.log(`Proveedor encontrado: ${proveedor}`);
+            return rows[0].ProveedorID;
+        } else {
+            console.log(`Proveedor no encontrado, insertando: ${proveedor}`);
+            const insertQuery = `INSERT INTO proveedores (Proveedor) VALUES (?)`;
+            const [insertResult]: [ResultSetHeader] = await con.query(insertQuery, [proveedor]);
+            console.log(`Proveedor insertado con ID: ${insertResult.insertId}`);
+            return insertResult.insertId;
+        }
+    } catch (error) {
+        console.error(`Error en getOrCreateProveedorId:`, error);
+        throw error;
+    }
+};

@@ -326,7 +326,14 @@ export class PresupuestoMensualComponent  implements OnInit {
 
 
   eliminarPeriodoCongelado(periodo: any) {
-    console.log("Eliminando periodo congelado:", periodo);
+    console.log("Intentando eliminar periodo congelado:", periodo);
+  
+    // Confirmación antes de eliminar
+    const confirmacion = window.confirm("¿Estás seguro de que deseas eliminar este periodo congelado?");
+    if (!confirmacion) {
+      console.log("Eliminación cancelada.");
+      return;
+    }
   
     // Buscar el periodo congelado con la misma fecha de inicio y fin
     const periodoAEliminar = this.periodosCongelados.find(p => {
@@ -368,7 +375,6 @@ export class PresupuestoMensualComponent  implements OnInit {
       }
     );
   }
-  
 
 
   loadPresupuestoSemanal() {
@@ -462,17 +468,15 @@ export class PresupuestoMensualComponent  implements OnInit {
 
 
   guardarPeriodosCongelados() {
-    // Filtrar los periodos seleccionados
     const periodosSeleccionados = this.periodosDisponibles
       .filter(periodo => periodo.selected)
       .map(periodo => ({
-        fecha_inicio: periodo.start,
-        fecha_fin: periodo.end
-    }));
-
-    // Lógica para guardar en la base de datos
+        fecha_inicio: this.formatDate(periodo.start),
+        fecha_fin: this.formatDate(periodo.end)
+      }));
+  
     console.log('Periodos congelados:', periodosSeleccionados);
-
+  
     this._presupuestoServ.savePeriodosCongelados(periodosSeleccionados).subscribe(
       response => {
         console.log('Periodos congelados guardados exitosamente:', response);
@@ -486,7 +490,15 @@ export class PresupuestoMensualComponent  implements OnInit {
       }
     );
   }
-
+  
+  // Función para formatear la fecha en 'YYYY-MM-DD'
+  formatDate(date: Date): string {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Mes en dos dígitos
+    const day = String(d.getDate()).padStart(2, '0'); // Día en dos dígitos
+    return `${year}-${month}-${day}`;
+  }
 
 
   async presentAlert(message: string, header: string = 'Error') {
