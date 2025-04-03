@@ -26,6 +26,20 @@
   <ion-button style="margin-left: 2rem;" color="success" (click)="triggerFileInputEgresosNuevo()">
     Importar Egresos
   </ion-button>
+
+
+  <!-- Botón para importar ingresos -->
+  <input
+    type="file"
+    accept=".xlsx, .xls"
+    (change)="onFileChangeIngresos($event)"
+    style="display: none"
+    id="fileInputIngresos"
+  />
+  <ion-button style="margin-left: 2rem;" color="primary" (click)="triggerFileInputIngresos()">
+    Importar Ingresos
+  </ion-button>
+
   
 
   <div class="search-container">

@@ -143,6 +143,78 @@ export class IngresosComponent implements OnInit {
     fileInput.click();
   }
 
+  triggerFileInputIngresos() {
+    const fileInput = document.getElementById('fileInputIngresos') as HTMLInputElement;
+    fileInput.click();
+  }
+
+  onFileChangeIngresos(event: any) {
+      const file = event.target.files[0];
+
+      if (file) {
+          const fileReader = new FileReader();
+
+          fileReader.onload = (e: any) => {
+              const data = new Uint8Array(e.target.result);
+              const workbook = XLSX.read(data, { type: 'array' });
+              const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+              const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+              this.processExcelDataIngresos(jsonData);
+          };
+
+          fileReader.readAsArrayBuffer(file);
+      }
+      event.target.value = '';
+  }
+
+  processExcelDataIngresos(data: any[]) {
+      const headers = data[0];
+      const rows = data.slice(1);
+
+      const processedData = rows.map((row) => ({
+          Fecha: this.excelDateToJSDate(row[0]) || '',
+          Segmento: row[1] || '',
+          Categoria: row[2] || '',
+          Concepto: row[3] || '',
+          Descripcion: row[4] || '',
+          Monto: row[5] || 0,
+          Cuenta: row[6] || ''
+      }));
+
+      console.log("Datos procesados de ingresos:", processedData);
+      this.sendIngresosInBatches(processedData);
+  }
+
+  sendIngresosInBatches(registros: any[]) {
+      const totalRegistros = registros.length;
+      let offset = 0;
+
+      const sendNextBatch = () => {
+          const batch = registros.slice(offset, offset + this.BATCH_SIZE);
+          if (batch.length === 0) {
+              console.log('Todos los ingresos han sido importados.');
+              this.isLoading = false;
+              this.loadIngresos();
+              return;
+          }
+
+          this.ingresosArchivoServices.importarIngresosArchivoImportado(batch).subscribe(
+              () => {
+                  console.log(`Batch de ${batch.length} ingresos importados correctamente`);
+                  offset += this.BATCH_SIZE;
+                  sendNextBatch();
+              },
+              (error: any) => {
+                  console.error('Error al importar el batch de ingresos', error);
+                  this.isLoading = false;
+              }
+          );
+      };
+
+      this.isLoading = true;
+      sendNextBatch();
+  } 
+
   onFileChangeEgresos(event: any) {
     const file = event.target.files[0];
 

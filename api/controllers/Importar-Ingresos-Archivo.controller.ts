@@ -293,3 +293,57 @@ const getOrCreateProveedorId = async (con: any, proveedor: string) => {
         throw error;
     }
 };
+
+
+
+
+// Nueva función para importar ingresos en el backend
+export const ImportarIngresosArchivoImportado = async (req: Request, res: Response) => {
+    const con = await connect();
+    await con.beginTransaction();
+
+    try {
+        const ingresosData = req.body;
+        console.log("Datos recibidos para importación de ingresos:", ingresosData);
+
+        for (const ingreso of ingresosData) {
+            console.log("Procesando ingreso:", ingreso);
+
+            // 1. Verificar o crear IDs de Segmento, Categoría y Concepto
+            const SegmentoID = ingreso.Segmento ? await getOrCreateId(con, 'segmentos', ingreso.Segmento) : null;
+            const CategoriaID = ingreso.Categoria ? await getOrCreateId(con, 'categorias', ingreso.Categoria) : null;
+            const ConceptoID = ingreso.Concepto ? await getOrCreateId(con, 'conceptos', ingreso.Concepto) : null;
+
+            // 2. Verificar o crear CuentaID
+            const TipoCuentaID = ingreso.Cuenta.toLowerCase().includes('caja chica') ? 1 : 2;
+            const CuentaID = ingreso.Cuenta ? await getOrCreateCuentaEgreso(con, ingreso.Cuenta, TipoCuentaID) : null;
+
+            // 3. Obtener el monto sin modificaciones
+            const nuevoMonto = ingreso.Monto;
+
+            // 4. Calcular saldo nuevo basado en los ingresos
+            const saldoFinal = await calcularSaldoCuenta(con, CuentaID, nuevoMonto, true); // Es ingreso
+            console.log(`Nuevo saldo calculado: ${saldoFinal}`);
+
+            // 5. Insertar el registro en la tabla ingresos (TipoIngreso = 2 para ingresos)
+            const insertIngresoQuery = `
+                INSERT INTO ingresos (SegmentoID, CategoriaID, ConceptoID, CuentaID, Monto, TipoIngreso, Descripcion, Fecha, Saldo)
+                VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)
+            `;
+
+            await con.query(insertIngresoQuery, [
+                SegmentoID, CategoriaID, ConceptoID, CuentaID, nuevoMonto, ingreso.Descripcion, ingreso.Fecha, saldoFinal
+            ]);
+            console.log("Ingreso insertado correctamente");
+        }
+
+        await con.commit();
+        res.status(200).json({ message: 'Ingresos importados exitosamente' });
+    } catch (error) {
+        await con.rollback();
+        const err = error as Error;
+        res.status(500).json({ error: 'Error al procesar la importación', detalle: err.message });
+    } finally {
+        con.end();
+    }
+};

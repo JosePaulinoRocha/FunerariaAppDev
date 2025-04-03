@@ -82,3 +82,53 @@
   align-items: center;
   margin-bottom: 1rem;
 }
+
+
+
+.table-container {
+  width: 100%;
+  margin: 16px;
+  max-height: 300px; /* Ajusta la altura máxima de las tablas */
+  overflow-y: auto; /* Habilita el scroll vertical cuando sea necesario */
+  overflow-x: hidden; /* Evita el scroll horizontal */
+  border: 1px solid #ddd; /* Opcional: bordes para mejor visualización */
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* Ajusta las columnas para evitar expansión */
+}
+
+.header-row {
+  background-color: #0054E9;
+  color: #FFFFFF;
+  position: sticky;
+  top: 0;
+}
+
+.header-row th {
+  text-align: center;
+  padding: 8px;
+  border: 1px solid #ddd;
+  white-space: normal; /* Permite que los textos se ajusten sin desbordar */
+  overflow: hidden; /* Evita desbordamientos de contenido */
+}
+
+.data-row td {
+  padding: 8px;
+  text-align: center;
+  border: 1px solid #ddd;
+  word-wrap: break-word; /* Rompe palabras largas en celdas */
+}
+
+.propiedades_contenedor_tablas {
+  display: flex;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+}
+
+.contenedor_ingresos, .contenedor_egresos {
+  width: 45%;
+  min-width: 300px; /* Evita que se achiquen demasiado */
+}

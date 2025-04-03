@@ -44,5 +44,14 @@ export class IngresosArchivoServices {
     
     return this.http.post(url, datos, { headers });
   }
+
+
+  importarIngresosArchivoImportado(datos: any[]): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}importarIngresosArchivoImportado/`;
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+  
+    return this.http.post(url, datos, { headers });
+  }
+  
   
 }
