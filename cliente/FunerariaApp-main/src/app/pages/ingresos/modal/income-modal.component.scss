@@ -8,7 +8,11 @@
       flex-direction: column;
 
       ion-item {
-        margin-bottom: 16px;
+        margin-bottom: 0px;
+      }
+
+      ion-grid {
+        padding: 0px;
       }
 
       ion-button {
@@ -55,3 +59,27 @@
 .inactivo {
   color: red;
 }
+
+// ion-item {
+//   --min-height: 4.5rem !important; /* Forza una altura mínima más pequeña */
+//   height: 4.5rem !important; /* Establece una altura más compacta */
+//   padding: 2px 8px !important; /* Reduce el espacio interno */
+// }
+
+// ion-select {
+//   --padding-start: 4px !important;
+//   --padding-end: 4px !important;
+//   font-size: 10px !important; /* Reduce el tamaño del texto */
+//   height: 2rem !important; /* Establece la altura */
+//   min-height: 2rem !important;
+// }
+
+// /* Modifica la altura interna del `ion-select` */
+// ion-select::part(icon),
+// ion-select::part(text) {
+//   height: 2rem !important;
+//   min-height: 2rem !important;
+//   font-size: 10px !important;
+//   line-height: 2rem !important;
+// }
+

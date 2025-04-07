@@ -12,6 +12,11 @@ import { IngresosArchivoModalComponent } from './modal-ingresos-archivo/ingresos
 import { LoadingController } from '@ionic/angular';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { DescripcionesModalComponent } from './modal-descripcion/modal-descripcion.component'; // ajusta la ruta si es diferente
+import { ObservacionesModalComponent } from './modal-observaciones/modal-observaciones.component';
+import { ReconciliacionesServices } from 'src/app/Servicios/Reconciliaciones.service';
+
+
 
 
 interface Income {
@@ -207,7 +212,7 @@ export class IngresosEgresosComponent implements OnInit {
   searchValues: { [key: string]: string } = {};
   dateSearchValues: { [key: string]: { startDate: string, endDate: string } } = {};
 
-  constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private ingresosArchivoServices: IngresosArchivoServices, private loadingController: LoadingController) { }
+  constructor(private _reconciliacionServ: ReconciliacionesServices, private modalController: ModalController, private _ingresoServ: IngresosServices, private ingresosArchivoServices: IngresosArchivoServices, private loadingController: LoadingController) { }
 
   async openAssignAccountsModal() {
     // Filtrar los ingresos seleccionados para obtener los IDs
@@ -300,6 +305,87 @@ export class IngresosEgresosComponent implements OnInit {
     this.checkAdminStatus();
   }
 
+
+  async abrirModalDescripcion(income: any) {
+    console.log('Abriendo modal para IngresoID:', income?.IngresoID);
+    console.log('Registro completo:', income);
+  
+    const modal = await this.modalController.create({
+      component: DescripcionesModalComponent,
+      componentProps: {
+        income: income
+      }
+    });
+  
+    await modal.present();
+  
+    const { data } = await modal.onDidDismiss();
+  
+    if (data?.observacion) {
+      console.log('Descripción recibida:', data.observacion);
+  
+      // Pasa income para que se actualice en la tabla
+      this.updateDescripcion(income.IngresoID, data.observacion, income);
+    }
+  }
+  
+  
+  updateDescripcion(ingresoID: number, descripcion: string, income?: any) {
+    console.log("este es mi id y descripcion: ", ingresoID, descripcion)
+    this._ingresoServ.updateDescripcion(ingresoID, descripcion).subscribe(() => {
+      console.log('Descripción actualizada exitosamente');
+      alert('Se realizó la descripción exitosamente');
+  
+      // Actualizar localmente el objeto en pantalla
+      if (income) {
+        income.Descripcion = descripcion;
+      }
+  
+    }, (error) => {
+      console.error('Error actualizando la descripción', error);
+      alert('Error: Algo salió mal');
+    });
+  }
+
+
+  async abrirModalObservacion(income: any) {
+    console.log('Abriendo modal para IngresoID:', income?.IngresoID);
+    console.log('Registro completo:', income);
+  
+    const modal = await this.modalController.create({
+      component: ObservacionesModalComponent,
+      componentProps: {
+        income: income
+      }
+    });
+  
+    await modal.present();
+  
+    const { data } = await modal.onDidDismiss();
+  
+    if (data?.observacion) {
+      console.log('Observacion recibida:', data.observacion);
+  
+      // Pasa income para que se actualice en la tabla
+      this.updateObservacion(income.IngresoID, data.observacion, income);
+    }
+  }
+  
+  
+  updateObservacion(ingresoID: number, observacion: string, income?: any) {
+    console.log("este es mi id y observacion: ", ingresoID, observacion )
+    this._reconciliacionServ.updateObservacion(ingresoID, observacion).subscribe(() => {
+      console.log('Observación actualizada exitosamente');
+      alert('Se realizó la observacion exitosamente');
+      if (income) {
+        income.ObservacionesDifConciliacion = observacion;
+      }
+    }, (error) => {
+      console.error('Error actualizando la observación', error);
+      alert('Error: Algo salio mal');
+    });
+  }
+  
 
   triggerFileInput() {
     const fileInput = document.getElementById('fileInput') as HTMLInputElement;

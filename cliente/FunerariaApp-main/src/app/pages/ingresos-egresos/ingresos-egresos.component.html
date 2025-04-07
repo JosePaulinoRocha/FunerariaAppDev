@@ -144,6 +144,7 @@
             </span>
             <span style="margin-left: 1rem;"></span>
           </th>
+          <th></th>
           <th (click)="sortTable('Descripcion')">
             <span style="margin-left: 10rem;"></span>
             Descripción
@@ -177,6 +178,7 @@
           <th>Reconciliado</th>
           <th>Ingreso / Egreso</th>
           <th>Reconciliacion ID</th>
+          <th></th>
           <th><span style="margin-left: 6rem;"></span>Observaciones<span style="margin-left: 6rem;"></span></th>
         </tr>
       </thead>
@@ -218,6 +220,11 @@
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null" *ngIf="!mostrarIngresos">{{ income.NombreSubcategoria }}</td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.NombreConcepto }}</td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.CuentaContable }}</td>
+          <td>
+            <ion-button fill="clear" size="small" (click)="abrirModalDescripcion(income)">
+              <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.Descripcion }}</td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null" *ngIf="!mostrarIngresos">{{ income.Proveedor }}</td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null" *ngIf="!mostrarIngresos">
@@ -269,6 +276,11 @@
             {{ income.TipoIngreso.data.includes(0) ? 'Ingreso' : 'Egreso' }}
           </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.ReconciliacionID }}</td>
+          <td>
+            <ion-button fill="clear" size="small" (click)="abrirModalObservacion(income)">
+              <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.ObservacionesDifConciliacion }}</td>
         </tr>
       </tbody>

@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import { connect } from "../BD/Accesos_BD";
-import { RowDataPacket } from 'mysql2/promise';
 import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
+import { RowDataPacket, ResultSetHeader  } from 'mysql2/promise';
 
 export const ObtenerIngresos = async (req: Request, res: Response) => {
     let con;
@@ -1380,5 +1380,30 @@ export const asignarCuentasMasivas = async (req: Request, res: Response) => {
     }
   };
   
+
+
+
+
+
+
+  export const ActualizarDescripcion = async (req: Request, res: Response) => {
+    const { ingresoID } = req.params;
+    const { descripcion } = req.body;
+    let con;
+    try {
+        con = await connect();
+        const query = 'UPDATE ingresos SET Descripcion = ? WHERE IngresoID = ?';
+        const [result] = await con.query<ResultSetHeader>(query, [descripcion, ingresoID]);
+        res.json({ message: 'Observación actualizada exitosamente', affectedRows: result.affectedRows });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            res.status(500).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: 'Unknown error occurred' });
+        }
+    } finally {
+        if (con) con.end();
+    }
+};
 
 

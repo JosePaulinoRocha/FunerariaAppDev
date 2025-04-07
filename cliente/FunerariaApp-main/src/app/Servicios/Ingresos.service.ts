@@ -192,4 +192,9 @@ export class IngresosServices {
     return this.http.put(url, data);
   }
 
+
+  updateDescripcion(ingresoID: number, descripcion: string): Observable<any> {
+    return this.http.put<any>(`${this.myAppUrl}${this.MyApiUrl}/UpdateDescripcion/${ingresoID}`, { descripcion });
+  }
+
 }

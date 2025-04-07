@@ -83,7 +83,7 @@ export class ReconciliacionesServices {
 
   updateObservacion(ingresoID: number, observacion: string): Observable<any> {
     return this.http.put<any>(`${this.myAppUrl}${this.MyApiUrl}/UpdateObservacion/${ingresoID}`, { observacion });
-}
+ }
 
   reintegracionReconciliacion(reconciliacionID: number): Observable<any> {
     return this.http.get<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlReintegrarReconciliacion}${reconciliacionID}`);

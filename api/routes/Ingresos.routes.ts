@@ -4,7 +4,7 @@ import multer, { FileFilterCallback } from 'multer';
 import fs from 'fs'; // Importa el módulo fs
 import path from 'path'; // Importa el módulo path
 import zlib from 'zlib';
-import { ObtenerIngresos, ObtenerIngresosParametros, ObtenerIngresosNoReconciliados, ObtenerIngresosPorFiltro, ObtenerIngresosOptimizado, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, ObtenerCombinacionesSegmento, PostIngresosComprobante, asignarCuenta, asignarCuentasMasivas, ObtenerProveedores, asignarCuentaContable, ObtenerCuentasContables } from '../controllers/Ingresos.controllers';
+import { ActualizarDescripcion, ObtenerIngresos, ObtenerIngresosParametros, ObtenerIngresosNoReconciliados, ObtenerIngresosPorFiltro, ObtenerIngresosOptimizado, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, ObtenerCombinacionesSegmento, PostIngresosComprobante, asignarCuenta, asignarCuentasMasivas, ObtenerProveedores, asignarCuentaContable, ObtenerCuentasContables } from '../controllers/Ingresos.controllers';
 
 const router = Router();
 
@@ -96,6 +96,8 @@ router.put('/AsignarCuenta', authenticateJWT, asignarCuenta);
 router.put('/AsignarCuentaContable', authenticateJWT, asignarCuentaContable);
 
 router.put('/AsignarCuentasMasivas', authenticateJWT, asignarCuentasMasivas);
+
+router.put('/UpdateDescripcion/:ingresoID', authenticateJWT, ActualizarDescripcion);
 
 
 export default router;
