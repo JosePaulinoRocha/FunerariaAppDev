@@ -56,9 +56,10 @@
         <!-- Primera fila: Segmentos y Categorías -->
         <ion-row class="aligned-column">
           <ion-col size="35" size-md="6" size-lg="15">
-            <ion-select
+              <ion-select
               [(ngModel)]="selectedSegmentos"
               (ionChange)="onFilterChange()"
+              (ionDismiss)="onDismissFilter('segmento')"
               multiple="false"
               placeholder="Segmentos"
               interface="popover">
@@ -79,6 +80,7 @@
             <ion-select
               [(ngModel)]="selectedCategorias"
               (ionChange)="onFilterChange()"
+              (ionDismiss)="onDismissFilter('categoria')"
               multiple="false"
               placeholder="Categorías"
               interface="popover">
@@ -231,8 +233,8 @@
       <ion-grid style="display: flex; justify-content: space-around;">
         <!-- Primera fila: Segmentos y Categorías -->
         <ion-row class="aligned-column">
-          <ion-col size="12" size-md="6" size-lg="3">
-            <ion-select
+          <ion-col size="35" size-md="6" size-lg="15">
+              <ion-select
               [(ngModel)]="selectedSegmentosIngresos"
               (ionChange)="onFilterIngresosChange()"
               multiple="false"
@@ -251,11 +253,12 @@
         <ion-row class="aligned-row">
 
 
-          <ion-col size="12" size-md="6" size-lg="3">
+          <ion-col size="35" size-md="6" size-lg="15">
             <ion-select
               [(ngModel)]="selectedCategoriasIngresos"
               (ionChange)="onFilterIngresosChange()"
               multiple="false"
+              (ionDismiss)="onDismissFilter('categoria')"
               placeholder="Categorias"
               interface="popover">
               <ion-select-option *ngFor="let categoria of filtros.categorias" [value]="categoria.CategoriaID">

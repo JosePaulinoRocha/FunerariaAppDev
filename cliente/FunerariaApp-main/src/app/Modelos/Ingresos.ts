@@ -54,6 +54,8 @@ export interface Segmento {
 export interface Categoria {
   CategoriaID: number;
   Nombre: string;
+  IngresosBit: number;
+  EgresoBit: number;
 }
 
 export interface Subcategoria {

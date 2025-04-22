@@ -15,6 +15,7 @@ interface Ingreso {
   NombreCategoria: string;
   SubcategoriaID: number;
   NombreSubcategoria: string;
+  TipoIngreso: { data: number[]; type: string; };
 }
 
 interface Concepto {
@@ -30,6 +31,8 @@ interface Segmento {
 interface Categoria {
   CategoriaID: number;
   Nombre: string;
+  IngresosBit: number;
+  EgresoBit: number;
 }
 
 interface Subcategoria {
@@ -63,6 +66,7 @@ export class IngresosEgresosModalComponent implements OnInit {
     NombreCategoria: '',
     SubcategoriaID: 0,
     NombreSubcategoria: '',
+    TipoIngreso: { data: [], type: '' },
   };
 
   concepto: Concepto[] = [];
@@ -104,6 +108,8 @@ export class IngresosEgresosModalComponent implements OnInit {
   
 
   ngOnInit() {
+    console.log('registro datos:', this.ingreso);
+
     this.loadConceptos();
     this.loadSegmentos();
     this.loadCategorias();
@@ -129,7 +135,10 @@ export class IngresosEgresosModalComponent implements OnInit {
 
   loadCategorias() {
     this._ingresoServ.getCategorias().subscribe((data: Categoria[]) => {
-      this.categoria = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
+      const tipoIngreso = this.ingreso.TipoIngreso?.data?.[0]; // 0 = egreso, 1 = ingreso
+      this.categoria = data
+        .filter(cat => tipoIngreso === 0 ? cat.IngresosBit === 1 : cat.EgresoBit === 1)
+        .sort((a, b) => a.Nombre.localeCompare(b.Nombre));
     }, (error) => {
       this.presentAlert('Error fetching categories');
     });

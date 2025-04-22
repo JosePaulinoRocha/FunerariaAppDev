@@ -169,7 +169,7 @@
     </ion-grid>
 
     <ion-footer>
-      <ion-button [disabled]=" ingreso.Monto < 0 || ingreso.Monto > initialMonto || ingreso.MontoParcial > initialMonto || ingreso.MontoParcial < 0 || ingreso.CategoriaID == 0 || ingreso.CategoriaID == null || ingreso.SubcategoriaID == 0 || ingreso.SubcategoriaID == null || ingreso.TipoCuentaID == 0 || ingreso.TipoCuentaID == null || (ingreso.CuentaID == 0 && newNombreCuenta == '') || (ingreso.CuentaID == null && newNombreCuenta == '')" style="margin-bottom: 1rem;" expand="full" type="submit">Asignar Cuenta</ion-button>
+      <ion-button [disabled]=" ingreso.Monto < 0 || ingreso.Monto > initialMonto || ingreso.MontoParcial > initialMonto || ingreso.MontoParcial < 0 || (ingreso.CategoriaID == 0 && newCategoria == '') || ingreso.SubcategoriaID == 0 || ingreso.SubcategoriaID == null || ingreso.TipoCuentaID == 0 || ingreso.TipoCuentaID == null || (ingreso.CuentaID == 0 && newNombreCuenta == '') || (ingreso.CuentaID == null && newNombreCuenta == '')" style="margin-bottom: 1rem;" expand="full" type="submit">Asignar Cuenta</ion-button>
     </ion-footer>
   </form>
 </ion-content>

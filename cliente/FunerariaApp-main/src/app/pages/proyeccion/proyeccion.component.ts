@@ -55,8 +55,8 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   selectedCategorias: any = null;
   selectedSubcategorias: any = null;
   selectedConceptos: any = null;
-  selectedSegmentosIngresos: any = null;
-  selectedCategoriasIngresos: any = null;
+  selectedSegmentosIngresos: any = undefined;
+  selectedCategoriasIngresos: any = undefined;
   selectedSubcategoriasIngresos: any = null;
   selectedConceptosIngresos: any = null;
   selectedSegmentosUtilidad: any = null;
@@ -241,6 +241,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     this.loadEgresoActual();
     this.loadEgresosMensualesSegmentos();   // <- actualiza egresos por segmento
     this.loadEgresosMensualSemanales();     // <- actualiza egresos semanales
+    this.ObtenerEgresosPorFiltros()
   }
 
 
@@ -262,18 +263,36 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   loadFiltros() {
     this._proyeccionServ.getFiltros().subscribe(
       (data: any) => {
-        console.log("Filtros recibidos desde el SP:", data[0].resultados.conceptos);
-        this.filtros.conceptos = data[0].resultados.conceptos;
-        this.filtros.categorias = data[0].resultados.categorias;
-        this.filtros.subcategorias = data[0].resultados.subcategorias;
-        this.filtros.segmentos = data[0].resultados.segmentos;
-              this.actualizarDatos(); // Actualizamos los datos o gráficos si es necesario
+        const conceptos = data[0].resultados.conceptos;
+        const categorias = data[0].resultados.categorias;
+        const subcategorias = data[0].resultados.subcategorias;
+        const segmentos = data[0].resultados.segmentos;
+  
+        this.filtros.conceptos = [{ ConceptoID: null, Nombre: 'Todos' }, ...conceptos];
+        this.filtros.categorias = [{ CategoriaID: null, Nombre: 'Todos' }, ...categorias];
+        this.filtros.subcategorias = [{ SubcategoriaID: null, Nombre: 'Todos' }, ...subcategorias];
+        this.filtros.segmentos = [{ SegmentoID: null, Nombre: 'Todos' }, ...segmentos];
+  
+        this.actualizarDatos();
       },
       (error) => {
         console.error("Error al obtener los filtros:", error);
       }
     );
   }
+
+  onDismissFilter(tipo: string) {
+    // Si el valor es null (opción "Todos") y no se disparó cambio, forzamos la actualización
+    if (
+      (tipo === 'segmento' && this.selectedSegmentos === null) ||
+      (tipo === 'categoria' && this.selectedCategorias === null) ||
+      (tipo === 'subcategoria' && this.selectedSubcategorias === null) ||
+      (tipo === 'concepto' && this.selectedConceptos === null)
+    ) {
+      this.onFilterChange();
+    }
+  }
+  
 
   LoadIngresosporFiltros() {
     console.log(this.selectedSegmentosIngresos, this.selectedCategoriasIngresos, this.selectedSubcategoriasIngresos, this.selectedConceptosIngresos, this.selectedInitialDateIngresos, this.selectedFinalDateIngresos)
@@ -487,6 +506,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     this.loadIngresoActual();
     this.loadIngresosMensualesSegmentos();   // <- actualiza ingresos por segmento
     this.loadIngresosMensualSemanales();     // <- actualiza ingresos semanales
+    this.LoadIngresosporFiltros();
   }
 
   private loadIngresoPasado() {

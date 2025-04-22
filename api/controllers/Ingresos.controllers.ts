@@ -267,22 +267,38 @@ export const PostIngresos = async (req: Request, res: Response) => {
             return cuentaId;
         };
 
-        const getOrCreateId = async (table: string, value: number | string | null) => {
+        const getOrCreateId = async (table: string, value: number | string | null, tipoIngreso: number | null = null) => {
             if (value === null) {
                 return null;
             }
+        
             if (typeof value === 'string' || value === 0) {
-                const columnName = 'Nombre';
-                const insertQuery = `INSERT INTO ${table} (${columnName}) VALUES (?)`;
-                const [insertResult]: any = await con.query(insertQuery, [value]);
+                let columnName = 'Nombre';
+                let insertQuery = '';
+                let queryValues: any[] = [];
+        
+                if (table == 'categorias' && tipoIngreso !== null) {
+                    // Asumimos que tipoIngreso: 0 = ingreso, 1 = egreso
+                    const ingresosBit = tipoIngreso === 0 ? 1 : 0;
+                    const egresosBit = tipoIngreso === 1 ? 1 : 0;
+        
+                    insertQuery = `INSERT INTO ${table} (${columnName}, IngresosBit, EgresoBit) VALUES (?, ?, ?)`;
+                    queryValues = [value, ingresosBit, egresosBit];
+                } else {
+                    insertQuery = `INSERT INTO ${table} (${columnName}) VALUES (?)`;
+                    queryValues = [value];
+                }
+        
+                const [insertResult]: any = await con.query(insertQuery, queryValues);
                 return insertResult.insertId;
             }
+        
             return value;
         };
 
         const newConceptoID = await getOrCreateId('conceptos', ConceptoID);
         const newSegmentoID = await getOrCreateId('segmentos', SegmentoID);
-        const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
+        const newCategoriaID = await getOrCreateId('categorias', CategoriaID, TipoIngreso);
 
         let newSubcategoriaID = null;
         if (SubcategoriaID !== null) {
@@ -615,22 +631,38 @@ export const UpdateIngresos = async (req: Request, res: Response) => {
             return cuentaId;
         };
 
-        const getOrCreateId = async (table: string, value: number | string | null) => {
+        const getOrCreateId = async (table: string, value: number | string | null, tipoIngreso: number | null = null) => {
             if (value === null) {
                 return null;
             }
+        
             if (typeof value === 'string' || value === 0) {
-                const columnName = 'Nombre';
-                const insertQuery = `INSERT INTO ${table} (${columnName}) VALUES (?)`;
-                const [insertResult]: any = await con.query(insertQuery, [value]);
+                let columnName = 'Nombre';
+                let insertQuery = '';
+                let queryValues: any[] = [];
+        
+                if (table == 'categorias' && tipoIngreso !== null) {
+                    // Asumimos que tipoIngreso: 0 = ingreso, 1 = egreso
+                    const ingresosBit = tipoIngreso === 0 ? 1 : 0;
+                    const egresosBit = tipoIngreso === 1 ? 1 : 0;
+        
+                    insertQuery = `INSERT INTO ${table} (${columnName}, IngresosBit, EgresoBit) VALUES (?, ?, ?)`;
+                    queryValues = [value, ingresosBit, egresosBit];
+                } else {
+                    insertQuery = `INSERT INTO ${table} (${columnName}) VALUES (?)`;
+                    queryValues = [value];
+                }
+        
+                const [insertResult]: any = await con.query(insertQuery, queryValues);
                 return insertResult.insertId;
             }
+        
             return value;
         };
 
         const newConceptoID = await getOrCreateId('conceptos', ConceptoID);
         const newSegmentoID = await getOrCreateId('segmentos', SegmentoID);
-        const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
+        const newCategoriaID = await getOrCreateId('categorias', CategoriaID, TipoIngreso);
 
         let newSubcategoriaID = null;
         if (SubcategoriaID !== null) {
@@ -956,23 +988,40 @@ export const ObtenerEstatus = async (req: Request, res: Response) => {
 export const updateCombination = async (req: Request, res: Response) => {
     let con: any;
     let result;
-    const { IngresoID, ConceptoID, SegmentoID, CategoriaID, SubcategoriaID } = req.body;
+    const { IngresoID, ConceptoID, SegmentoID, CategoriaID, SubcategoriaID, TipoIngreso } = req.body;
 
     try {
         con = await connect();
         await con.beginTransaction(); 
-        const getOrCreateId = async (table: string, value: number | string) => {
+
+
+        const getOrCreateId = async (table: string, value: number | string, tipoIngreso: number | null = null) => {
             if (typeof value === 'string') {
-                const insertQuery = `INSERT INTO ${table} (Nombre) VALUES (?)`;
-                const [insertResult]: any = await con.query(insertQuery, [value]);
+                const columnName = 'Nombre';
+                let insertQuery = '';
+                let queryValues: any[] = [];
+
+                if (table === 'categorias' && tipoIngreso !== null) {
+                    const ingresosBit = tipoIngreso === 0 ? 1 : 0;
+                    const egresosBit = tipoIngreso === 1 ? 1 : 0;
+                    insertQuery = `INSERT INTO ${table} (${columnName}, IngresosBit, EgresoBit) VALUES (?, ?, ?)`;
+                    queryValues = [value, ingresosBit, egresosBit];
+                } else {
+                    insertQuery = `INSERT INTO ${table} (${columnName}) VALUES (?)`;
+                    queryValues = [value];
+                }
+
+                const [insertResult]: any = await con.query(insertQuery, queryValues);
                 return insertResult.insertId;
             }
             return value;
         };
 
+        const tipoIngresoNum = Number(TipoIngreso) || 0;
+
         const newConceptoID = await getOrCreateId('conceptos', ConceptoID);
         const newSegmentoID = await getOrCreateId('segmentos', SegmentoID);
-        const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
+        const newCategoriaID = await getOrCreateId('categorias', CategoriaID, tipoIngresoNum);
         const newSubcategoriaID = await getOrCreateId('subcategorias', SubcategoriaID);
 
         const checkCombinationQuery = `
@@ -1082,13 +1131,43 @@ export const asignarCuenta = async (req: Request, res: Response) => {
     const { 
         IngresoID, TipoCuentaID, CuentaID, TipoCuenta2ID, CuentaID2, RFC, RFC2, 
         CategoriaID, SubcategoriaID, Monto, MontoParcial, EsMontoParcial, 
-        Fecha, Descripcion, SegmentoID 
+        Fecha, Descripcion, SegmentoID, TipoIngreso 
     } = req.body;
 
     try {
         con = await connect();
         await con.beginTransaction();
         console.log('Transacción iniciada');
+
+        const getOrCreateId = async (table: string, value: number | string | null, tipoIngreso: number | null = null) => {
+            if (value === null) return null;
+
+            if (typeof value === 'string' || value === 0) {
+                const columnName = 'Nombre';
+                let insertQuery = '';
+                let queryValues: any[] = [];
+
+                if (table === 'categorias' && tipoIngreso !== null) {
+                    const ingresosBit = tipoIngreso === 0 ? 1 : 0;
+                    const egresosBit = tipoIngreso === 1 ? 1 : 0;
+                    insertQuery = `INSERT INTO ${table} (${columnName}, IngresosBit, EgresoBit) VALUES (?, ?, ?)`;
+                    queryValues = [value, ingresosBit, egresosBit];
+                } else {
+                    insertQuery = `INSERT INTO ${table} (${columnName}) VALUES (?)`;
+                    queryValues = [value];
+                }
+
+                const [insertResult]: any = await con.query(insertQuery, queryValues);
+                return insertResult.insertId;
+            }
+
+            return value;
+        };
+
+        // Obtener o insertar categoría/subcategoría
+        const tipoIngreso = Array.isArray(TipoIngreso) ? TipoIngreso[0] : 0; // 0 = ingreso, 1 = egreso
+        const newCategoriaID = await getOrCreateId('categorias', CategoriaID, tipoIngreso);
+        const newSubcategoriaID = await getOrCreateId('subcategorias', SubcategoriaID);
 
         if (TipoCuenta2ID && CuentaID2) {
             // Restar monto de la cuenta principal
@@ -1105,7 +1184,7 @@ export const asignarCuenta = async (req: Request, res: Response) => {
                 SET Monto = ?, CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?
                 WHERE IngresoID = ?
             `;
-            await con.query(updateIngresoQuery, [montoPrincipal, CuentaID, TipoCuentaID, CategoriaID, SubcategoriaID, IngresoID]);
+            await con.query(updateIngresoQuery, [montoPrincipal, CuentaID, TipoCuentaID, newCategoriaID, newSubcategoriaID, IngresoID]);
 
             // Insertar un nuevo registro para la cuenta secundaria
             const insertIngresoQuery = `
@@ -1113,10 +1192,10 @@ export const asignarCuenta = async (req: Request, res: Response) => {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `;
             await con.query(insertIngresoQuery, [
-                TipoCuenta2ID, CuentaID2, CategoriaID, SubcategoriaID, montoSecundario, Fecha, Descripcion, SegmentoID
+                TipoCuenta2ID, CuentaID2, newCategoriaID, newSubcategoriaID, montoSecundario, Fecha, Descripcion, SegmentoID
             ]);
 
-            // Calcular y actualizar los saldos
+            // Calcular y actualizar saldos
             const saldoCuentaPrincipal = await calcularSaldoCuenta(CuentaID, montoPrincipal, true, con);
             const saldoCuentaSecundaria = await calcularSaldoCuenta(CuentaID2, montoSecundario, true, con);
 
@@ -1126,7 +1205,7 @@ export const asignarCuenta = async (req: Request, res: Response) => {
             await con.query(`UPDATE ingresos SET Saldo = ? WHERE IngresoID = ?`, [saldoCuentaSecundaria, newIngresoID]);
 
         } else {
-            // Si no hay cuenta secundaria, actualizar como antes
+            // Si no hay cuenta secundaria, actualizar ingreso original
             const updateIngresoQuery = `
                 UPDATE ingresos
                 SET CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?, Monto = ?, 
@@ -1134,12 +1213,11 @@ export const asignarCuenta = async (req: Request, res: Response) => {
                 WHERE IngresoID = ?
             `;
             await con.query(updateIngresoQuery, [
-                CuentaID, TipoCuentaID, CategoriaID, SubcategoriaID, Monto, 
+                CuentaID, TipoCuentaID, newCategoriaID, newSubcategoriaID, Monto, 
                 EsMontoParcial ? 1 : 0, EsMontoParcial ? MontoParcial : 0, 
                 IngresoID
             ]);
 
-            // Calcular y actualizar saldo
             const saldoFinal = await calcularSaldoCuenta(CuentaID, parseFloat(Monto), true, con);
             await con.query(`UPDATE ingresos SET Saldo = ? WHERE IngresoID = ?`, [saldoFinal, IngresoID]);
         }
@@ -1160,6 +1238,7 @@ export const asignarCuenta = async (req: Request, res: Response) => {
         return res.json(result);
     }
 };
+
 
 
 
@@ -1271,12 +1350,13 @@ export const asignarCuentasMasivas = async (req: Request, res: Response) => {
     let con: any;
     let result: any;
     const { ids, cuenta } = req.body;
-    const { TipoCuentaID, CuentaID, RFC, CategoriaID, SubcategoriaID } = cuenta;
+    const { TipoCuentaID, CuentaID, RFC, CategoriaID, SubcategoriaID, TipoIngreso  } = cuenta;
   
     console.log('IDs recibidos:', ids); // Añadido para depuración
     console.log('Datos de cuenta:', cuenta); // Añadido para depuración
     console.log('Categoría:', CategoriaID);
     console.log('Subcategoría:', SubcategoriaID);
+    console.log('TipoIngreso:', TipoIngreso);
   
     if (!ids || ids.length === 0) {
       return res.status(400).json({ message: 'No se recibieron IDs para actualizar' });
@@ -1318,20 +1398,31 @@ export const asignarCuentasMasivas = async (req: Request, res: Response) => {
         throw new Error(`TipoCuentaID no válido: ${TipoCuentaIDNum}`);
       }
 
+        // Lógica mejorada para insertar categoría y subcategoría
+        const getOrCreateId = async (table: string, value: number | string, tipoIngreso: number | null = null) => {
+            if (typeof value === 'string') {
+                const columnName = 'Nombre';
+                let insertQuery = '';
+                let queryValues: any[] = [];
 
+                if (table === 'categorias' && tipoIngreso !== null) {
+                    const ingresosBit = tipoIngreso === 0 ? 1 : 0;
+                    const egresosBit = tipoIngreso === 1 ? 1 : 0;
+                    insertQuery = `INSERT INTO ${table} (${columnName}, IngresosBit, EgresoBit) VALUES (?, ?, ?)`;
+                    queryValues = [value, ingresosBit, egresosBit];
+                } else {
+                    insertQuery = `INSERT INTO ${table} (${columnName}) VALUES (?)`;
+                    queryValues = [value];
+                }
 
-        // Función para obtener o crear una Categoría/Subcategoría
-        const getOrCreateId = async (table: string, value: number | string) => {
-        if (typeof value === 'string') {
-            const insertQuery = `INSERT INTO ${table} (Nombre) VALUES (?)`;
-            const [insertResult]: any = await con.query(insertQuery, [value]);
-            return insertResult.insertId;
-        }
-        return value;
+                const [insertResult]: any = await con.query(insertQuery, queryValues);
+                return insertResult.insertId;
+            }
+            return value;
         };
 
-        // Obtener o crear IDs de la categoría y subcategoría
-        const newCategoriaID = await getOrCreateId('categorias', CategoriaID);
+        const tipoIngresoNum = Number(TipoIngreso) || 0; // 0 = ingreso, 1 = egreso
+        const newCategoriaID = await getOrCreateId('categorias', CategoriaID, tipoIngresoNum);
         const newSubcategoriaID = await getOrCreateId('subcategorias', SubcategoriaID);
 
 

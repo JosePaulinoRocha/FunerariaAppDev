@@ -52,6 +52,8 @@ interface Segmento {
 interface Categoria {
   CategoriaID: number;
   Nombre: string;
+  IngresosBit: number;
+  EgresoBit: number;
 }
 
 interface Subcategoria {
@@ -181,14 +183,7 @@ export class IncomeModalComponent implements OnInit {
   allProveedores: Proveedor[] = [];
 
   excludedSegmentos: string[] = [
-    // 'Cobranza',
-    'Cuentas Establecidas',
-    'Sala ventas',
-    'Inversiones Iniciales',
-    'Funeraria Anahuac',
-    'Ingreso Funeraria',
-    'Reembolso',
-    'Prestamo Foraneo'
+
   ];
 
 
@@ -239,7 +234,7 @@ export class IncomeModalComponent implements OnInit {
   }
 
   onTipoIngresoChange() {
-
+    this.loadCategorias();
   }
 
   getFilteredSegmentos(): Segmento[] {
@@ -404,14 +399,19 @@ export class IncomeModalComponent implements OnInit {
   loadCategorias() {
     this._ingresoServ.getCategorias().subscribe(
       (data: Categoria[]) => {
-        // Ordenar las categorías alfabéticamente por el campo 'Nombre'
-        this.categoria = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
+        if (this.ingreso.TipoIngreso === 0) {
+          this.categoria = data.filter(cat => cat.IngresosBit === 1);
+        } else if (this.ingreso.TipoIngreso === 1) {
+          this.categoria = data.filter(cat => cat.EgresoBit === 1);
+        }
+        this.categoria.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
       },
       (error) => {
         this.presentAlert('Error fetching categories');
       }
     );
   }
+  
   
   loadSubcategorias() {
     this._ingresoServ.getSubcategorias().subscribe(

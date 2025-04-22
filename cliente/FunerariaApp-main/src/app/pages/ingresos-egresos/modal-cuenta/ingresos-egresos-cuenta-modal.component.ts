@@ -45,6 +45,8 @@ interface Cuenta {
 interface Categoria {
   CategoriaID: number;
   Nombre: string;
+  IngresosBit: number;
+  EgresoBit: number;
 }
 
 interface Subcategoria {
@@ -134,6 +136,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
 
   ngOnInit() {
     console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
+    console.log('Ingreso datos:', this.ingreso);
 
     this.initialMonto = this.ingreso.Monto;
 
@@ -230,11 +233,15 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
 
   loadCategorias() {
     this._ingresoServ.getCategorias().subscribe((data: Categoria[]) => {
-      this.categoria = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
+      const tipoIngreso = this.ingreso.TipoIngreso?.data?.[0]; // 0 = egreso, 1 = ingreso
+      this.categoria = data
+        .filter(cat => tipoIngreso === 0 ? cat.IngresosBit === 1 : cat.EgresoBit === 1)
+        .sort((a, b) => a.Nombre.localeCompare(b.Nombre));
     }, (error) => {
       this.presentAlert('Error fetching categories');
     });
   }
+  
 
   loadSubcategorias() {
     this._ingresoServ.getSubcategorias().subscribe((data: Subcategoria[]) => {
