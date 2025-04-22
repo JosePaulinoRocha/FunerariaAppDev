@@ -365,7 +365,8 @@ export class IngresosComponent implements OnInit {
       componentProps: {
         ingreso: income ? { ...income } : this.getEmptyIncome(),
         isEditMode: !!income
-      }
+      },
+      cssClass: 'modal-grande' // ← AQUI agregas la clase
     });
 
     modal.onDidDismiss().then((result) => {

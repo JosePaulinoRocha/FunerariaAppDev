@@ -37,6 +37,20 @@
     </div>
 
 
+    <div class="estado-select-container">
+      <ion-select
+        [(ngModel)]="estadoReconciliado"
+        (ionChange)="onEstadoChange()"
+        interface="popover"
+        placeholder="Estado de conciliación"
+        class="estado-select">
+        <ion-select-option value="1">Reconciliados</ion-select-option>
+        <ion-select-option value="0">No Reconciliados</ion-select-option>
+        <ion-select-option value="-1">Todos</ion-select-option>
+      </ion-select>
+    </div>
+
+
     <div class="selectsProyecciones">
       <ion-grid style="display: flex; justify-content: space-around;">
         <!-- Primera fila: Segmentos y Categorías -->
@@ -196,6 +210,20 @@
         (click)="toggleIngresoChart('porSemana')">
         Por Semana
       </ion-button>
+    </div>
+    
+
+    <div class="estado-select-container">
+      <ion-select
+        [(ngModel)]="estadoReconciliadoIngresos"
+        (ionChange)="onEstadoIngresosChange()"
+        interface="popover"
+        placeholder="Estado de conciliación (Ingresos)"
+        class="estado-select">
+        <ion-select-option value="1">Reconciliados</ion-select-option>
+        <ion-select-option value="0">No Reconciliados</ion-select-option>
+        <ion-select-option value="-1">Todos</ion-select-option>
+      </ion-select>
     </div>
 
 
@@ -477,26 +505,87 @@
         <div class="data-value">{{ (((ingresoActual - egresoActual) - (ingresoPasado - totalEgresos)) / (ingresoPasado - totalEgresos) * 100) | number: '1.0-2' }}%</div> <!-- Cálculo dinámico -->
       </div>
     </div>
+    
 
-    <h2 style="margin-top: 2rem;" class="chart-title">Ingresos: Ultimos 20 meses</h2>
+    <h2 style="margin-top: 2rem;" class="chart-title">Ingresos: Últimos 20 meses</h2>
+
+    <div class="estado-select-container">
+      <ion-select
+        [(ngModel)]="filtroReconciliado"
+        (ionChange)="loadIngresosMensuales()"
+        interface="popover"
+        placeholder="Filtrar por reconciliación"
+        class="estado-select">
+        <ion-select-option value="1">Reconciliados</ion-select-option>
+        <ion-select-option value="0">No Reconciliados</ion-select-option>
+        <ion-select-option value="todos">Ambos</ion-select-option>
+      </ion-select>
+    </div>
+    
     <div class="chart-container">
       <canvas id="barChartRevenue"></canvas>
     </div>
+    
 
     <h2 style="margin-top: 2rem;" class="chart-title">Egresos: Últimos 20 meses</h2>
+
+    <div class="estado-select-container">
+      <ion-select
+        [(ngModel)]="filtroReconciliadoEgresos"
+        (ionChange)="loadEgresosMensuales()"
+        interface="popover"
+        placeholder="Filtrar por reconciliación"
+        class="estado-select">
+        <ion-select-option value="1">Reconciliados</ion-select-option>
+        <ion-select-option value="0">No Reconciliados</ion-select-option>
+        <ion-select-option value="todos">Ambos</ion-select-option>
+      </ion-select>
+    </div>
+    
     <div class="chart-container">
       <canvas id="barChartEgresosMensuales"></canvas>
     </div>
+    
 
-    <h2 style="margin-top: 2rem;" class="chart-title">Egreso por Categoria Unificada</h2>
+    <h2 style="margin-top: 2rem;" class="chart-title">Egreso por Categoría Unificada</h2>
+
+    <div class="estado-select-container">
+      <ion-select
+        [(ngModel)]="filtroReconciliadoEgresosCategoria"
+        (ionChange)="loadEgresosPorCategoria()"
+        interface="popover"
+        placeholder="Estado de conciliación"
+        class="estado-select">
+        <ion-select-option value="1">Reconciliados</ion-select-option>
+        <ion-select-option value="0">No Reconciliados</ion-select-option>
+        <ion-select-option value="-1">Todos</ion-select-option>
+      </ion-select>
+    </div>
+    
     <div class="chart-container">
       <canvas id="barChartBreakdown"></canvas>
     </div>
+    
 
-    <h2 style="margin-top: 2rem;" class="chart-title">Ingreso por Categoria Unificada</h2>
+    <h2 style="margin-top: 2rem;" class="chart-title">Ingreso por Categoría Unificada</h2>
+
+    <div class="estado-select-container">
+      <ion-select
+        [(ngModel)]="filtroReconciliadoIngresosCat"
+        (ionChange)="loadIngresosPorCategoria()"
+        interface="popover"
+        placeholder="Estado de conciliación"
+        class="estado-select">
+        <ion-select-option value="1">Reconciliados</ion-select-option>
+        <ion-select-option value="0">No Reconciliados</ion-select-option>
+        <ion-select-option value="-1">Todos</ion-select-option>
+      </ion-select>
+    </div>
+    
     <div class="chart-container">
       <canvas id="barChartIngresosSemanales"></canvas>
     </div>
+    
 
   </div>
 </ion-content>

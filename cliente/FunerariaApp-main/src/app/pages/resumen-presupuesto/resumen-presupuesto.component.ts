@@ -103,7 +103,7 @@ export class ResumenPresupuestoComponent  implements OnInit {
   }
 
   private loadEgresoActual() {
-    this._proyeccionServ.getEgresoMensual().subscribe(
+    this._proyeccionServ.getEgresoMensual('1').subscribe(
       (data: any[]) => {
         this.egresoActual = data.length > 0 && data[0].EgresoActual
           ? parseFloat(data[0].EgresoActual)
@@ -117,7 +117,7 @@ export class ResumenPresupuestoComponent  implements OnInit {
   }
 
   private loadIngresoActual() {
-    this._proyeccionServ.getIngresoMensual().subscribe(
+    this._proyeccionServ.getIngresoMensual('1').subscribe(
       (data: any[]) => {
         this.ingresoActual = data.length > 0 && data[0].IngresoActual
           ? parseFloat(data[0].IngresoActual)

@@ -17,24 +17,25 @@ router.get('/GetEgresoPasado', authenticateJWT, ObtenerEgresoPasado);
 
 router.get('/GetIngresoActual', authenticateJWT, ObtenerIngresoActual);
 
-router.get('/GetEgresosMensuales', authenticateJWT, ObtenerEgresosMensuales);
+router.get('/GetEgresosMensuales/:estado', authenticateJWT, ObtenerEgresosMensuales);
 
-router.get('/GetEgresosMensualSemanales', authenticateJWT, ObtenerEgresosMensualSemanales);
+router.get('/GetEgresosMensualSemanales/:filtro', authenticateJWT, ObtenerEgresosMensualSemanales);
 
-router.get('/GetIngresosMensualSemanales', authenticateJWT, ObtenerIngresosMensualSemanales);
+router.get('/GetIngresosMensualSemanales/:filtro', authenticateJWT, ObtenerIngresosMensualSemanales);
 
-router.get('/GetEgresosMensualSegmentos', authenticateJWT, ObtenerEgresoMensualSegmentos);
+router.get('/GetEgresosMensualSegmentos/:filtro', authenticateJWT, ObtenerEgresoMensualSegmentos);
 
-router.get('/GetIngresosMensualSegmentos', authenticateJWT, ObtenerIngresoMensualSegmentos);
+router.get('/GetIngresosMensualSegmentos/:filtroReconciliado', authenticateJWT, ObtenerIngresoMensualSegmentos);
 
 router.get('/GetUtilidadesNetasMensuales', authenticateJWT, ObtenerUtilidadesNetasMensuales);
 
 router.get('/GetIngresoPasado', authenticateJWT, ObtenerIngresoPasado);
 
-router.get('/GetIngresosActuales', authenticateJWT, ObtenerIngresosMensuales);
+router.get('/GetIngresosActuales/:filtro', authenticateJWT, ObtenerIngresosMensuales);
 
-router.get('/GetEgresosPorCategoriaMensuales', authenticateJWT, ObtenerEgresosPorCategoriaMensuales);
+router.get('/GetEgresosPorCategoriaMensuales/:filtro', authenticateJWT, ObtenerEgresosPorCategoriaMensuales);
 
-router.get('/GetIngresosPorCategoriaMensuales', authenticateJWT, ObtenerIngresosPorCategoriaMensuales);
+router.get('/GetIngresosPorCategoriaMensuales/:filtro', authenticateJWT, ObtenerIngresosPorCategoriaMensuales);
+
 
 export default router;

@@ -64,3 +64,11 @@ ion-item {
 .loading-bar ion-spinner, .loading-bar ion-progress-bar {
   margin: 5px auto;
 }
+
+
+.modal-grande {
+  --width: 90vw !important;
+  --height: 90vh !important;
+  --max-width: none !important;
+  --max-height: none !important;
+}

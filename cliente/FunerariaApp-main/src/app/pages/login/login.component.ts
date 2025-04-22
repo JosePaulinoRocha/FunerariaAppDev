@@ -33,7 +33,7 @@ export class LoginComponent implements OnInit {
 
   private redirectToDefaultRoute() {
     if (this.isMobile()) {
-      this.router.navigate(['/proyeccion']);
+      this.router.navigate(['/home']);
     } else {
       this.router.navigate(['/home']);
     }

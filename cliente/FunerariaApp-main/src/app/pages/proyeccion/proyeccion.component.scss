@@ -113,3 +113,23 @@
   display: flex;
   justify-content: center;
 }
+
+
+.estado-select-container {
+  display: flex;
+  justify-content: center;
+  margin: 1rem auto;
+}
+
+.estado-select {
+  min-width: 220px;
+  max-width: 300px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --background: #f0f4ff;
+  --color: #004085;
+  --border-radius: 8px;
+  --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-weight: bold;
+  border: 1px solid #cce5ff;
+}

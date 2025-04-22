@@ -607,14 +607,16 @@ export class IncomeModalComponent implements OnInit {
                     this._ingresoServ.uploadComprobante(response.IngresoID, formData).subscribe(
                         fileResponse => {
                             console.log('Archivo guardado correctamente:', fileResponse);
-                            this.closeModal(true);
+                            // this.closeModal(true);
+                            this.resetForm();
                         },
                         fileError => {
                             console.error('Error al guardar el archivo:', fileError);
                         }
                     );
                 } else {
-                    this.closeModal(true);
+                    // this.closeModal(false);
+                    this.resetForm();
                 }
             },
             error => {
@@ -657,7 +659,56 @@ export class IncomeModalComponent implements OnInit {
     }
   }
 
-
+  resetForm() {
+    this.form.reset();
+    this.selectedFile = null;
+    this.ingreso = {
+      IngresoID: 0,
+      Fecha: '',
+      ConceptoID: 0,
+      NombreConcepto: '',
+      Descripcion: '',
+      Proveedor: '',
+      ProveedorID: 0,
+      Piezas: 0,
+      Monto: 0,
+      Saldo: 0,
+      Comprobante: '',
+      SegmentoID: 0,
+      NombreSegmento: '',
+      CategoriaID: 0,
+      NombreCategoria: '',
+      SubcategoriaID: 0,
+      NombreSubcategoria: '',
+      EstatusComprobacionID: 2,
+      NombreEstatus: '',
+      FechaAutorizacion: '',
+      UsuarioAutorizaID: 0,
+      UsuarioRecibeID: 0,
+      FechaConciliacion: '',
+      ObservacionesDifConciliacion: '',
+      TipoIngreso: this.ingreso.TipoIngreso,
+      TipoCuentaID: 1,
+      CuentaID: 0,
+      RFC: '',
+    };
+    this.newProveedor = '';
+    this.newConcepto = '';
+    this.newSegmento = '';
+    this.newCategoria = '';
+    this.newSubcategoria = '';
+    this.newNombreCuenta = '';
+    this.newRFC = '';
+    this.isNewCuenta = false;
+  
+    this.form.patchValue({
+      CategoriaID: null,
+      SubcategoriaID: null,
+      ConceptoID: null,
+      Monto: 0,
+    });
+  }
+  
 
 
 }

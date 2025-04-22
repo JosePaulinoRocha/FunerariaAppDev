@@ -3,7 +3,6 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { environmentProd } from 'src/environments/environment.prod';
 
 
 @Injectable({
@@ -64,56 +63,58 @@ export class ProyeccionServices {
     return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}ObtenerUtilidadesPorFiltros/`,  filtros );
   }
 
-  getEgresoMensual(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresoActual/`);
+  getEgresoMensual(estado: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresoActual?estado=${estado}`);
   }
 
   getEgresoMensualPasado(): Observable<any[]> {
     return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresoPasado/`);
   }
 
-  getIngresoMensual(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresoActual/`);
+  getIngresoMensual(estado: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresoActual?estado=${estado}`);
   }
+  
 
   getIngresoMensualPasado(): Observable<any[]> {
     return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresoPasado/`);
   }
 
-  getIngresosMensuales(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosActuales/`);
+  getIngresosMensuales(filtro: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosActuales/${filtro}`);
+  }
+  
+
+  getEgresosMensuales(filtroReconciliado: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensuales/${filtroReconciliado}`);
   }
 
-  getEgresosMensuales(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensuales/`);
+  EgresosMensualSemanales(filtroReconciliado: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensualSemanales/${filtroReconciliado}`);
   }
 
-  EgresosMensualSemanales(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensualSemanales/`);
+  IngresosMensualSemanales(filtroReconciliado: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosMensualSemanales/${filtroReconciliado}`);
   }
 
-  IngresosMensualSemanales(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosMensualSemanales/`);
+  getEgresosMensualSegmentos(filtroReconciliado: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensualSegmentos/${filtroReconciliado}`);
   }
 
-  getEgresosMensualSegmentos(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensualSegmentos/`);
-  }
-
-  getIngresosMensualSegmentos(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosMensualSegmentos/`);
+  getIngresosMensualSegmentos(filtroReconciliado: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosMensualSegmentos/${filtroReconciliado}`);
   }
 
   getUtilidadesNetasMensuales(): Observable<any[]> {
     return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetUtilidadesNetasMensuales/`);
   }
 
-  getEgresosPorCategoriaMensuales(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosPorCategoriaMensuales/`);
+  getEgresosPorCategoriaMensuales(filtro: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosPorCategoriaMensuales/${filtro}`);
   }
 
-  getIngresosPorCategoriaMensuales(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosPorCategoriaMensuales/`);
+  getIngresosPorCategoriaMensuales(filtro: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosPorCategoriaMensuales/${filtro}`);
   }
-
+  
 }

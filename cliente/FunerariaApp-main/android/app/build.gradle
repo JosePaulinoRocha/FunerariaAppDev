@@ -25,8 +25,8 @@ android {
 }
 
 repositories {
-    flatDir{
-        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    flatDir {
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'  // Ajusta las rutas según tu estructura de directorios
     }
 }
 

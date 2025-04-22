@@ -24,6 +24,16 @@ import { ReactiveFormsModule, FormControl } from '@angular/forms';
   ],
 })
 export class ProyeccionComponent implements OnInit, OnDestroy {
+
+  estadoReconciliado: string = '1';
+  estadoReconciliadoIngresos: string = '1';
+
+  filtroReconciliado: string = '1';
+  filtroReconciliadoEgresos: string = '1';
+
+  filtroReconciliadoEgresosCategoria: number = 1;
+  filtroReconciliadoIngresosCat: string = '1';
+
   activeEgresoChart: string = 'actualVsPlaneado';
   activeIngresoChart: string = 'actualVsPlaneado';
   activeUtilidadChart: string = 'actualVsPlaneado';
@@ -112,6 +122,11 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     this.loadIngresosPorCategoria();
 
 
+      const hoy = new Date();
+      const haceUnMes = new Date(hoy.setMonth(hoy.getMonth() - 1));
+      this.selectedInitialDateEgresos = haceUnMes.toISOString().split('T')[0]; // formato YYYY-MM-DD
+
+      this.selectedInitialDateIngresos = haceUnMes.toISOString().split('T')[0]; //
   }
 
   ngOnChanges() {
@@ -165,7 +180,8 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   loadEgresosMensualesSegmentos() {
-    this._proyeccionServ.getEgresosMensualSegmentos().subscribe(
+    const filtro = parseInt(this.estadoReconciliado, 10); // ← usa el filtro correcto de egresos
+    this._proyeccionServ.getEgresosMensualSegmentos(filtro).subscribe(
       (data: any[]) => {
         console.log("Datos de egresos mensual por segmentos:", data);
         this.createEgresosMensualesChart(data);
@@ -173,13 +189,15 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       (error) => console.error('Error fetching egresos mensuales:', error)
     );
   }
+  
 
 
   loadIngresosMensualesSegmentos() {
-    this._proyeccionServ.getIngresosMensualSegmentos().subscribe(
+    const filtro = parseInt(this.estadoReconciliadoIngresos, 10); // convierte de string a number
+    this._proyeccionServ.getIngresosMensualSegmentos(filtro).subscribe(
       (data: any[]) => {
         console.log('Datos de ingresos mensual por segmentos:', data);
-        this.createIngresosMensualesChart(data); // Pasamos los datos directamente
+        this.createIngresosMensualesChart(data);
       },
       (error) => console.error('Error fetching ingresos mensuales:', error)
     );
@@ -203,21 +221,28 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   private loadEgresoActual() {
-    this._proyeccionServ.getEgresoMensual().subscribe(
+    this._proyeccionServ.getEgresoMensual(this.estadoReconciliado).subscribe(
       (data: any[]) => {
         this.egresoActual = data.length > 0 && data[0].EgresoActual
           ? parseFloat(data[0].EgresoActual)
-          : 0; // Establece en 0 si no hay resultados
+          : 0;
         this.updateEgresosChart();
         this.calculatePercentage();
       },
       (error) => {
         console.error('Error fetching egreso mensual:', error);
-        this.egresoActual = 0; // Valor por defecto en caso de error
+        this.egresoActual = 0;
         this.updateEgresosChart();
       }
     );
   }
+
+  onEstadoChange() {
+    this.loadEgresoActual();
+    this.loadEgresosMensualesSegmentos();   // <- actualiza egresos por segmento
+    this.loadEgresosMensualSemanales();     // <- actualiza egresos semanales
+  }
+
 
   private loadEgresoPasado() {
     this._proyeccionServ.getEgresoMensualPasado().subscribe(
@@ -428,20 +453,26 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
 
-  private loadIngresoActual() {
-    this._proyeccionServ.getIngresoMensual().subscribe(
+  loadIngresoActual() {
+    this._proyeccionServ.getIngresoMensual(this.estadoReconciliadoIngresos).subscribe(
       (data: any[]) => {
         this.ingresoActual = data.length > 0 && data[0].IngresoActual
           ? parseFloat(data[0].IngresoActual)
-          : 0; // Valor predeterminado
-        this.updateIngresosChart(); // Aseguramos que el gráfico se actualice
+          : 0;
+        this.updateIngresosChart();
       },
       (error) => {
         console.error('Error fetching ingreso mensual:', error);
-        this.ingresoActual = 0; // Valor predeterminado en caso de error
-        this.updateIngresosChart(); // Aseguramos que el gráfico se actualice
+        this.ingresoActual = 0;
+        this.updateIngresosChart();
       }
     );
+  }
+
+  onEstadoIngresosChange() {
+    this.loadIngresoActual();
+    this.loadIngresosMensualesSegmentos();   // <- actualiza ingresos por segmento
+    this.loadIngresosMensualSemanales();     // <- actualiza ingresos semanales
   }
 
   private loadIngresoPasado() {
@@ -475,28 +506,21 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
 
 
   loadIngresosMensuales() {
-    this._proyeccionServ.getIngresosMensuales().subscribe(
+    this._proyeccionServ.getIngresosMensuales(this.filtroReconciliado).subscribe(
       (data: any[]) => {
-        console.log("Esta es la data de ingresos mensuales:", data);
-
-        // Invertimos el orden de los registros
         const reversedData = data.reverse();
-        console.log("Datos invertidos de ingresos mensuales:", reversedData);
-
-        // Llenamos la gráfica con los ingresos mensuales
         this.updateRevenueChart(reversedData);
       },
-      (error) => console.error('Error fetching ingresos mensuales:', error)
+      (error) => console.error('Error al cargar ingresos mensuales:', error)
     );
   }
+  
 
   loadEgresosMensuales() {
-    this._proyeccionServ.getEgresosMensuales().subscribe(
+    this._proyeccionServ.getEgresosMensuales(this.filtroReconciliadoEgresos).subscribe(
       (data: any[]) => {
         const reversedData = data.reverse();
         console.log("Datos invertidos de egresos:", reversedData);
-
-        // Actualiza la gráfica con los datos invertidos
         this.updateEgresosMensualesChart(reversedData);
       },
       (error) => console.error('Error fetching egresos mensuales:', error)
@@ -504,39 +528,41 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   loadEgresosMensualSemanales() {
-    this._proyeccionServ.EgresosMensualSemanales().subscribe(
+    const filtro = parseInt(this.estadoReconciliado, 10);
+    this._proyeccionServ.EgresosMensualSemanales(filtro).subscribe(
       (data: any[]) => {
         console.log("Datos de egresos semanales:", data);
-        this.createEgresosSemanalesChart(data); // Llamar a la función para crear la gráfica
-        this.egresosSemanales = data; // Almacenar los datos de egresos
-        this.createUtilidadNetaChart(); // Crear la gráfica de utilidad neta después de obtener los datos
+        this.createEgresosSemanalesChart(data);
+        this.egresosSemanales = data;
+        this.createUtilidadNetaChart();
       },
       (error) => console.error('Error fetching egresos mensuales:', error)
     );
   }
+  
 
   loadIngresosMensualSemanales() {
-    this._proyeccionServ.IngresosMensualSemanales().subscribe(
+    const filtro = parseInt(this.estadoReconciliadoIngresos, 10); // '0', '1' o '-1'
+    this._proyeccionServ.IngresosMensualSemanales(filtro).subscribe(
       (data: any[]) => {
         console.log("Datos de ingresos semanales:", data);
-        this.createIngresosSemanalesChart(data); // Llamar a la función para crear la gráfica
-        this.ingresosSemanales = data; // Almacenar los datos de ingresos
-        this.createUtilidadNetaChart(); // Crear la gráfica de utilidad neta después de obtener los datos
+        this.createIngresosSemanalesChart(data);
+        this.ingresosSemanales = data;
+        this.createUtilidadNetaChart();
       },
       (error) => console.error('Error fetching ingresos mensuales:', error)
     );
   }
+  
 
   loadEgresosPorCategoria() {
-    this._proyeccionServ.getEgresosPorCategoriaMensuales().subscribe(
+    this._proyeccionServ.getEgresosPorCategoriaMensuales(this.filtroReconciliadoEgresosCategoria).subscribe(
       (data: any[]) => {
-        console.log("Esta es la data de egresos por categoria mensuales:", data);
-
-        // Procesar datos para el gráfico
+        console.log("Esta es la data de egresos por categoría mensuales:", data);
+  
         this.egresosPorCategoria.labels = data.map(item => item.NombreCategoria);
         this.egresosPorCategoria.data = data.map(item => parseFloat(item.TotalEgresos));
-
-        // Ahora que los datos están listos, inicializamos el gráfico
+  
         this.initializeBreakdownChart(this.egresosPorCategoria);
       },
       (error) => console.error('Error fetching egresos por categoría mensuales:', error)
@@ -544,20 +570,16 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   loadIngresosPorCategoria() {
-    this._proyeccionServ.getIngresosPorCategoriaMensuales().subscribe(
+    this._proyeccionServ.getIngresosPorCategoriaMensuales(this.filtroReconciliadoIngresosCat).subscribe(
       (data: any[]) => {
-        console.log("Esta es la data de ingresos por categoria mensuales:", data);
-
-        // Procesar datos para el gráfico
+        console.log("Data ingresos por categoría filtrada:", data);
         const ingresosData = {
-          labels: data.map(item => item.NombreCategoria), // Categorías
-          data: data.map(item => parseFloat(item.TotalIngresos)) // Montos de ingresos
+          labels: data.map(item => item.NombreCategoria),
+          data: data.map(item => parseFloat(item.TotalIngresos))
         };
-
-        // Ahora que los datos están listos, inicializamos el gráfico
         this.initializeIngresosChart(ingresosData);
       },
-      (error) => console.error('Error fetching ingresos por categoría mensuales:', error)
+      (error) => console.error('Error al cargar ingresos por categoría:', error)
     );
   }
 

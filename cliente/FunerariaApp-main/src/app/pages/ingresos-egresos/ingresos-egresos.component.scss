@@ -29,9 +29,12 @@
   }
   
   .data-row td {
-    padding: 8px;
+    padding: 0px 8px;
     text-align: center;
     border: 1px solid #ddd;
+    white-space: nowrap; /* Esto ayuda a mantener todo en una línea */
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .page-info {
@@ -72,11 +75,11 @@
 }
 
 .no-account {
-  background-color: yellow;
+  background-color: #fff59d; /* Amarillo suave */
 }
 
 .yellow-background {
-  background-color: yellow;
+  background-color: #fff59d;
 }
 
 .aquamarine-background {
@@ -120,4 +123,28 @@
 
 .red-text {
   color: red;
+}
+
+
+.table th,
+.table td {
+  white-space: nowrap;        /* No permite salto de línea */
+  overflow: hidden;           /* Oculta el texto que se desborda */
+  text-overflow: ellipsis;    /* Agrega "..." si el texto es muy largo */
+  // max-width: 200px;           /* Ajusta este ancho según lo que necesites */
+}
+
+
+
+.zoom-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* espacio entre el texto y el rango */
+  min-width: 200px;
+}
+
+/* Estilo solo para el botón con la clase 'small-button' */
+.small-button {
+  font-size: 10px; /* Tamaño de la fuente reducido */
+  padding: 0px 10px; /* Reduce el tamaño del botón */
 }

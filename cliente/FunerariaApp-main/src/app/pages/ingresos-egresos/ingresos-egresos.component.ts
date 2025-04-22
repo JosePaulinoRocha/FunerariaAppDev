@@ -83,6 +83,15 @@ interface Income {
 })
 export class IngresosEgresosComponent implements OnInit {
 
+  selectedColumns: string[] = [
+    'Cuenta', 'Combinacion', 'Fecha', 'Segmento', 'Categoria', 'Subcategoria', 
+    'Concepto', 'CuentaContable', 'Descripcion', 'Proveedor', 'Monto'
+  ];
+  
+  columnasVisibles: { [key: string]: boolean } = {};
+
+  fontSize: number = 10;
+
   readonly BATCH_SIZE = 100;
 
   isSearchActive: boolean = false;
@@ -303,6 +312,8 @@ export class IngresosEgresosComponent implements OnInit {
   ngOnInit() {
     this.loadIngresos();
     this.checkAdminStatus();
+    this.updateFontSize();
+
   }
 
 
@@ -903,6 +914,23 @@ export class IngresosEgresosComponent implements OnInit {
   async dismissLoading(loading: HTMLIonLoadingElement) {
     await loading.dismiss();
   }
+
+  updateFontSize() {
+    const tabla = document.querySelector('.mi-tabla') as HTMLElement;
+    if (tabla) {
+      tabla.style.fontSize = `${this.fontSize}px`;
+  
+      // También forzamos que todos los td y th internos se ajusten
+      const celdas = tabla.querySelectorAll('td, th');
+      celdas.forEach((celda) => {
+        if (celda instanceof HTMLElement) {
+          celda.title = celda.innerText;
+        }
+      });
+      
+    }
+  }
+  
 
 
 }
