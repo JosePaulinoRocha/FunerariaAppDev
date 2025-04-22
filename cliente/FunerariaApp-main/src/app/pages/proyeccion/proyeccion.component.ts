@@ -277,7 +277,14 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
 
   LoadIngresosporFiltros() {
     console.log(this.selectedSegmentosIngresos, this.selectedCategoriasIngresos, this.selectedSubcategoriasIngresos, this.selectedConceptosIngresos, this.selectedInitialDateIngresos, this.selectedFinalDateIngresos)
-    this._proyeccionServ.ObtenerIngresosPorFiltros(this.selectedSegmentosIngresos, this.selectedCategoriasIngresos, this.selectedSubcategoriasIngresos, this.selectedConceptosIngresos, this.selectedInitialDateIngresos, this.selectedFinalDateIngresos).subscribe(
+    this._proyeccionServ.ObtenerIngresosPorFiltros(
+      this.selectedSegmentosIngresos,
+      this.selectedCategoriasIngresos,
+      this.selectedSubcategoriasIngresos,
+      this.selectedConceptosIngresos,
+      this.selectedInitialDateIngresos,
+      this.selectedFinalDateIngresos,
+      this.estadoReconciliadoIngresos).subscribe(
       (data: any) => {
         console.log("Egresos recibidos desde el SP:", data);
         this.ingresosPorFiltrosData = data;
@@ -332,17 +339,24 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   ObtenerEgresosPorFiltros() {
-    console.log(this.selectedSegmentos, this.selectedCategorias, this.selectedSubcategorias, this.selectedConceptos, this.selectedInitialDateEgresos, this.selectedFinalDateEgresos)
-    this._proyeccionServ.ObtenerEgresosPorFiltros(this.selectedSegmentos, this.selectedCategorias, this.selectedSubcategorias, this.selectedConceptos, this.selectedInitialDateEgresos, this.selectedFinalDateEgresos).subscribe(
+    console.log(this.selectedSegmentos, this.selectedCategorias, this.selectedSubcategorias, this.selectedConceptos, this.selectedInitialDateEgresos, this.selectedFinalDateEgresos, this.estadoReconciliado)
+    this._proyeccionServ.ObtenerEgresosPorFiltros(
+      this.selectedSegmentos, 
+      this.selectedCategorias, 
+      this.selectedSubcategorias, 
+      this.selectedConceptos, 
+      this.selectedInitialDateEgresos, 
+      this.selectedFinalDateEgresos,
+      this.estadoReconciliado // Filtro de reconciliado
+    ).subscribe(
       (data: any) => {
         this.EgresosPorFiltrosData = data;
-
-        // Si hay datos, actualiza activeIngresoChart
+  
         if (this.EgresosPorFiltrosData && this.EgresosPorFiltrosData.length > 0) {
-          this.activeEgresoChart = 'barChartEgresosPorFiltros'; // Muestra la gráfica específica
-          this.graficarEgresosPorFiltros(this.EgresosPorFiltrosData); // Llama la función para graficar los datos
+          this.activeEgresoChart = 'barChartEgresosPorFiltros';
+          this.graficarEgresosPorFiltros(this.EgresosPorFiltrosData);
         } else {
-          this.activeEgresosChart = ''; // No mostrar gráfica si no hay datos
+          this.activeEgresosChart = '';
         }
       },
       (error) => {
@@ -517,15 +531,19 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   
 
   loadEgresosMensuales() {
-    this._proyeccionServ.getEgresosMensuales(this.filtroReconciliadoEgresos).subscribe(
-      (data: any[]) => {
-        const reversedData = data.reverse();
-        console.log("Datos invertidos de egresos:", reversedData);
-        this.updateEgresosMensualesChart(reversedData);
+    this._proyeccionServ.getEgresosMensuales(this.filtroReconciliado).subscribe(
+      (data: any[] | null) => {
+        if (data) {
+          const reversedData = data.reverse();
+          this.updateEgresosMensualesChart(reversedData);
+        } else {
+          console.warn('No se recibieron egresos mensuales.');
+        }
       },
-      (error) => console.error('Error fetching egresos mensuales:', error)
+      (error) => console.error('Error al cargar egresos mensuales:', error)
     );
   }
+  
 
   loadEgresosMensualSemanales() {
     const filtro = parseInt(this.estadoReconciliado, 10);

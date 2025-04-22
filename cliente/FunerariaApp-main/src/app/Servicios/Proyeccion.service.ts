@@ -24,31 +24,43 @@ export class ProyeccionServices {
   }
 
 
-  ObtenerIngresosPorFiltros(selectedSegmentos: any, selectedCategorias: any, selectedSubcategorias: any, selectedConceptos: any, selectedInitialDateIngresos: any, selectedFinalDateIngresos:any): Observable<any> {
+  ObtenerIngresosPorFiltros(
+    selectedSegmentos: any,
+    selectedCategorias: any,
+    selectedSubcategorias: any,
+    selectedConceptos: any,
+    selectedInitialDateIngresos: any,
+    selectedFinalDateIngresos: any,
+    reconciliado: string | null
+  ): Observable<any> {
     const filtros = {
       segmento: selectedSegmentos || null,
       categoria: selectedCategorias || null,
       subcategoria: selectedSubcategorias || null,
       concepto: selectedConceptos || null,
       fechaInicial: selectedInitialDateIngresos || null,
-      fechaFinal: selectedFinalDateIngresos || null
+      fechaFinal: selectedFinalDateIngresos || null,
+      reconciliado: reconciliado
     };
-
-    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}ObtenerIngresosPorFiltros/`,  filtros );
+  
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}ObtenerIngresosPorFiltros/`, filtros);
   }
+  
 
-  ObtenerEgresosPorFiltros(selectedSegmentos: any, selectedCategorias: any, selectedSubcategorias: any, selectedConceptos: any, selectedInitialDateIngresos: any, selectedFinalDateIngresos:any): Observable<any> {
+  ObtenerEgresosPorFiltros(selectedSegmentos: any, selectedCategorias: any, selectedSubcategorias: any, selectedConceptos: any, selectedInitialDateIngresos: any, selectedFinalDateIngresos:any, estadoReconciliado: any): Observable<any> {
     const filtros = {
       segmento: selectedSegmentos || null,
       categoria: selectedCategorias || null,
       subcategoria: selectedSubcategorias || null,
       concepto: selectedConceptos || null,
       fechaInicial: selectedInitialDateIngresos || null,
-      fechaFinal: selectedFinalDateIngresos || null
+      fechaFinal: selectedFinalDateIngresos || null,
+      reconciliado: estadoReconciliado || null // Incluir el filtro de reconciliado
     };
-
-    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}ObtenerEgresosPorFiltros/`,  filtros );
+  
+    return this.http.post<any>(`${this.myAppUrl}${this.MyApiUrl}ObtenerEgresosPorFiltros/`, filtros );
   }
+  
 
   ObtenerUtilidadesPorFiltros(selectedUtilidadesSegmentos: any, selectedUtilidadesCategorias: any, selectedUtilidadesSubcategorias: any, selectedUtilidadesConceptos: any, selectedUtilidadesInitialDateUtilidades: any, selectedUtilidadesFinalDateUtilidades:any): Observable<any> {
     const filtros = {

@@ -31,24 +31,24 @@ export const ObtenerIngresosPorFiltros = async (req:any, res:any) => {
     let result : any = [];
 
     // Obtener los filtros del cuerpo de la solicitud
-    const { segmento, categoria, subcategoria, concepto, fechaInicial, fechaFinal } = req.body;
+    const { segmento, categoria, subcategoria, concepto, fechaInicial, fechaFinal, reconciliado } = req.body;
     console.log(segmento, fechaInicial, fechaFinal)
     try {
         con = await connect(); // Conectar a la base de datos
 
         // Llamar al procedimiento almacenado con los filtros recibidos
-        const query = 'CALL Get_Ingresos_Por_Filtros(?, ?, ?, ?, ?, ?)';
+        const query = 'CALL Get_Ingresos_Por_Filtros(?, ?, ?, ?, ?, ?, ?)';
 
         const [rows] = await con.query(query, [
-            segmento ? segmento : null,
-            categoria ? categoria : null ,
-            subcategoria ?subcategoria  : null ,
-            concepto ? concepto  : null ,
-            fechaInicial ? fechaInicial : null ,
-            fechaFinal ? fechaFinal : null 
-
-        
+          segmento || null,
+          categoria || null,
+          subcategoria || null,
+          concepto || null,
+          fechaInicial || null,
+          fechaFinal || null,
+          reconciliado !== null ? reconciliado : null
         ]);
+        
         
         result = rows; // Almacenar el resultado de la consulta
     } catch (error) {
@@ -64,36 +64,36 @@ export const ObtenerIngresosPorFiltros = async (req:any, res:any) => {
 export const ObtenerEgresosPorFiltros = async (req:any, res:any) => {
     let con;
     let result : any = [];
-
-    // Obtener los filtros del cuerpo de la solicitud
-    const { segmento, categoria, subcategoria, concepto, fechaInicial, fechaFinal } = req.body;
-
+  
+    const { segmento, categoria, subcategoria, concepto, fechaInicial, fechaFinal, reconciliado } = req.body;
+  
     try {
-        con = await connect(); // Conectar a la base de datos
-
-        // Llamar al procedimiento almacenado con los filtros recibidos
-        const query = 'CALL Get_Egresos_Por_Filtros(?, ?, ?, ?, ?, ?)';
-
-        const [rows] = await con.query(query, [
-            segmento ? segmento : null,
-            categoria ? categoria : null ,
-            subcategoria ?subcategoria  : null ,
-            concepto ? concepto  : null ,
-            fechaInicial ? fechaInicial : null ,
-            fechaFinal ? fechaFinal : null 
-
-        ]);
-        // console.log(rows)
-        result = rows; // Almacenar el resultado de la consulta
+      con = await connect(); // Conectar a la base de datos
+  
+      // Llamar al procedimiento almacenado con los filtros recibidos
+      const query = 'CALL Get_Egresos_Por_Filtros(?, ?, ?, ?, ?, ?, ?)';
+  
+      const [rows] = await con.query(query, [
+        segmento ? segmento : null,
+        categoria ? categoria : null ,
+        subcategoria ? subcategoria  : null ,
+        concepto ? concepto  : null ,
+        fechaInicial ? fechaInicial : null ,
+        fechaFinal ? fechaFinal : null ,
+        reconciliado !== null ? reconciliado : null // Filtrar por reconciliado
+      ]);
+      
+      result = rows;
     } catch (error) {
-        console.error('Error ejecutando el procedimiento almacenado Get_Egresos_Por_Filtros');
-        console.error(error);
-        result = null;
+      console.error('Error ejecutando el procedimiento almacenado Get_Egresos_Por_Filtros');
+      console.error(error);
+      result = null;
     } finally {
-        await con?.end(); // Cerrar la conexión
-        return res.json(result); // Devolver el resultado como JSON
+      await con?.end(); // Cerrar la conexión
+      return res.json(result); // Devolver el resultado como JSON
     }
-};
+  };
+  
 
 export const ObtenerUtilidadesPorFiltros = async (req:any, res:any) => {
     let con;
@@ -239,48 +239,56 @@ export const ObtenerIngresoActual = async (req: Request, res: Response) => {
 
 
 export const ObtenerEgresosMensuales = async (req: Request, res: Response) => {
-    let con;
-    let result;
-    const estado = req.params.estado;
-  
-    try {
-      con = await connect();
-  
-      let whereReconciliado = '';
-      if (estado === '1') {
-        whereReconciliado = 'AND Reconciliado = 1';
-      } else if (estado === '0') {
-        whereReconciliado = 'AND Reconciliado = 0';
-      }
-  
-      const query = `
-        SELECT 
-          DATE_FORMAT(fechas.mes_inicio, '%Y') AS Anio,
-          DATE_FORMAT(fechas.mes_inicio, '%m') AS MesNumero,
-          COALESCE(SUM(i.Monto), 0) AS EgresoTotal
-        FROM (
-          SELECT LAST_DAY(CURDATE() - INTERVAL seq MONTH) AS mes_fin,
-                 DATE_FORMAT(LAST_DAY(CURDATE() - INTERVAL seq MONTH), '%Y-%m-01') AS mes_inicio
-          FROM seq_0_to_19
-        ) AS fechas
-        LEFT JOIN ingresos i 
-          ON i.Fecha >= fechas.mes_inicio AND i.Fecha <= fechas.mes_fin
-          AND i.TipoIngreso = 1
-          ${whereReconciliado}
-        GROUP BY fechas.mes_inicio
-        ORDER BY fechas.mes_inicio DESC
-      `;
-  
-      const data = (await con.query(query))[0] as any[];
-      result = data;
-    } catch (error) {
-      console.error('Error en egresos mensuales:', error);
-      result = null;
-    } finally {
-      await con?.end();
-      return res.json(result);
+  let con;
+  let result;
+  const estado = req.params.estado; // "1", "0" o "todos"
+
+  try {
+    con = await connect();
+
+    let whereClause = '';
+    if (estado === '1') {
+      whereClause = 'AND i.Reconciliado = 1';
+    } else if (estado === '0') {
+      whereClause = 'AND i.Reconciliado = 0';
     }
-  };
+
+    const query = `
+      SELECT 
+        m.Anio,
+        m.MesNumero,
+        IFNULL(SUM(i.Monto), 0) AS EgresoTotal
+      FROM (
+        SELECT 
+          YEAR(DATE_SUB(CURDATE(), INTERVAL n MONTH)) AS Anio,
+          MONTH(DATE_SUB(CURDATE(), INTERVAL n MONTH)) AS MesNumero
+        FROM (
+          SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4
+          UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9
+          UNION SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14
+          UNION SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19
+        ) AS nums
+      ) AS m
+      LEFT JOIN ingresos i 
+        ON YEAR(i.Fecha) = m.Anio 
+        AND MONTH(i.Fecha) = m.MesNumero 
+        AND i.TipoIngreso = 1
+        ${whereClause}
+      GROUP BY m.Anio, m.MesNumero
+      ORDER BY m.Anio DESC, m.MesNumero DESC
+    `;
+
+    const egresos = (await con.query(query))[0] as any[];
+    result = egresos;
+  } catch (error) {
+    console.error('Error al obtener egresos mensuales:', error);
+    result = [];
+  } finally {
+    await con?.end();
+    return res.json(result);
+  }
+};
+
   
 
   export const ObtenerEgresosMensualSemanales = async (req: Request, res: Response) => {
