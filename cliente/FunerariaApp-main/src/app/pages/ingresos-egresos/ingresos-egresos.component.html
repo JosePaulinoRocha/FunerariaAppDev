@@ -42,12 +42,12 @@
     <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
 
 
-    <ion-button style="margin-left: 4rem;" color="warning"
+    <ion-button style="margin-left: 1.5rem;" color="warning"
       [disabled]="selectedIncomes.length === 0"
       (click)="openAssignAccountsModal()">Asignar Cuentas
     </ion-button>
 
-    <ion-button [disabled]="selectedIncomes.length === 0" style="margin-left: 2rem;" (click)="exportEgresos()">Exportar Ingresos / Egresos</ion-button>
+    <ion-button [disabled]="selectedIncomes.length === 0" style="margin-left: 1rem;" (click)="exportEgresos()">Exportar</ion-button>
 
 
     <!-- Botón para importar archivo de Excel -->
@@ -58,7 +58,7 @@
       style="display: none"
       id="fileInput"
     />
-    <ion-button style="margin-left: 2rem;" color="danger" (click)="triggerFileInput()">Importar Ingresos</ion-button>
+    <ion-button style="margin-left: 1rem;" color="danger" (click)="triggerFileInput()">Importar Ingresos</ion-button>
 
 
     <input
@@ -68,7 +68,7 @@
     style="display: none"
     id="fileInputEgresos"
     />
-    <ion-button style="margin-left: 2rem;" color="success" (click)="triggerFileInputEgresos()">Importar Egresos</ion-button>
+    <ion-button style="margin-left: 1rem;" color="success" (click)="triggerFileInputEgresos()">Importar Egresos</ion-button>
 
 
     <div style="margin-top: 1rem;" class="button-group">

@@ -290,134 +290,188 @@ export const ObtenerEgresosMensuales = async (req: Request, res: Response) => {
 };
 
   
+export const ObtenerEgresosMensualSemanales = async (req: Request, res: Response) => {
+  let con;
+  try {
+    const filtro = parseInt(req.params.filtro);
+    let fechaInicio = req.query.fechaInicio as string;
+    let fechaFin = req.query.fechaFin as string;
 
-  export const ObtenerEgresosMensualSemanales = async (req: Request, res: Response) => {
-    let con;
-    let result;
-    try {
-      const filtro = parseInt(req.params.filtro); // ← aquí capturamos el filtro
-      con = await connect();
-  
-      let whereClause = '';
-      if (filtro === 0 || filtro === 1) {
-        whereClause = `AND i.Reconciliado = ${filtro}`;
-      }
-  
-      const query = `
-        SELECT 
-            sm.inicio_semana,
-            sm.fin_semana,
-            COALESCE(SUM(er.Monto), 0) AS total_monto
-        FROM (
-            SELECT 
-                fm.inicio_mes + INTERVAL (7 - WEEKDAY(fm.inicio_mes)) MOD 7 DAY + INTERVAL n.n WEEK AS inicio_semana,
-                LEAST(fm.inicio_mes + INTERVAL (7 - WEEKDAY(fm.inicio_mes)) MOD 7 DAY + INTERVAL n.n WEEK + INTERVAL 6 DAY, fm.fin_mes) AS fin_semana
-            FROM (
-                SELECT DATE_FORMAT(CURDATE(), '%Y-%m-01') AS inicio_mes, LAST_DAY(CURDATE()) AS fin_mes
-            ) fm
-            JOIN (SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5) n
-            WHERE fm.inicio_mes + INTERVAL (7 - WEEKDAY(fm.inicio_mes)) MOD 7 DAY + INTERVAL n.n WEEK <= fm.fin_mes
-  
-            UNION ALL
-  
-            SELECT 
-                fm.inicio_mes AS inicio_semana,
-                fm.inicio_mes + INTERVAL (7 - WEEKDAY(fm.inicio_mes)) MOD 7 - 1 DAY AS fin_semana
-            FROM (
-                SELECT DATE_FORMAT(CURDATE(), '%Y-%m-01') AS inicio_mes, LAST_DAY(CURDATE()) AS fin_mes
-            ) fm
-            WHERE WEEKDAY(fm.inicio_mes) <> 0
-        ) sm
-        LEFT JOIN (
-            SELECT i.Monto, i.Fecha
-            FROM ingresos i
-            WHERE i.TipoIngreso = 1
-              AND i.Fecha BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND LAST_DAY(CURDATE())
-              ${whereClause}
-        ) er ON er.Fecha BETWEEN sm.inicio_semana AND sm.fin_semana
-        GROUP BY sm.inicio_semana, sm.fin_semana
-        ORDER BY sm.inicio_semana;
-      `;
-  
-      const gastos = (await con.query(query))[0] as any[];
-      result = gastos;
-    } catch (error) {
-      console.log('Error en egreso semanal');
-      console.log(error);
-      result = null;
-    } finally {
-      await con?.end();
-      return res.json(result);
-    }
-  };
-  
+    const today = new Date();
+    const primerDiaMes = new Date(today.getFullYear(), today.getMonth(), 1);
+    const ultimoDiaMes = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-  export const ObtenerIngresosMensualSemanales = async (req: Request, res: Response) => {
-    let con;
-    let result;
-    try {
-      const filtro = parseInt(req.params.filtro); // 0, 1, o -1
-      con = await connect();
-  
-      let whereClause = `
-        i.TipoIngreso = 0
-        AND i.Fecha BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND LAST_DAY(CURDATE())
-      `;
-  
-      if (filtro === 0 || filtro === 1) {
-        whereClause += ` AND i.Reconciliado = ${filtro}`;
-      }
-  
-      const query = `
-        SELECT 
-            sm.inicio_semana,
-            sm.fin_semana,
-            COALESCE(SUM(er.Monto), 0) AS total_monto
+    const formatDate = (fecha: Date): string =>
+      `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}-${fecha.getDate().toString().padStart(2, '0')}`;
+
+    // Verificar si las fechas son undefined o vacías
+    const fechaInicioFinal = (!fechaInicio || fechaInicio === 'undefined') ? formatDate(primerDiaMes) : fechaInicio;
+    const fechaFinFinal = (!fechaFin || fechaFin === 'undefined') ? formatDate(ultimoDiaMes) : fechaFin;
+
+    const fechaInicioSQL = `'${fechaInicioFinal}'`;
+    const fechaFinSQL = `'${fechaFinFinal}'`;
+
+    console.log("Parámetros recibidos (egresos semanales):", { filtro, fechaInicio: fechaInicioFinal, fechaFin: fechaFinFinal });
+
+    con = await connect();
+
+    const query = `
+      WITH fechas AS (
+        SELECT
+          STR_TO_DATE(${fechaInicioSQL}, '%Y-%m-%d') AS inicio,
+          STR_TO_DATE(${fechaFinSQL}, '%Y-%m-%d') AS fin
+      ),
+      semanas AS (
+        SELECT
+          DATE_ADD(inicio_lunes, INTERVAL n.n * 7 DAY) AS inicio_semana,
+          LEAST(DATE_ADD(inicio_lunes, INTERVAL n.n * 7 + 6 DAY), f.fin) AS fin_semana
         FROM (
-            SELECT 
-                fm.inicio_mes + INTERVAL (7 - WEEKDAY(fm.inicio_mes)) MOD 7 DAY + INTERVAL n.n WEEK AS inicio_semana,
-                LEAST(fm.inicio_mes + INTERVAL (7 - WEEKDAY(fm.inicio_mes)) MOD 7 DAY + INTERVAL n.n WEEK + INTERVAL 6 DAY, fm.fin_mes) AS fin_semana
-            FROM (
-                SELECT 
-                    DATE_FORMAT(CURDATE(), '%Y-%m-01') AS inicio_mes,
-                    LAST_DAY(CURDATE()) AS fin_mes
-            ) fm
-            JOIN (
-                SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
-            ) n
-            WHERE fm.inicio_mes + INTERVAL (7 - WEEKDAY(fm.inicio_mes)) MOD 7 DAY + INTERVAL n.n WEEK <= fm.fin_mes
-            
-            UNION ALL
-            
-            SELECT 
-                fm.inicio_mes AS inicio_semana,
-                fm.inicio_mes + INTERVAL (7 - WEEKDAY(fm.inicio_mes)) MOD 7 - 1 DAY AS fin_semana
-            FROM (
-                SELECT 
-                    DATE_FORMAT(CURDATE(), '%Y-%m-01') AS inicio_mes,
-                    LAST_DAY(CURDATE()) AS fin_mes
-            ) fm
-            WHERE WEEKDAY(fm.inicio_mes) <> 0
-        ) sm
-        LEFT JOIN (
-            SELECT i.Monto, i.Fecha
-            FROM ingresos i
-            WHERE ${whereClause}
-        ) er ON er.Fecha BETWEEN sm.inicio_semana AND sm.fin_semana
-        GROUP BY sm.inicio_semana, sm.fin_semana
-        ORDER BY sm.inicio_semana;
-      `;
+          SELECT
+            DATE_SUB(f.inicio, INTERVAL IF(WEEKDAY(f.inicio) = 0, 0, WEEKDAY(f.inicio)) DAY) AS inicio_lunes,
+            f.fin
+          FROM fechas f
+        ) f
+        JOIN (
+          SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+          UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+          UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11
+          UNION ALL SELECT 12 UNION ALL SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15
+          UNION ALL SELECT 16 UNION ALL SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19
+          UNION ALL SELECT 20 UNION ALL SELECT 21 UNION ALL SELECT 22 UNION ALL SELECT 23
+          UNION ALL SELECT 24 UNION ALL SELECT 25 UNION ALL SELECT 26 UNION ALL SELECT 27
+          UNION ALL SELECT 28 UNION ALL SELECT 29 UNION ALL SELECT 30 UNION ALL SELECT 31
+          UNION ALL SELECT 32 UNION ALL SELECT 33 UNION ALL SELECT 34 UNION ALL SELECT 35
+          UNION ALL SELECT 36 UNION ALL SELECT 37 UNION ALL SELECT 38 UNION ALL SELECT 39
+          UNION ALL SELECT 40 UNION ALL SELECT 41 UNION ALL SELECT 42 UNION ALL SELECT 43
+          UNION ALL SELECT 44 UNION ALL SELECT 45 UNION ALL SELECT 46 UNION ALL SELECT 47
+          UNION ALL SELECT 48 UNION ALL SELECT 49 UNION ALL SELECT 50 UNION ALL SELECT 51
+          UNION ALL SELECT 52 UNION ALL SELECT 53 UNION ALL SELECT 54 UNION ALL SELECT 55
+          UNION ALL SELECT 56 UNION ALL SELECT 57 UNION ALL SELECT 58 UNION ALL SELECT 59
+          UNION ALL SELECT 60 UNION ALL SELECT 61 UNION ALL SELECT 62 UNION ALL SELECT 63
+          UNION ALL SELECT 64 UNION ALL SELECT 65 UNION ALL SELECT 66 UNION ALL SELECT 67
+          UNION ALL SELECT 68 UNION ALL SELECT 69 UNION ALL SELECT 70 UNION ALL SELECT 71
+          UNION ALL SELECT 72 UNION ALL SELECT 73 UNION ALL SELECT 74 UNION ALL SELECT 75
+          UNION ALL SELECT 76 UNION ALL SELECT 77
+        ) n
+        WHERE DATE_ADD(inicio_lunes, INTERVAL n.n * 7 DAY) <= f.fin
+      )
+      SELECT 
+        semanas.inicio_semana,
+        semanas.fin_semana,
+        COALESCE(SUM(i.Monto), 0) AS total_monto
+      FROM semanas
+      LEFT JOIN ingresos i 
+        ON i.Fecha BETWEEN semanas.inicio_semana AND semanas.fin_semana
+      WHERE i.TipoIngreso = 1  -- Aquí se filtra por egresos (TipoIngreso = 1)
+        AND i.Fecha BETWEEN STR_TO_DATE(${fechaInicioSQL}, '%Y-%m-%d') AND STR_TO_DATE(${fechaFinSQL}, '%Y-%m-%d')
+        ${filtro === -1 ? '' : `AND i.Reconciliado = ${filtro}`}
+      GROUP BY semanas.inicio_semana, semanas.fin_semana
+      ORDER BY semanas.inicio_semana;
+    `;
+
+    const [data] = await con.query(query);
+    return res.json(data);
+  } catch (error) {
+    console.error('Error en egresos semanales con fechas:', error);
+    return res.status(500).json({ message: 'Error al obtener los egresos semanales' });
+  } finally {
+    await con?.end();
+  }
+};
+
+
   
-      const data = (await con.query(query))[0] as any[];
-      result = data;
-    } catch (error) {
-      console.log('Error en ingresos semanales:', error);
-      result = null;
-    } finally {
-      await con?.end();
-      return res.json(result);
-    }
-  };
+export const ObtenerIngresosMensualSemanales = async (req: Request, res: Response) => {
+  let con;
+  try {
+    const filtro = parseInt(req.params.filtro);
+    let fechaInicio = req.query.fechaInicio as string;
+    let fechaFin = req.query.fechaFin as string;
+
+    const today = new Date();
+    const primerDiaMes = new Date(today.getFullYear(), today.getMonth(), 1);
+    const ultimoDiaMes = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    const formatDate = (fecha: Date): string =>
+      `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}-${fecha.getDate().toString().padStart(2, '0')}`;
+
+    // Usar fechas actuales por defecto si no vienen
+    const fechaInicioFinal = (!fechaInicio || fechaInicio === 'undefined') ? formatDate(primerDiaMes) : fechaInicio;
+    const fechaFinFinal = (!fechaFin || fechaFin === 'undefined') ? formatDate(ultimoDiaMes) : fechaFin;
+
+    const fechaInicioSQL = `'${fechaInicioFinal}'`;
+    const fechaFinSQL = `'${fechaFinFinal}'`;
+
+    console.log("Parámetros recibidos (finales):", { filtro, fechaInicio: fechaInicioFinal, fechaFin: fechaFinFinal });
+
+    con = await connect();
+
+    const query = `
+      WITH fechas AS (
+        SELECT
+          STR_TO_DATE(${fechaInicioSQL}, '%Y-%m-%d') AS inicio,
+          STR_TO_DATE(${fechaFinSQL}, '%Y-%m-%d') AS fin
+      ),
+      semanas AS (
+        SELECT
+          DATE_ADD(inicio_lunes, INTERVAL n.n * 7 DAY) AS inicio_semana,
+          LEAST(DATE_ADD(inicio_lunes, INTERVAL n.n * 7 + 6 DAY), f.fin) AS fin_semana
+        FROM (
+          SELECT
+            -- Calcula el lunes anterior o igual a la fecha de inicio
+            DATE_SUB(f.inicio, INTERVAL IF(WEEKDAY(f.inicio) = 0, 0, WEEKDAY(f.inicio)) DAY) AS inicio_lunes,
+            f.fin
+          FROM fechas f
+        ) f
+        JOIN (
+          SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+          UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+          UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11
+          UNION ALL SELECT 12 UNION ALL SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15
+          UNION ALL SELECT 16 UNION ALL SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19
+          UNION ALL SELECT 20 UNION ALL SELECT 21 UNION ALL SELECT 22 UNION ALL SELECT 23
+          UNION ALL SELECT 24 UNION ALL SELECT 25 UNION ALL SELECT 26 UNION ALL SELECT 27
+          UNION ALL SELECT 28 UNION ALL SELECT 29 UNION ALL SELECT 30 UNION ALL SELECT 31
+          UNION ALL SELECT 32 UNION ALL SELECT 33 UNION ALL SELECT 34 UNION ALL SELECT 35
+          UNION ALL SELECT 36 UNION ALL SELECT 37 UNION ALL SELECT 38 UNION ALL SELECT 39
+          UNION ALL SELECT 40 UNION ALL SELECT 41 UNION ALL SELECT 42 UNION ALL SELECT 43
+          UNION ALL SELECT 44 UNION ALL SELECT 45 UNION ALL SELECT 46 UNION ALL SELECT 47
+          UNION ALL SELECT 48 UNION ALL SELECT 49 UNION ALL SELECT 50 UNION ALL SELECT 51
+          UNION ALL SELECT 52 UNION ALL SELECT 53 UNION ALL SELECT 54 UNION ALL SELECT 55
+          UNION ALL SELECT 56 UNION ALL SELECT 57 UNION ALL SELECT 58 UNION ALL SELECT 59
+          UNION ALL SELECT 60 UNION ALL SELECT 61 UNION ALL SELECT 62 UNION ALL SELECT 63
+          UNION ALL SELECT 64 UNION ALL SELECT 65 UNION ALL SELECT 66 UNION ALL SELECT 67
+          UNION ALL SELECT 68 UNION ALL SELECT 69 UNION ALL SELECT 70 UNION ALL SELECT 71
+          UNION ALL SELECT 72 UNION ALL SELECT 73 UNION ALL SELECT 74 UNION ALL SELECT 75
+          UNION ALL SELECT 76 UNION ALL SELECT 77
+        ) n
+        WHERE DATE_ADD(inicio_lunes, INTERVAL n.n * 7 DAY) <= f.fin
+      )
+      SELECT 
+        semanas.inicio_semana,
+        semanas.fin_semana,
+        COALESCE(SUM(i.Monto), 0) AS total_monto
+      FROM semanas
+      LEFT JOIN ingresos i 
+        ON i.Fecha BETWEEN semanas.inicio_semana AND semanas.fin_semana
+      WHERE i.TipoIngreso = 0
+        AND i.Fecha BETWEEN STR_TO_DATE(${fechaInicioSQL}, '%Y-%m-%d') AND STR_TO_DATE(${fechaFinSQL}, '%Y-%m-%d')
+        ${filtro === -1 ? '' : `AND i.Reconciliado = ${filtro}`}
+      GROUP BY semanas.inicio_semana, semanas.fin_semana
+      ORDER BY semanas.inicio_semana;
+    `;
+
+    console.log("Ejecutando query de ingresos semanales...");
+    const [data] = await con.query(query);
+    return res.json(data);
+  } catch (error) {
+    console.error('Error en ingresos semanales con fechas:', error);
+    return res.status(500).json({ message: 'Error al obtener los ingresos semanales' });
+  } finally {
+    await con?.end();
+  }
+};
+
   
 
 export const ObtenerEgresoMensualSegmentos = async (req: Request, res: Response) => {

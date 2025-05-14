@@ -101,12 +101,12 @@ export class ProyeccionServices {
     return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensuales/${filtroReconciliado}`);
   }
 
-  EgresosMensualSemanales(filtroReconciliado: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensualSemanales/${filtroReconciliado}`);
+  EgresosMensualSemanales(filtroReconciliado: number, fechaInicio?: string, fechaFin?: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetEgresosMensualSemanales/${filtroReconciliado}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
   }
 
-  IngresosMensualSemanales(filtroReconciliado: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosMensualSemanales/${filtroReconciliado}`);
+  IngresosMensualSemanales(filtroReconciliado: number, fechaInicio: string, fechaFin: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosMensualSemanales/${filtroReconciliado}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
   }
 
   getEgresosMensualSegmentos(filtroReconciliado: number): Observable<any[]> {

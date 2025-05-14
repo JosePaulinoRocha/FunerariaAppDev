@@ -147,13 +147,23 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   onFilterChange(): void {
-    console.log("Esto funciona")
-    this.ObtenerEgresosPorFiltros();
+  this.ObtenerEgresosPorFiltros();
+  
+    if (this.activeEgresoChart === 'porSemana') {
+      this.loadEgresosMensualSemanales();
+    }
   }
 
-  onFilterIngresosChange() : void {
-    this.LoadIngresosporFiltros()
+
+  onFilterIngresosChange(): void {
+    this.LoadIngresosporFiltros();
+
+    // Si actualmente se está mostrando la gráfica "por semana", vuelve a cargarla
+    if (this.activeIngresoChart === 'porSemana') {
+      this.loadIngresosMensualSemanales();
+    }
   }
+
 
   onFilterChangeUtilidad(): void {
     this.ObtenerUtilidadesPorFiltros()
@@ -238,10 +248,13 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   onEstadoChange() {
+    if (this.activeEgresoChart === 'barChartEgresosPorFiltros') {
+      this.ObtenerEgresosPorFiltros();
+    }
     this.loadEgresoActual();
     this.loadEgresosMensualesSegmentos();   // <- actualiza egresos por segmento
     this.loadEgresosMensualSemanales();     // <- actualiza egresos semanales
-    this.ObtenerEgresosPorFiltros()
+    // this.ObtenerEgresosPorFiltros()
   }
 
 
@@ -305,15 +318,20 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       this.selectedFinalDateIngresos,
       this.estadoReconciliadoIngresos).subscribe(
       (data: any) => {
-        console.log("Egresos recibidos desde el SP:", data);
+        console.log("ingresos recibidos desde el SP:", data);
         this.ingresosPorFiltrosData = data;
 
-        // Si hay datos, actualiza activeIngresoChart
         if (this.ingresosPorFiltrosData && this.ingresosPorFiltrosData.length > 0) {
-          this.activeIngresoChart = 'barChartIngresosPorFiltros'; // Muestra la gráfica específica
-          this.graficarIngresosPorFiltros(this.ingresosPorFiltrosData); // Llama la función para graficar los datos
+          // Solo cambiar si NO está en 'porSemana'
+          if (this.activeIngresoChart !== 'porSemana') {
+            this.activeIngresoChart = 'barChartIngresosPorFiltros';
+          }
+          this.graficarIngresosPorFiltros(this.ingresosPorFiltrosData);
         } else {
-          this.activeIngresoChart = ''; // No mostrar gráfica si no hay datos
+          // Solo quitar gráfica si estaba viendo "barChartIngresosPorFiltros"
+          if (this.activeIngresoChart === 'barChartIngresosPorFiltros') {
+            this.activeIngresoChart = '';
+          }
         }
       },
       (error) => {
@@ -356,6 +374,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       }
     });
   }
+  
 
   ObtenerEgresosPorFiltros() {
     console.log(this.selectedSegmentos, this.selectedCategorias, this.selectedSubcategorias, this.selectedConceptos, this.selectedInitialDateEgresos, this.selectedFinalDateEgresos, this.estadoReconciliado)
@@ -372,10 +391,16 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
         this.EgresosPorFiltrosData = data;
   
         if (this.EgresosPorFiltrosData && this.EgresosPorFiltrosData.length > 0) {
-          this.activeEgresoChart = 'barChartEgresosPorFiltros';
+          // Solo cambiar si NO está en 'porSemana'
+          if (this.activeEgresosChart !== 'porSemana') {
+            this.activeEgresosChart = 'barChartEgresosPorFiltros';
+          }
           this.graficarEgresosPorFiltros(this.EgresosPorFiltrosData);
         } else {
-          this.activeEgresosChart = '';
+          // Solo quitar gráfica si estaba viendo "barChartEgresosPorFiltros"
+          if (this.activeEgresosChart === 'barChartEgresosPorFiltros') {
+            this.activeEgresosChart = '';
+          }
         }
       },
       (error) => {
@@ -506,7 +531,10 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     this.loadIngresoActual();
     this.loadIngresosMensualesSegmentos();   // <- actualiza ingresos por segmento
     this.loadIngresosMensualSemanales();     // <- actualiza ingresos semanales
-    this.LoadIngresosporFiltros();
+    // this.LoadIngresosporFiltros();
+    if (this.activeIngresoChart === 'barChartIngresosPorFiltros') {
+      this.LoadIngresosporFiltros();
+    }
   }
 
   private loadIngresoPasado() {
@@ -551,7 +579,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   
 
   loadEgresosMensuales() {
-    this._proyeccionServ.getEgresosMensuales(this.filtroReconciliado).subscribe(
+    this._proyeccionServ.getEgresosMensuales(this.filtroReconciliadoEgresos).subscribe(
       (data: any[] | null) => {
         if (data) {
           const reversedData = data.reverse();
@@ -567,31 +595,55 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
 
   loadEgresosMensualSemanales() {
     const filtro = parseInt(this.estadoReconciliado, 10);
-    this._proyeccionServ.EgresosMensualSemanales(filtro).subscribe(
+
+    const fechaInicio = this.selectedInitialDateEgresos?.split('T')[0];
+    const fechaFin = this.selectedFinalDateEgresos?.split('T')[0];
+
+    console.log("fechas de inicio y fin: ", fechaInicio, fechaFin);
+
+    this._proyeccionServ.EgresosMensualSemanales(filtro, fechaInicio, fechaFin).subscribe(
       (data: any[]) => {
-        console.log("Datos de egresos semanales:", data);
-        this.createEgresosSemanalesChart(data);
-        this.egresosSemanales = data;
+        const formattedData = data.map(item => ({
+          ...item,
+          inicio_semana: new Date(item.inicio_semana).toISOString().split('T')[0],
+          fin_semana: new Date(item.fin_semana).toISOString().split('T')[0]
+        }));
+
+        console.log("Datos de egresos semanales (formateados):", formattedData);
+        this.createEgresosSemanalesChart(formattedData);
+        this.egresosSemanales = formattedData;
         this.createUtilidadNetaChart();
       },
       (error) => console.error('Error fetching egresos mensuales:', error)
     );
   }
-  
 
+  
   loadIngresosMensualSemanales() {
-    const filtro = parseInt(this.estadoReconciliadoIngresos, 10); // '0', '1' o '-1'
-    this._proyeccionServ.IngresosMensualSemanales(filtro).subscribe(
+    const filtro = parseInt(this.estadoReconciliadoIngresos, 10);
+
+    const fechaInicio = this.selectedInitialDateIngresos?.split('T')[0];
+    const fechaFin = this.selectedFinalDateIngresos?.split('T')[0];
+
+    console.log("fechas de inicio y fin: ", fechaInicio, fechaFin);
+
+    this._proyeccionServ.IngresosMensualSemanales(filtro, fechaInicio, fechaFin).subscribe(
       (data: any[]) => {
-        console.log("Datos de ingresos semanales:", data);
-        this.createIngresosSemanalesChart(data);
-        this.ingresosSemanales = data;
+        const formattedData = data.map(item => ({
+          ...item,
+          inicio_semana: new Date(item.inicio_semana).toISOString().split('T')[0],
+          fin_semana: new Date(item.fin_semana).toISOString().split('T')[0]
+        }));
+
+        console.log("Datos de ingresos semanales (formateados):", formattedData);
+        this.createIngresosSemanalesChart(formattedData);
+        this.ingresosSemanales = formattedData;
         this.createUtilidadNetaChart();
       },
       (error) => console.error('Error fetching ingresos mensuales:', error)
     );
   }
-  
+
 
   loadEgresosPorCategoria() {
     this._proyeccionServ.getEgresosPorCategoriaMensuales(this.filtroReconciliadoEgresosCategoria).subscribe(

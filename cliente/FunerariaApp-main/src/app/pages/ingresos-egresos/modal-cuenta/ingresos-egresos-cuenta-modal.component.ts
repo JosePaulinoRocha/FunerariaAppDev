@@ -235,7 +235,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     this._ingresoServ.getCategorias().subscribe((data: Categoria[]) => {
       const tipoIngreso = this.ingreso.TipoIngreso?.data?.[0]; // 0 = egreso, 1 = ingreso
       this.categoria = data
-        .filter(cat => tipoIngreso === 0 ? cat.IngresosBit === 1 : cat.EgresoBit === 1)
+        .filter(cat => tipoIngreso === 1 ? cat.EgresoBit === 1 : cat.IngresosBit === 1)
         .sort((a, b) => a.Nombre.localeCompare(b.Nombre));
     }, (error) => {
       this.presentAlert('Error fetching categories');
