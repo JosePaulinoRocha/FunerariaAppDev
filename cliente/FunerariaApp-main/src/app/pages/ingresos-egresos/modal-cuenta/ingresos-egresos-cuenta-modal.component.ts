@@ -6,6 +6,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { CategoriasModalComponent } from '../modal-cuenta/modal-categorias/categoria-modal.component';
+import { SubcategoriasModalComponent } from '../modal-cuenta/modal-subcategorias/subcategoria-modal.component';
+import { CuentaModalComponent } from '../modal-cuenta/modal-cuentas/cuenta-modal.component';
 
 
 declare module 'jspdf' {
@@ -33,6 +36,10 @@ interface Ingreso {
   Descripcion: string;
   TipoIngreso: { data: number[]; type: string; };
   NombreSegmento : string;
+  NombreCategoria : string;
+  NombreSubcategoria : string;
+  NombreCuentaEnvia : string;
+  NombreCuentaRecibe : string;
 }
 
 interface Cuenta {
@@ -80,6 +87,11 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     Descripcion: '',
     TipoIngreso: { data: [], type: '' },
     NombreSegmento: '',
+    NombreCategoria: '',
+    NombreSubcategoria: '',
+    NombreCuentaEnvia: '',
+    NombreCuentaRecibe: '',
+
   };
 
   isMontoParcial: boolean = false;
@@ -241,6 +253,21 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
       this.presentAlert('Error fetching categories');
     });
   }
+
+  async onCategoriaSelectorClick() {
+    const modal = await this.modalController.create({
+      component: CategoriasModalComponent,
+    });
+
+    modal.onDidDismiss().then((data) => {
+      if (data.data) {
+        this.ingreso.CategoriaID = data.data.CategoriaID;
+        this.ingreso.NombreCategoria = data.data.NombreCategoria;
+      }
+    });
+
+    await modal.present();
+  }
   
 
   loadSubcategorias() {
@@ -251,16 +278,38 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     });
   }
 
+  async onSubcategoriaSelectorClick() {
+    const modal = await this.modalController.create({
+      component: SubcategoriasModalComponent,
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+    if (data) {
+        this.ingreso.SubcategoriaID = data.SubcategoriaID;
+        this.ingreso.NombreSubcategoria = data.NombreSubcategoria;
+    }
+  }
+
   onTipoCuentaChange(tipo: 'envia' | 'recibe') {
+    const nombresPermitidos = ['PABS Caja Chica', 'Pabs Caja chica SLRC', 'Perdida'];
+
     if (tipo === 'envia' && this.ingreso.TipoCuentaID) {
-      this.filteredCuentasEnvia = this.cuenta.filter(
-        (c) => c.TipoCuentaID === this.ingreso.TipoCuentaID
-      );
+      this.filteredCuentasEnvia = this.cuenta.filter((c) => {
+        if (this.ingreso.TipoCuentaID === 1) {
+          return c.TipoCuentaID === 1 && nombresPermitidos.includes(c.NombreCuenta);
+        }
+        return c.TipoCuentaID === this.ingreso.TipoCuentaID;
+      });
       this.ingreso.CuentaID = 0;
     } else if (tipo === 'recibe' && this.ingreso.TipoCuenta2ID) {
-      this.filteredCuentasRecibe = this.cuenta.filter(
-        (c) => c.TipoCuentaID === this.ingreso.TipoCuenta2ID
-      );
+      this.filteredCuentasRecibe = this.cuenta.filter((c) => {
+        if (this.ingreso.TipoCuenta2ID === 1) {
+          return c.TipoCuentaID === 1 && nombresPermitidos.includes(c.NombreCuenta);
+        }
+        return c.TipoCuentaID === this.ingreso.TipoCuenta2ID;
+      });
       this.ingreso.Cuenta2ID = 0;
     }
   }
@@ -282,6 +331,35 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     }
   }
 
+  async openBuscadorCuenta(modo: 'envia' | 'recibe') {
+    const tipoCuentaID = modo === 'envia' ? this.ingreso.TipoCuentaID : this.ingreso.TipoCuenta2ID;
+
+    const modal = await this.modalController.create({
+      component: CuentaModalComponent,
+      componentProps: {
+        cuentas: this.cuenta,
+        tipoCuentaID,
+        modo
+      }
+    });
+
+    modal.onDidDismiss().then(({ data }) => {
+      if (data?.cuenta) {
+        const { CuentaID, NombreCuenta } = data.cuenta;
+        if (modo === 'envia') {
+          this.ingreso.CuentaID = CuentaID;
+          this.ingreso.NombreCuentaEnvia = NombreCuenta;
+        } else {
+          this.ingreso.Cuenta2ID = CuentaID;
+          this.ingreso.NombreCuentaRecibe = NombreCuenta;
+        }
+      }
+    });
+
+    await modal.present();
+  }
+
+
   async presentAlert(message: string) {
     const alert = await this.alertController.create({
       header: 'Mensaje',
@@ -301,6 +379,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
         RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
         CategoriaID: this.isNewCategoria ? this.newCategoria : this.ingreso.CategoriaID,
         SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
+        Fecha: this.ingreso.Fecha
       };
     
       console.log("Informacion de la actualizacion de cuenta y datos: ", cuentaData);
@@ -312,7 +391,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
        }).subscribe(
          () => {
            this.presentAlert('Cuentas asignadas correctamente a los registros seleccionados.');
-           this.generatePDF(); 
+          //  this.generatePDF(); 
            this.closeModal(true);
          },
          (error) => {

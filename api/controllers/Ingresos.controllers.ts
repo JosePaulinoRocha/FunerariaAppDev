@@ -90,9 +90,6 @@ export const ObtenerIngresosParametros = async (req: Request, res: Response) => 
   };
   
   
-
-
-
 export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     let con;
     let result;
@@ -100,6 +97,8 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     const filtro = req.params.filtro; // Obtener el filtro de los parámetros
     const pagina = parseInt(req.query.pagina as string) || 1; // Página solicitada, por defecto es la página 1
     const resultadosPorPagina = parseInt(req.query.resultadosPorPagina as string) || 10; // Resultados por página, por defecto 10
+    const fechaDesde = req.query.fechaDesde as string;
+    const orden = (req.query.orden as string || 'DESC').toUpperCase(); // ASC o DESC
 
     // Calcular el OFFSET (desplazamiento) y el LIMIT (número de registros a devolver)
     const offset = (pagina - 1) * resultadosPorPagina;
@@ -126,6 +125,15 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
             query += ' AND Reconciliado = 1';
         }
 
+        // Filtro por fechaDesde
+        if (fechaDesde) {
+            if (orden === 'ASC') {
+                query += ` AND DATE(Fecha) >= '${fechaDesde}'`;
+            } else {
+                query += ` AND DATE(Fecha) <= '${fechaDesde}'`;
+            }
+        }
+
         // Contar el número total de registros sin aplicar LIMIT
         let countQuery = `SELECT COUNT(*) as total FROM vistaingresos WHERE 1=1`;
         if (filtro === 'ingresos') countQuery += ' AND TipoIngreso = 0';
@@ -135,7 +143,16 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
         else if (filtro === 'cuentaContable') countQuery += ' AND CuentaContable IS NOT NULL AND CuentaContable > 0';
         else if (filtro === 'sinCuentaContable') countQuery += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
         else if (filtro === 'reconciliados') countQuery += ' AND Reconciliado = 1';
-        
+
+        // Filtro por fechaDesde también en el count
+        if (fechaDesde) {
+            if (orden === 'ASC') {
+                countQuery += ` AND DATE(Fecha) >= '${fechaDesde}'`;
+            } else {
+                countQuery += ` AND DATE(Fecha) <= '${fechaDesde}'`;
+            }
+        }
+
         let countResult : any = (await con.query(countQuery))[0];
         const totalRecords = countResult[0].total;
 
@@ -143,7 +160,7 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
         totalPages = Math.ceil(totalRecords / resultadosPorPagina);
 
         // Ejecutar la consulta con LIMIT y OFFSET para obtener los registros
-        query += ` ORDER BY Fecha DESC LIMIT ${resultadosPorPagina} OFFSET ${offset}`;
+        query += ` ORDER BY DATE(Fecha) ${orden}, IngresoID ${orden} LIMIT ${resultadosPorPagina} OFFSET ${offset}`;
 
         const ingresos = (await con.query(query))[0] as any[];
         result = ingresos;
@@ -1123,15 +1140,13 @@ const calcularSaldoCuenta = async (CuentaID: number | string, nuevoMonto: number
 };
 
 
-
-
 export const asignarCuenta = async (req: Request, res: Response) => {
     let con: any;
     let result: any;
-    const { 
-        IngresoID, TipoCuentaID, CuentaID, TipoCuenta2ID, CuentaID2, RFC, RFC2, 
-        CategoriaID, SubcategoriaID, Monto, MontoParcial, EsMontoParcial, 
-        Fecha, Descripcion, SegmentoID, TipoIngreso 
+    const {
+        IngresoID, TipoCuentaID, CuentaID, TipoCuenta2ID, CuentaID2, RFC, RFC2,
+        CategoriaID, SubcategoriaID, Monto, MontoParcial, EsMontoParcial,
+        Fecha, Descripcion, SegmentoID, TipoIngreso
     } = req.body;
 
     try {
@@ -1178,13 +1193,15 @@ export const asignarCuenta = async (req: Request, res: Response) => {
                 throw new Error('El monto asignado excede el monto disponible en la cuenta principal.');
             }
 
-            // Actualizar el monto restante en la cuenta principal
+            // Actualizar el monto restante en la cuenta principal (ahora también actualiza Fecha)
             const updateIngresoQuery = `
                 UPDATE ingresos
-                SET Monto = ?, CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?
+                SET Monto = ?, CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?, Fecha = ?
                 WHERE IngresoID = ?
             `;
-            await con.query(updateIngresoQuery, [montoPrincipal, CuentaID, TipoCuentaID, newCategoriaID, newSubcategoriaID, IngresoID]);
+            await con.query(updateIngresoQuery, [
+                montoPrincipal, CuentaID, TipoCuentaID, newCategoriaID, newSubcategoriaID, Fecha, IngresoID
+            ]);
 
             // Insertar un nuevo registro para la cuenta secundaria
             const insertIngresoQuery = `
@@ -1205,16 +1222,17 @@ export const asignarCuenta = async (req: Request, res: Response) => {
             await con.query(`UPDATE ingresos SET Saldo = ? WHERE IngresoID = ?`, [saldoCuentaSecundaria, newIngresoID]);
 
         } else {
-            // Si no hay cuenta secundaria, actualizar ingreso original
+            // Si no hay cuenta secundaria, actualizar ingreso original (ahora también actualiza Fecha)
             const updateIngresoQuery = `
                 UPDATE ingresos
                 SET CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?, Monto = ?, 
-                    MontoParcialBandera = ?, MontoParcial = ?
+                    MontoParcialBandera = ?, MontoParcial = ?, Fecha = ?
                 WHERE IngresoID = ?
             `;
             await con.query(updateIngresoQuery, [
-                CuentaID, TipoCuentaID, newCategoriaID, newSubcategoriaID, Monto, 
-                EsMontoParcial ? 1 : 0, EsMontoParcial ? MontoParcial : 0, 
+                CuentaID, TipoCuentaID, newCategoriaID, newSubcategoriaID, Monto,
+                EsMontoParcial ? 1 : 0, EsMontoParcial ? MontoParcial : 0,
+                Fecha,
                 IngresoID
             ]);
 
@@ -1238,8 +1256,6 @@ export const asignarCuenta = async (req: Request, res: Response) => {
         return res.json(result);
     }
 };
-
-
 
 
 
@@ -1350,13 +1366,7 @@ export const asignarCuentasMasivas = async (req: Request, res: Response) => {
     let con: any;
     let result: any;
     const { ids, cuenta } = req.body;
-    const { TipoCuentaID, CuentaID, RFC, CategoriaID, SubcategoriaID, TipoIngreso  } = cuenta;
-  
-    console.log('IDs recibidos:', ids); // Añadido para depuración
-    console.log('Datos de cuenta:', cuenta); // Añadido para depuración
-    console.log('Categoría:', CategoriaID);
-    console.log('Subcategoría:', SubcategoriaID);
-    console.log('TipoIngreso:', TipoIngreso);
+    const { TipoCuentaID, CuentaID, RFC, CategoriaID, SubcategoriaID, TipoIngreso, Fecha  } = cuenta;
   
     if (!ids || ids.length === 0) {
       return res.status(400).json({ message: 'No se recibieron IDs para actualizar' });
@@ -1425,17 +1435,16 @@ export const asignarCuentasMasivas = async (req: Request, res: Response) => {
         const newCategoriaID = await getOrCreateId('categorias', CategoriaID, tipoIngresoNum);
         const newSubcategoriaID = await getOrCreateId('subcategorias', SubcategoriaID);
 
-
   
       // Actualiza la cuenta en los ingresos seleccionados
       const updateIngresoQuery = `
         UPDATE ingresos 
-        SET CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?
+        SET CuentaID = ?, TipoCuentaID = ?, CategoriaID = ?, SubcategoriaID = ?, Fecha = ?
         WHERE IngresoID IN (${ids.map(() => '?').join(', ')})
       `;
       console.log('Update query:', updateIngresoQuery); // Añadido para depuración
       console.log('Update values:', [newCuentaID, TipoCuentaIDNum, newCategoriaID, newSubcategoriaID, ...ids]); // Añadido para depuración
-      await con.query(updateIngresoQuery, [newCuentaID, TipoCuentaIDNum, newCategoriaID, newSubcategoriaID, ...ids]);
+      await con.query(updateIngresoQuery, [newCuentaID, TipoCuentaIDNum, newCategoriaID, newSubcategoriaID, Fecha, ...ids]);
 
 
         // Obtener el monto total de los ingresos que se están actualizando
@@ -1471,11 +1480,6 @@ export const asignarCuentasMasivas = async (req: Request, res: Response) => {
     }
   };
   
-
-
-
-
-
 
   export const ActualizarDescripcion = async (req: Request, res: Response) => {
     const { ingresoID } = req.params;

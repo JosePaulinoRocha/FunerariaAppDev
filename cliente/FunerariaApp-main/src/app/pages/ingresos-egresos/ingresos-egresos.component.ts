@@ -83,6 +83,9 @@ interface Income {
 })
 export class IngresosEgresosComponent implements OnInit {
 
+  selectedDate: string = new Date().toISOString().split('T')[0]; // fecha actual
+  sortOrder: 'ASC' | 'DESC' = 'DESC';
+
   selectedColumns: string[] = [
     'Cuenta', 'Combinacion', 'Fecha', 'Segmento', 'Categoria', 'Subcategoria', 
     'Concepto', 'CuentaContable', 'Descripcion', 'Proveedor', 'Monto'
@@ -118,20 +121,17 @@ export class IngresosEgresosComponent implements OnInit {
 
   sortTable(field: string) {
     if (this.sortField === field) {
-      // Cambia la dirección del orden si el campo ya está seleccionado
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-      // Si es un nuevo campo, inicia en 'asc'
       this.sortField = field;
       this.sortDirection = 'asc';
     }
   
-    // Ordena los datos completos antes de paginar
     this.incomes.sort((a, b) => {
       const valueA = a[field];
       const valueB = b[field];
   
-      if (valueA == null || valueB == null) return 0; // Manejo de valores nulos o indefinidos
+      if (valueA == null || valueB == null) return 0;
       if (this.sortDirection === 'asc') {
         return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
       } else {
@@ -139,7 +139,6 @@ export class IngresosEgresosComponent implements OnInit {
       }
     });
   
-    // Actualiza los datos paginados después de ordenar
     this.updatePaginatedIncomes();
   }
   
@@ -149,7 +148,7 @@ export class IngresosEgresosComponent implements OnInit {
     this.selectedIncomes = [];
 
     this.paginatedIncomes.forEach(income => {
-      income['selected'] = isChecked; // Acceso dinámico con corchetes
+      income['selected'] = isChecked;
       if (isChecked) {
         this.selectedIncomes.push(income.IngresoID);
       }
@@ -157,7 +156,7 @@ export class IngresosEgresosComponent implements OnInit {
   }
 
   onSelectIncome(income: any) {
-    if (income['selected']) {  // Acceso dinámico con corchetes
+    if (income['selected']) {  
       this.selectedIncomes.push(income.IngresoID);
     } else {
       const index = this.selectedIncomes.indexOf(income.IngresoID);
@@ -574,47 +573,32 @@ export class IngresosEgresosComponent implements OnInit {
   }
 
   exportEgresos() {
-
     // Filtrar los ingresos seleccionados
     const selectedEgresos = this.incomes.filter(egreso =>
       this.selectedIncomes.includes(egreso.IngresoID)
     );
 
-    // Verificar si hay registros no reconciliados
-    const noReconciliados = selectedEgresos.filter(egreso => egreso.Reconciliado !== 1);
-    if (noReconciliados.length > 0) {
-      // Mostrar un mensaje con los IngresoID de los registros no reconciliados
-      const idsNoReconciliados = noReconciliados.map(egreso => egreso.IngresoID).join(', ');
-      alert(`Los siguientes registros no están reconciliados: ${idsNoReconciliados}. No se puede exportar el archivo.`);
-      return; // Detener la ejecución si hay registros no reconciliados
-    }
-
-    // Filtrar solo los registros reconciliados
-    const egresosReconciliados = selectedEgresos.filter(egreso => egreso.Reconciliado === 1);
-
     // Verificar si hay registros con cuenta contable inválida o combinación incompleta
-    const cuentaContableInvalida = egresosReconciliados.filter(egreso =>
+    const cuentaContableInvalida = selectedEgresos.filter(egreso =>
       egreso.CuentaContable !== null &&
       (egreso.CuentaContable <= 0 ||
-      egreso.SegmentoID === null ||
-      egreso.CategoriaID === null ||
-      egreso.SubcategoriaID === null ||
-      egreso.ConceptoID === null ||
-      egreso['CuentaID'] === null)
+        egreso.SegmentoID === null ||
+        egreso.CategoriaID === null ||
+        egreso.SubcategoriaID === null ||
+        egreso.ConceptoID === null ||
+        egreso['CuentaID'] === null)
     );
 
     if (cuentaContableInvalida.length > 0) {
-      // Mostrar un mensaje con los IngresoID de los registros con cuenta contable inválida
       const idsCuentaInvalida = cuentaContableInvalida.map(egreso => egreso.IngresoID).join(', ');
       alert(`Los siguientes registros tienen una cuenta contable inválida o falta completar la combinación: ${idsCuentaInvalida}. No se puede exportar el archivo.`);
-      return; // Detener la ejecución si hay registros con cuenta contable inválida
+      return;
     }
 
-    console.log("Estos son los registros seleccionados y reconciliados que se exportarán: ", egresosReconciliados);
+    console.log("Estos son los registros seleccionados que se exportarán: ", selectedEgresos);
 
-
-    // Mapear solo los campos que deseas exportar
-    const exportData = egresosReconciliados.map(egreso => ({
+    // Mapear los campos que deseas exportar
+    const exportData = selectedEgresos.map(egreso => ({
       ID: egreso.IngresoID,
       Fecha: egreso.Fecha,
       Tipo: egreso.TipoIngreso.data[0] === 1 ? 'Egreso' : 'Ingreso',
@@ -642,14 +626,13 @@ export class IngresosEgresosComponent implements OnInit {
       Observaciones: egreso.ObservacionesDifConciliacion,
     }));
 
-    // Crear la hoja de Excel a partir del array de egresos reconciliados
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
     const workbook: XLSX.WorkBook = { Sheets: { 'Capturas': worksheet }, SheetNames: ['Capturas'] };
 
-    // Generar el archivo Excel y descargarlo
     const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(blob, 'Capturas_reconciliados.xlsx');
+
+    saveAs(blob, 'Capturas.xlsx'); // Cambié el nombre para reflejar que ya no es solo de reconciliados
   }
 
 
@@ -660,29 +643,40 @@ export class IngresosEgresosComponent implements OnInit {
 
   loadIngresos() {
     this.isLoading = true;
-    this._ingresoServ.getIngresosPorFiltro(this.filtroSeleccionado, this.currentPage, this.itemsPerPage)
-      .subscribe((data: any) => {
-        console.log(data.ingresos)
 
-        this.sortAndFormatData(data.ingresos);
-        this.updatePagination(data.ingresos.length);
-
-        // Already received totalPages from the API, so no need to recalculate
-        this.totalPages = data.totalPages;
-        this.pagesRemaining = this.totalPages - this.currentPage;
-
-        this.isLoading = false;
-      }, (error) => {
-        this.isLoading = false;
-        console.error('Error fetching incomes', error);
-        // Optionally show a user-friendly message
-        alert('Error fetching data. Please try again later.');
-      });
+    this._ingresoServ.getIngresosPorFiltro(
+      this.filtroSeleccionado,
+      this.currentPage,
+      this.itemsPerPage,
+      this.selectedDate,
+      this.sortOrder
+    ).subscribe((data: any) => {
+      this.sortAndFormatData(data.ingresos);
+      this.updatePagination(data.ingresos.length);
+      this.totalPages = data.totalPages;
+      this.pagesRemaining = this.totalPages - this.currentPage;
+      this.isLoading = false;
+    }, (error) => {
+      this.isLoading = false;
+      console.error('Error fetching incomes', error);
+      alert('Error fetching data. Please try again later.');
+    });
   }
+
+  onDateChange() {
+    this.currentPage = 1;
+    this.loadIngresos();
+  }
+
+  toggleSortOrder() {
+    this.sortOrder = this.sortOrder === 'DESC' ? 'ASC' : 'DESC';
+    this.currentPage = 1;
+    this.loadIngresos();
+  }
+  
   sortAndFormatData(data: Income[]) {
     this.incomes = data
 
-      .sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime())
       .map(income => ({
         ...income,
         Fecha: new Date(income.Fecha).toISOString().split('T')[0],
@@ -694,41 +688,29 @@ export class IngresosEgresosComponent implements OnInit {
   }
 
   updatePagination(totalRecords: number) {
-    // This method is no longer necessary for recalculating totalPages, but we will use it to update pagination
     this.updatePaginatedIncomes();
   }
 
   onItemsPerPageChange() {
-    // Reset to page 1 when the number of items per page changes
     this.currentPage = 1;
     // this.updatePaginatedIncomes();
     this.loadDataBasedOnContext();
   }
 
   updatePaginatedIncomes() {
-    // Calcula el startIndex de acuerdo con la bandera de búsqueda
     let startIndex: number;
     if (this.isSearchActive) {
-      startIndex = (this.currentPage - 1) * this.itemsPerPage; // Para la búsqueda, usamos la paginación normal
+      startIndex = (this.currentPage - 1) * this.itemsPerPage;
     } else {
-      startIndex = 0; // Para la carga general, usamos el índice 0
+      startIndex = 0;
     }
-  
     console.log("startIndex", startIndex);
-  
-    // Verifica que this.incomes tenga la cantidad de elementos correcta para la paginación.
     console.log("Total Incomes: ", this.incomes.length);
-  
-    // Actualiza los ingresos paginados de acuerdo al startIndex y itemsPerPage.
     this.paginatedIncomes = this.incomes.slice(startIndex, startIndex + this.itemsPerPage);
     console.log("paginatedIncomes", this.paginatedIncomes, startIndex, this.itemsPerPage);
-  
-    // Si los datos aún no se están mostrando, puede ser que `startIndex` esté fuera de rango de `this.incomes`.
     if (this.paginatedIncomes.length === 0) {
       console.warn('No hay ingresos para mostrar en esta página, revisa el valor de startIndex y la longitud de this.incomes');
     }
-  
-    // Actualiza las páginas restantes.
     this.pagesRemaining = Math.max(0, this.totalPages - this.currentPage);
   }
   
@@ -749,23 +731,20 @@ export class IngresosEgresosComponent implements OnInit {
     }
   }
 
-  // Función para determinar qué carga realizar
   loadDataBasedOnContext() {
     if (this.isSearchActive) {
-      this.applySearch(); // Llama a la función de búsqueda
+      this.applySearch(); 
     } else {
-      this.loadIngresos(); // Llama a la carga general
+      this.loadIngresos();
     }
   }
 
   setFilter(filtro: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados') {
     this.filtroSeleccionado = filtro;
-    this.currentPage = 1;  // Reset to page 1 when the filter changes
-    this.loadIngresos();  // Reload the data based on the selected filter
+    this.currentPage = 1; 
+    this.loadIngresos(); 
   }
 
-
-  // Ajusta la función de búsqueda para activar la bandera
   applySearch() {
     this.isLoading = true;
     this.isSearchActive = true;
@@ -788,7 +767,6 @@ export class IngresosEgresosComponent implements OnInit {
       }
     }
   
-    // Llama al servicio con filtros y el filtro seleccionado
     this._ingresoServ.getIngresosParametros(filtros).subscribe(
       (data: Income[]) => {
         this.incomes = data
@@ -804,7 +782,6 @@ export class IngresosEgresosComponent implements OnInit {
               : '',
           }));
   
-        // Actualiza la paginación después de la búsqueda
         this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
         this.currentPage = Math.min(this.currentPage, this.totalPages);
         this.updatePaginatedIncomes();
@@ -824,8 +801,8 @@ export class IngresosEgresosComponent implements OnInit {
     this.searchValues = {};
     this.dateSearchValues = {};
     this.selectedFields = [];
-    this.isSearchActive = false; // Desactivar la búsqueda
-    this.loadIngresos(); // Volver a la carga general
+    this.isSearchActive = false; 
+    this.loadIngresos();
   }
 
   matchesSearch(income: Income): boolean {

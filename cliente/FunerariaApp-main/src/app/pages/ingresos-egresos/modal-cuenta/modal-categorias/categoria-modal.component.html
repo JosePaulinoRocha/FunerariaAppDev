@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Seleccionar categoría</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="modalController.dismiss()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="filterCategorias()"></ion-searchbar>
+
+  <ion-list *ngIf="filteredCategorias.length > 0">
+    <ion-item *ngFor="let categoria of filteredCategorias" (click)="selectCategoria(categoria)">
+      <ion-label>
+        <h2>{{ categoria.NombreCategoria }}</h2>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="filteredCategorias.length === 0" class="no-results">
+    <p>No hay categorías disponibles.</p>
+  </div>
+</ion-content>

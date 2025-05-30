@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Seleccionar subcategoría</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="modalController.dismiss()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="filterSubcategorias()"></ion-searchbar>
+
+  <ion-list *ngIf="filteredSubcategorias.length > 0">
+    <ion-item *ngFor="let subcategoria of filteredSubcategorias" (click)="selectSubcategoria(subcategoria)">
+      <ion-label>
+        <h2>{{ subcategoria.NombreSubcategoria }}</h2>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="filteredSubcategorias.length === 0" class="no-results">
+    <p>No hay subcategorías disponibles.</p>
+  </div>
+</ion-content>
