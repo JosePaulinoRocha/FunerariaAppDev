@@ -94,7 +94,7 @@ export class ReconciliacionesHistorialComponent  implements OnInit {
         Fecha: new Date(reconciliacion.Fecha).toISOString().split('T')[0], // Formatear la fecha
       }));
       
-      console.log("esta es la data de reconciliaciones: ", this.reconciliaciones);
+      // console.log("esta es la data de reconciliaciones: ", this.reconciliaciones);
       this.totalPages = Math.ceil(this.reconciliaciones.length / this.itemsPerPage);
       this.updatePaginatedReconciliaciones();
     }, (error) => {
@@ -188,11 +188,11 @@ export class ReconciliacionesHistorialComponent  implements OnInit {
   }
 
   deleteReconciliacion(reconciliacionID: number) {
-    console.log("este es mi ReconciliacionID a eliminar: ", reconciliacionID)
+    // console.log("este es mi ReconciliacionID a eliminar: ", reconciliacionID)
     if (confirm('¿Está seguro de que desea eliminar esta reconciliación?')) {
         this._reconciliacionServ.deleteReconciliacion(reconciliacionID).subscribe(
             response => {
-                console.log('Reconciliación eliminada:', response);
+                // console.log('Reconciliación eliminada:', response);
 
                 // Mensaje de éxito
                 alert('Reconciliación eliminada exitosamente.');
@@ -212,11 +212,11 @@ export class ReconciliacionesHistorialComponent  implements OnInit {
   }
 
   ReintegracionesEgresos(reconciliacionID: number) {
-    console.log("este es mi ReconciliacionID para la reintegracion: ", reconciliacionID);
+    // console.log("este es mi ReconciliacionID para la reintegracion: ", reconciliacionID);
 
     this._reconciliacionServ.reintegracionReconciliacion(reconciliacionID).subscribe(
       (response: any[]) => {
-        console.log('Resultados de la consulta de reintegraciones:', response);
+        // console.log('Resultados de la consulta de reintegraciones:', response);
         
         // Asigna los datos de respuesta a reintegracionesData
         this.reintegracionesData = response.map(reintegracion => ({
@@ -239,7 +239,7 @@ export class ReconciliacionesHistorialComponent  implements OnInit {
   }
 
   async RealizarReintegro(ingresoID: number) {
-    console.log("este es mi ReconciliacionID para la reintegracion: ", ingresoID);
+    // console.log("este es mi ReconciliacionID para la reintegracion: ", ingresoID);
 
     const ingreso = this.reintegracionesData.find(i => i.IngresoID === ingresoID); // Buscar el ingreso por ID
     const modal = await this.modalController.create({

@@ -333,7 +333,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
   
   actualizarResumenBancoSeleccionado() {
     if (!this.cuentaSeleccionada) {
-      console.log("No hay cuenta seleccionada.");
+      // console.log("No hay cuenta seleccionada.");
       return;
     }
   
@@ -341,9 +341,9 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
   
     // Primero agregar las categorías del resumen inicial (sin modificaciones)
     if (this.resumenInicialCuenta && this.resumenInicialCuenta.categorias) {
-      console.log("Agregando categorías del resumen inicial.");
+      // console.log("Agregando categorías del resumen inicial.");
       this.resumenInicialCuenta.categorias.forEach((categoria: any) => {
-        console.log(`CategoriaID: ${categoria.CategoriaID}, Nombre: ${categoria.NombreCategoria}, Presupuesto: ${categoria.Presupuesto}`);
+        // console.log(`CategoriaID: ${categoria.CategoriaID}, Nombre: ${categoria.NombreCategoria}, Presupuesto: ${categoria.Presupuesto}`);
         if (!categoriasMap[categoria.CategoriaID]) {
           categoriasMap[categoria.CategoriaID] = {
             NombreCategoria: categoria.NombreCategoria,
@@ -359,7 +359,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
     this.gastosSeleccionados.forEach(gasto => {
       const { CategoriaID, NombreCategoria, Monto } = gasto;
       const montoNumerico = parseFloat(Monto);
-      console.log(`Gasto - CategoriaID: ${CategoriaID}, Nombre: ${NombreCategoria}, Monto: ${Monto}`);
+      // console.log(`Gasto - CategoriaID: ${CategoriaID}, Nombre: ${NombreCategoria}, Monto: ${Monto}`);
     
       if (!CategoriaID) {
         console.warn(`Gasto sin CategoriaID: ${NombreCategoria}`);
@@ -379,7 +379,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
     this.presupuestoSeleccionado.forEach(presupuesto => {
       const { CategoriaID, NombreCategoria, MontoDictaminado } = presupuesto;
       const montoNumerico = parseFloat(MontoDictaminado);
-      console.log(`Presupuesto Semanal - CategoriaID: ${CategoriaID}, Nombre: ${NombreCategoria}, Monto: ${MontoDictaminado}`);
+      // console.log(`Presupuesto Semanal - CategoriaID: ${CategoriaID}, Nombre: ${NombreCategoria}, Monto: ${MontoDictaminado}`);
     
       if (!CategoriaID) {
         console.warn(`Presupuesto semanal sin CategoriaID: ${NombreCategoria}`);
@@ -399,7 +399,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
     this.presupuestoFrecuenciaSeleccionado.forEach(presupuesto => {
       const { CategoriaID, NombreCategoria, MontoDictaminado } = presupuesto;
       const montoNumerico = parseFloat(MontoDictaminado);
-      console.log(`Presupuesto por Frecuencia - CategoriaID: ${CategoriaID}, Nombre: ${NombreCategoria}, Monto: ${MontoDictaminado}`);
+      // console.log(`Presupuesto por Frecuencia - CategoriaID: ${CategoriaID}, Nombre: ${NombreCategoria}, Monto: ${MontoDictaminado}`);
     
       if (!CategoriaID) {
         console.warn(`Presupuesto por frecuencia sin CategoriaID: ${NombreCategoria}`);
@@ -416,16 +416,16 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
     });
   
     // Comprobamos si es Caja Chica
-    console.log("Este es el cuentaID temporal: ", this.cuentaIDTemporal);
+    // console.log("Este es el cuentaID temporal: ", this.cuentaIDTemporal);
   
     if (this.cuentaIDTemporal === 0) { // Usamos el cuentaIDTemporal guardado
-      console.log("Cuenta es Caja Chica, no modificando categorías del resumen inicial.");
+      // console.log("Cuenta es Caja Chica, no modificando categorías del resumen inicial.");
       this.cuentaSeleccionada.categorias = Object.values(categoriasMap);
       this.cuentaSeleccionada.totalPresupuesto = this.cuentaSeleccionada.categorias.reduce(
         (total: any, categoria: any) => total + categoria.Presupuesto,
         0
       );
-      console.log('Resumen de Caja Chica:', this.cuentaSeleccionada);
+      // console.log('Resumen de Caja Chica:', this.cuentaSeleccionada);
       return; // Salir si es Caja Chica
     }
   
@@ -436,8 +436,8 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
       0
     );
   
-    console.log('Categorías finales:', this.cuentaSeleccionada.categorias);
-    console.log('Total presupuesto:', this.cuentaSeleccionada.totalPresupuesto);
+    // console.log('Categorías finales:', this.cuentaSeleccionada.categorias);
+    // console.log('Total presupuesto:', this.cuentaSeleccionada.totalPresupuesto);
   }
   
 
@@ -456,7 +456,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
   
 
   generarResumenCuentaSeleccionada(cuentaID: number) {
-    console.log("Generating resumen for cuentaID:", cuentaID);
+    // console.log("Generating resumen for cuentaID:", cuentaID);
     
     // Verificar si es "Caja Chica" (cuentaID = 0)
     if (cuentaID === 0) {
@@ -496,7 +496,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
             ...resumenCajaChica,
             categorias: Object.values(resumenCajaChica.categorias)
         };
-        console.log("Resumen de Caja Chica:", this.cuentaSeleccionada);
+        // console.log("Resumen de Caja Chica:", this.cuentaSeleccionada);
         return; // No continuar con el procesamiento de otras cuentas
     }
     
@@ -506,7 +506,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
     const dataCombinada = [...this.presupuestoSemanal, ...this.gastos, ...this.gastoMensualFrecuencia].filter((item) => item.CuentaID === cuentaID);
 
     dataCombinada.forEach((item) => {
-        console.log("Processing item for cuenta:", item);
+        // console.log("Processing item for cuenta:", item);
         if (item.CuentaID && item.NombreCuenta) {
             if (!cuentasMap[item.CuentaID]) {
                 cuentasMap[item.CuentaID] = {
@@ -532,7 +532,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
             const monto = parseFloat(item.Monto ?? item.MontoDictaminado) || 0;
             cuenta.categorias[item.CategoriaID].Presupuesto += monto;
             cuenta.totalPresupuesto += monto;
-            console.log(`Updated Presupuesto for categoria ${item.CategoriaID}:`, cuenta.categorias[item.CategoriaID].Presupuesto);
+            // console.log(`Updated Presupuesto for categoria ${item.CategoriaID}:`, cuenta.categorias[item.CategoriaID].Presupuesto);
         }
     });
 
@@ -543,7 +543,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
             ...cuentaSeleccionada,
             categorias: Object.values(cuentaSeleccionada.categorias)
         };
-        console.log("Resumen para la cuenta seleccionada:", this.cuentaSeleccionada);
+        // console.log("Resumen para la cuenta seleccionada:", this.cuentaSeleccionada);
     } else {
         console.warn(`No se encontró cuenta con NombreCuenta: ${this.cuentaSeleccionada.NombreCuenta}`);
     }
@@ -742,7 +742,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
       })),
     ];
   
-    console.log('Resumen de cuentas bancarias:', this.cuentasBancarias);
+    // console.log('Resumen de cuentas bancarias:', this.cuentasBancarias);
   }
 
   getTotalSemana(categoriasSemana: any[]): number {
@@ -788,8 +788,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
       fechaInicio.setDate(fechaInicio.getDate() + 7);
     }
   
-    console.log('Semanas generadas:', semanas.map(s =>
-      `Semana ${s.semana}: Inicio ${s.inicio.toISOString()} - Fin ${s.fin.toISOString()}`));
+    // console.log('Semanas generadas:', semanas.map(s => `Semana ${s.semana}: Inicio ${s.inicio.toISOString()} - Fin ${s.fin.toISOString()}`));
     return semanas;
   }
   
@@ -955,7 +954,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
                 { CuentaID: 0, NombreCuenta: 'Caja Chica', TipoCuentaID: 1, RFC: "" }, // RFC como cadena vacía
                 ...data.filter(cuenta => cuenta.TipoCuentaID == 2) // TipoCuentaID de cuentas bancarias
             ];
-            console.log('Esta es mi data en cuentas:', this.cuenta);
+            // console.log('Esta es mi data en cuentas:', this.cuenta);
         },
         (error) => {
             console.error('Error fetching cuentas', error);
@@ -975,7 +974,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
         PeriodoCongelado: presupuestoSemanal.PeriodoCongelado ? this.formatPeriodoCongelado(presupuestoSemanal.PeriodoCongelado) : null
       }));
   
-      console.log("esta es la data de presupuesto semanal: ", this.presupuestoSemanal);
+      // console.log("esta es la data de presupuesto semanal: ", this.presupuestoSemanal);
       this.totalPagesSemanales = Math.ceil(this.presupuestoSemanal.length / this.itemsPerPage);
       this.updatePaginatedRegistrosSemanales();
     }, (error) => {
@@ -996,7 +995,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
           Fecha: new Date(gastos.Fecha).toISOString().split('T')[0],
         }));
     
-        console.log("Esta es la data de gastos mensuales extraordinarios: ", this.gastos);
+        // console.log("Esta es la data de gastos mensuales extraordinarios: ", this.gastos);
         this.totalPagesExtraordinario = Math.ceil(this.gastos.length / this.itemsPerPage);
         this.updatePaginatedRegistros();
       } else {
@@ -1033,7 +1032,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
           };
         });
   
-        console.log("esta es la data de gastos por frecuencia: ", this.gastoMensualFrecuencia);
+        // console.log("esta es la data de gastos por frecuencia: ", this.gastoMensualFrecuencia);
         this.totalPages = Math.ceil(this.gastoMensualFrecuencia.length / this.itemsPerPage);
         this.updatePaginatedGastos();
         this.organizarEgresosPorSemanas(); // Organizar los egresos por semanas
@@ -1197,7 +1196,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
   
     // Asignar las semanas generadas al arreglo
     this.semanasMesActual = weeks;
-    console.log('Semanas generadas para el mes actual:', this.semanasMesActual);
+    // console.log('Semanas generadas para el mes actual:', this.semanasMesActual);
   }
   
   
@@ -1211,7 +1210,7 @@ export class PresupuestoMensualCuentasComponent  implements OnInit {
           Fecha: ingreso.Fecha ? new Date(ingreso.Fecha).toISOString().split('T')[0] : null
         }));
   
-        console.log("Esta es la data de ingresos mensuales: ", this.ingreso);
+        // console.log("Esta es la data de ingresos mensuales: ", this.ingreso);
       },
       (error) => {
         console.error('Error fetching incomes', error);
@@ -1364,7 +1363,7 @@ applySearch() {
         PeriodoCongelado: gastoMensualFrecuencia.PeriodoCongelado ? this.formatPeriodoCongelado(gastoMensualFrecuencia.PeriodoCongelado) : null
       }));
 
-      console.log("Esta es la data de gastos después del filtro: ", this.gastoMensualFrecuencia);
+      // console.log("Esta es la data de gastos después del filtro: ", this.gastoMensualFrecuencia);
       this.totalPages = Math.ceil(this.gastoMensualFrecuencia.length / this.itemsPerPage);
       this.updatePaginatedGastos();
     }, (error) => {
@@ -1442,7 +1441,7 @@ applySearch() {
         this._presupuestoMensualCuentasServ.actualizarGastosSeleccionados(this.gastosSeleccionados, cuentaID)
             .subscribe(
                 async response => {
-                    console.log('Respuesta del servidor:', response);
+                    // console.log('Respuesta del servidor:', response);
                     this.loadGastoMensualExtraordinario();  // Recargar los datos
                     this.cuentaSeleccionada = null;
                     this.cuentaIDTemporal = null;
@@ -1465,7 +1464,7 @@ applySearch() {
         this._presupuestoMensualCuentasServ.actualizarCuentaDeGastosSemanales(this.presupuestoSeleccionado, cuentaID)
             .subscribe(
                 async response => {
-                    console.log('Respuesta del servidor:', response);
+                    // console.log('Respuesta del servidor:', response);
                     this.loadPresupuestoSemanal();  // Recargar los datos
                     this.cuentaSeleccionada = null;
                     this.cuentaIDTemporal = null;
@@ -1490,7 +1489,7 @@ applySearch() {
         this._presupuestoMensualCuentasServ.actualizarCuentaDeGastosFrecuencia(this.presupuestoFrecuenciaSeleccionado, cuentaID)
           .subscribe(
             async response => {
-              console.log('Respuesta del servidor:', response);
+              // console.log('Respuesta del servidor:', response);
               this.loadGastosMensualesFrecuencia();  // Recargar los datos
               this.cuentaSeleccionada = null;
               this.cuentaIDTemporal = null;

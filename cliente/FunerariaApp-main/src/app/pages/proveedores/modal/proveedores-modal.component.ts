@@ -71,8 +71,8 @@ export class ProveedoresModalComponent implements OnInit {
 
 
   ngOnInit() {
-    console.log("Proveedor recibido en el modal:", this.proveedor);
-    console.log("Modo edición:", this.isEditMode);
+    // console.log("Proveedor recibido en el modal:", this.proveedor);
+    // console.log("Modo edición:", this.isEditMode);
 
     this.loadProveedores();
     this.loadCategorias();
@@ -130,15 +130,15 @@ export class ProveedoresModalComponent implements OnInit {
       CostoPorPieza: this.proveedor.CostoPorPieza,
     };
   
-    console.log("Datos del nuevo proveedor:", nuevoProveedor);
+    // console.log("Datos del nuevo proveedor:", nuevoProveedor);
 
 
     if (this.isEditMode) {
 
-      console.log("entro a agregar proveedor")
+      // console.log("entro a agregar proveedor")
 
       this._proveedorServ.updateProveedor(nuevoProveedor).subscribe(async response => {
-        console.log('Proveedor actualizado exitosamente:', response);
+        // console.log('Proveedor actualizado exitosamente:', response);
   
         const alert = await this.alertController.create({
           header: 'Éxito',
@@ -159,10 +159,10 @@ export class ProveedoresModalComponent implements OnInit {
 
     } else {
 
-      console.log("entro a agregar proveedor")
+      // console.log("entro a agregar proveedor")
 
       this._proveedorServ.addProveedor(nuevoProveedor).subscribe(async response => {
-        console.log('Proveedor agregado exitosamente:', response);
+        // console.log('Proveedor agregado exitosamente:', response);
     
         const alert = await this.alertController.create({
           header: 'Éxito',

@@ -21,7 +21,7 @@ export class ObservacionesModalComponent {
     // Verificamos si el campo correcto es "Descripcion"
     if (this.income?.ObservacionesDifConciliacion) {
       this.observacion = this.income.ObservacionesDifConciliacion;
-      console.log('Descripción precargada:', this.observacion);
+      // console.log('Descripción precargada:', this.observacion);
     }
   }
 

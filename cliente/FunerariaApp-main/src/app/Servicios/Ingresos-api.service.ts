@@ -95,7 +95,7 @@ export class IngresosApiServices {
         NumeroRegistrosImportados: numeroRegistrosImportados,
     };
 
-    console.log('Enviando historial con:', body);
+    // console.log('Enviando historial con:', body);
 
     return this.http.post(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlHistorialIngresosAdd}`, body);
   }

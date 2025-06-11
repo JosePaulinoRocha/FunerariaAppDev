@@ -147,8 +147,8 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
   constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private alertController: AlertController) {}
 
   ngOnInit() {
-    console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
-    console.log('Ingreso datos:', this.ingreso);
+    // console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
+    // console.log('Ingreso datos:', this.ingreso);
 
     this.initialMonto = this.ingreso.Monto;
 
@@ -158,7 +158,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
       this.isMassiveAssignMode = true;
       this.updateModalMode();
       this.calcularTotalMontos();
-      console.log('Datos para generar PDF:', this.incomesData);
+      // console.log('Datos para generar PDF:', this.incomesData);
     } else {
       this.isMassiveAssignMode = false;
       this.updateModalMode();
@@ -234,7 +234,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
 
   loadCuentas() {
     this._ingresoServ.getCuentas().subscribe((data: Cuenta[]) => {
-      console.log("esta es la info de cuentas: ", data);
+      // console.log("esta es la info de cuentas: ", data);
       this.cuenta = data;
       this.onTipoCuentaChange('envia');
       this.onTipoCuentaChange('recibe');
@@ -372,7 +372,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
 
   async asignarCuenta() {
     if (this.isMassiveAssignMode) {
-      console.log("entro en asignacion masiva");
+      // console.log("entro en asignacion masiva");
       const cuentaData = {
         TipoCuentaID: this.ingreso.TipoCuentaID,
         CuentaID: this.isNewCuenta ? this.newNombreCuenta : this.ingreso.CuentaID,
@@ -382,8 +382,8 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
         Fecha: this.ingreso.Fecha
       };
     
-      console.log("Informacion de la actualizacion de cuenta y datos: ", cuentaData);
-      console.log("Income IDs en el modal: ", this.incomeIDs);
+      // console.log("Informacion de la actualizacion de cuenta y datos: ", cuentaData);
+      // console.log("Income IDs en el modal: ", this.incomeIDs);
       
       this._ingresoServ.actualizarCuentasIngresoMasivas({
         ids: this.incomeIDs,  // Aquí usamos `this.incomeIDs`
@@ -401,7 +401,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
          }
        );
     } else {
-      console.log("entro en asignacion individual");
+      // console.log("entro en asignacion individual");
       const incomeData = {
         IngresoID: this.ingreso.IngresoID,
         TipoCuentaID: this.ingreso.TipoCuentaID,
@@ -423,7 +423,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
         MontoParcial: this.isMontoParcial ? this.ingreso.MontoParcial : 0, // Solo envía el monto parcial si se eligió esa opción
       };
 
-      console.log("Informacion de la actualizacion de cuenta y datos: ", incomeData);
+      // console.log("Informacion de la actualizacion de cuenta y datos: ", incomeData);
 
   
       this._ingresoServ.actualizarCuentaIngreso(incomeData).subscribe(

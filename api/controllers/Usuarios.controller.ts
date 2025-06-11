@@ -12,10 +12,10 @@ export const Login = async (req: Request, res: Response) => {
     con = await connect();
     const query = 'SELECT * FROM usuarios WHERE email = ?';
     const [users] = await con.query(query, [email]) as any[];
-    
+
     if (users.length > 0) {
       const user = users[0];
-      console.log('Usuario encontrado:', user); // Añadir este log
+      console.log('Usuario encontrado:', user);
 
       if (password === user.password) {
         const payload = {
@@ -23,17 +23,21 @@ export const Login = async (req: Request, res: Response) => {
           isAdmin: user.isAdmin,
         };
         const token = jwt.sign(payload, jwtSecret, { expiresIn: jwtExpiresIn });
-        return res.json({ success: true, token, user });
+
+        // Eliminar password y CambioContra antes de enviar
+        const { password, ...safeUser } = user;
+
+        return res.json({ success: true, token, user: safeUser });
       } else {
-        console.log('Contraseña incorrecta'); // Añadir este log
+        console.log('Contraseña incorrecta');
         return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
       }
     } else {
-      console.log('Usuario no encontrado'); // Añadir este log
+      console.log('Usuario no encontrado');
       return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
     }
   } catch (error) {
-    console.log('Error en Login:', error); // Añadir este log
+    console.log('Error en Login:', error);
     return res.status(500).json({ success: false, message: 'Error en el servidor' });
   } finally {
     await con?.end();

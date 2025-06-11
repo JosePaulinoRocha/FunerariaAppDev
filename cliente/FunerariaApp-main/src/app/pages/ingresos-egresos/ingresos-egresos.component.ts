@@ -83,7 +83,7 @@ interface Income {
 })
 export class IngresosEgresosComponent implements OnInit {
 
-  selectedDate: string = new Date().toISOString().split('T')[0]; // fecha actual
+  selectedDate: string = new Date().toISOString().split('T')[0];
   sortOrder: 'ASC' | 'DESC' = 'DESC';
 
   selectedColumns: string[] = [
@@ -99,8 +99,8 @@ export class IngresosEgresosComponent implements OnInit {
 
   isSearchActive: boolean = false;
 
-  selectedIncomes: number[] = []; // Almacena los IDs seleccionados
-  selectAll: boolean = false;     // Controla si todos los registros están seleccionados
+  selectedIncomes: number[] = [];
+  selectAll: boolean = false;    
 
   isLoading: boolean = false;
 
@@ -114,10 +114,18 @@ export class IngresosEgresosComponent implements OnInit {
   isAdmin: boolean = false;
   mostrarIngresos: boolean = true;
   filtroSeleccionado: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados' = 'ingresosSinCuenta';
+  segmentoSeleccionado: string = 'todos';
 
   sortField: string = '';
 
   sortDirection: 'asc' | 'desc' = 'asc';
+
+  onSegmentoChange(event: Event) {
+    const selectElement = event.target as HTMLSelectElement;
+    this.segmentoSeleccionado = selectElement.value;
+    this.currentPage = 1;
+    this.loadIngresos();
+  }
 
   sortTable(field: string) {
     if (this.sortField === field) {
@@ -317,8 +325,8 @@ export class IngresosEgresosComponent implements OnInit {
 
 
   async abrirModalDescripcion(income: any) {
-    console.log('Abriendo modal para IngresoID:', income?.IngresoID);
-    console.log('Registro completo:', income);
+    // console.log('Abriendo modal para IngresoID:', income?.IngresoID);
+    // console.log('Registro completo:', income);
   
     const modal = await this.modalController.create({
       component: DescripcionesModalComponent,
@@ -332,7 +340,7 @@ export class IngresosEgresosComponent implements OnInit {
     const { data } = await modal.onDidDismiss();
   
     if (data?.observacion) {
-      console.log('Descripción recibida:', data.observacion);
+      // console.log('Descripción recibida:', data.observacion);
   
       // Pasa income para que se actualice en la tabla
       this.updateDescripcion(income.IngresoID, data.observacion, income);
@@ -341,9 +349,9 @@ export class IngresosEgresosComponent implements OnInit {
   
   
   updateDescripcion(ingresoID: number, descripcion: string, income?: any) {
-    console.log("este es mi id y descripcion: ", ingresoID, descripcion)
+    // console.log("este es mi id y descripcion: ", ingresoID, descripcion)
     this._ingresoServ.updateDescripcion(ingresoID, descripcion).subscribe(() => {
-      console.log('Descripción actualizada exitosamente');
+      // console.log('Descripción actualizada exitosamente');
       alert('Se realizó la descripción exitosamente');
   
       // Actualizar localmente el objeto en pantalla
@@ -359,8 +367,8 @@ export class IngresosEgresosComponent implements OnInit {
 
 
   async abrirModalObservacion(income: any) {
-    console.log('Abriendo modal para IngresoID:', income?.IngresoID);
-    console.log('Registro completo:', income);
+    // console.log('Abriendo modal para IngresoID:', income?.IngresoID);
+    // console.log('Registro completo:', income);
   
     const modal = await this.modalController.create({
       component: ObservacionesModalComponent,
@@ -374,7 +382,7 @@ export class IngresosEgresosComponent implements OnInit {
     const { data } = await modal.onDidDismiss();
   
     if (data?.observacion) {
-      console.log('Observacion recibida:', data.observacion);
+      // console.log('Observacion recibida:', data.observacion);
   
       // Pasa income para que se actualice en la tabla
       this.updateObservacion(income.IngresoID, data.observacion, income);
@@ -383,9 +391,9 @@ export class IngresosEgresosComponent implements OnInit {
   
   
   updateObservacion(ingresoID: number, observacion: string, income?: any) {
-    console.log("este es mi id y observacion: ", ingresoID, observacion )
+    // console.log("este es mi id y observacion: ", ingresoID, observacion )
     this._reconciliacionServ.updateObservacion(ingresoID, observacion).subscribe(() => {
-      console.log('Observación actualizada exitosamente');
+      // console.log('Observación actualizada exitosamente');
       alert('Se realizó la observacion exitosamente');
       if (income) {
         income.ObservacionesDifConciliacion = observacion;
@@ -480,12 +488,12 @@ export class IngresosEgresosComponent implements OnInit {
       CuentaContpaq: row[6] || 0,
     }));
 
-    console.log("Datos procesados:", processedData);
+    // console.log("Datos procesados:", processedData);
 
     // Llamar al servicio para enviar los datos a la API
     this.ingresosArchivoServices.importarIngresosArchivo(processedData).subscribe(
       (response) => {
-        console.log('Datos enviados exitosamente:', response);
+        // console.log('Datos enviados exitosamente:', response);
         this.loadIngresos();
       },
       (error) => {
@@ -514,7 +522,7 @@ export class IngresosEgresosComponent implements OnInit {
       Cuenta: row[8] || '',
     }));
 
-    console.log("Datos procesados de egresos:", processedData);
+    // console.log("Datos procesados de egresos:", processedData);
 
     // Enviar registros en batches
     this.sendEgresosInBatches(processedData);
@@ -532,7 +540,7 @@ export class IngresosEgresosComponent implements OnInit {
 
       // Si no hay más registros, finalizar
       if (batch.length === 0) {
-        console.log('Todos los registros han sido importados.');
+        // console.log('Todos los registros han sido importados.');
         this.isLoading = false;
         this.loadIngresos(); // Actualizar la tabla al finalizar la importación
         return;
@@ -541,7 +549,7 @@ export class IngresosEgresosComponent implements OnInit {
       // Enviar el batch al endpoint
       this.ingresosArchivoServices.importarEgresosArchivo(batch).subscribe(
         () => {
-          console.log(`Batch de ${batch.length} registros importados correctamente`);
+          // console.log(`Batch de ${batch.length} registros importados correctamente`);
           offset += this.BATCH_SIZE; // Incrementar el offset para el siguiente batch
           sendNextBatch(); // Llamar de nuevo para enviar el siguiente batch
         },
@@ -595,7 +603,7 @@ export class IngresosEgresosComponent implements OnInit {
       return;
     }
 
-    console.log("Estos son los registros seleccionados que se exportarán: ", selectedEgresos);
+    // console.log("Estos son los registros seleccionados que se exportarán: ", selectedEgresos);
 
     // Mapear los campos que deseas exportar
     const exportData = selectedEgresos.map(egreso => ({
@@ -649,7 +657,8 @@ export class IngresosEgresosComponent implements OnInit {
       this.currentPage,
       this.itemsPerPage,
       this.selectedDate,
-      this.sortOrder
+      this.sortOrder,
+      this.segmentoSeleccionado
     ).subscribe((data: any) => {
       this.sortAndFormatData(data.ingresos);
       this.updatePagination(data.ingresos.length);
@@ -683,7 +692,7 @@ export class IngresosEgresosComponent implements OnInit {
         FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
         FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
       }));
-      console.log("sort ",data)
+      // console.log("sort ",data)
     this.mostrarIngresos = this.filtroSeleccionado === 'ingresos' || this.filtroSeleccionado === 'cuentaContable';
   }
 
@@ -704,10 +713,10 @@ export class IngresosEgresosComponent implements OnInit {
     } else {
       startIndex = 0;
     }
-    console.log("startIndex", startIndex);
-    console.log("Total Incomes: ", this.incomes.length);
+    // console.log("startIndex", startIndex);
+    // console.log("Total Incomes: ", this.incomes.length);
     this.paginatedIncomes = this.incomes.slice(startIndex, startIndex + this.itemsPerPage);
-    console.log("paginatedIncomes", this.paginatedIncomes, startIndex, this.itemsPerPage);
+    // console.log("paginatedIncomes", this.paginatedIncomes, startIndex, this.itemsPerPage);
     if (this.paginatedIncomes.length === 0) {
       console.warn('No hay ingresos para mostrar en esta página, revisa el valor de startIndex y la longitud de this.incomes');
     }
@@ -718,7 +727,7 @@ export class IngresosEgresosComponent implements OnInit {
   prevPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
-      console.log('Página anterior:', this.currentPage);
+      // console.log('Página anterior:', this.currentPage);
       this.loadDataBasedOnContext();
     }
   }
@@ -726,7 +735,7 @@ export class IngresosEgresosComponent implements OnInit {
   nextPage() {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      console.log('Página siguiente:', this.currentPage);
+      // console.log('Página siguiente:', this.currentPage);
       this.loadDataBasedOnContext();
     }
   }
@@ -749,7 +758,9 @@ export class IngresosEgresosComponent implements OnInit {
     this.isLoading = true;
     this.isSearchActive = true;
   
-    const filtros: { [key: string]: string | number } = { filtro: this.filtroSeleccionado }; // Incluye el filtro seleccionado
+    const filtros: { [key: string]: string | number } = { filtro: this.filtroSeleccionado };
+
+    filtros['segmento'] = this.segmentoSeleccionado || 'todos';
   
     for (let field of this.selectedFields) {
       if (this.isDateField(field)) {
@@ -813,7 +824,6 @@ export class IngresosEgresosComponent implements OnInit {
         const startDate = dateRange.startDate ? new Date(dateRange.startDate) : null;
         const endDate = dateRange.endDate ? new Date(dateRange.endDate) : null;
   
-        // Ajustar el final del rango para incluir el último día
         if (endDate) {
           endDate.setDate(endDate.getDate() + 1);
         }
@@ -864,14 +874,7 @@ export class IngresosEgresosComponent implements OnInit {
   }
 
 
-  // downloadFile(fileUrl: string) {
-  //   const baseUrl = 'http://localhost:8081/api/';
-  //   const fullUrl = `${baseUrl}${fileUrl}`;
-  //   window.open(fullUrl, '_blank');
-  // }
-
   downloadFile(fileUrl: string) {
-    // Asegurar que la URL de archivo no tenga rutas absolutas incorrectas
     const cleanFileUrl = fileUrl.replace(/^\/?root\/Api_Funeraria_Git\/Api_Funeraria_Git\//, ''); 
     const baseUrl = 'https://systemabmxlifuneraria.com';
     const fullUrl = `${baseUrl}/${cleanFileUrl}`;
@@ -882,7 +885,7 @@ export class IngresosEgresosComponent implements OnInit {
   async presentLoading(message: string) {
     const loading = await this.loadingController.create({
       message: message,
-      spinner: 'crescent', // Puedes cambiar el spinner a 'lines', 'bubbles', etc.
+      spinner: 'crescent', 
     });
     await loading.present();
     return loading;
@@ -897,7 +900,6 @@ export class IngresosEgresosComponent implements OnInit {
     if (tabla) {
       tabla.style.fontSize = `${this.fontSize}px`;
   
-      // También forzamos que todos los td y th internos se ajusten
       const celdas = tabla.querySelectorAll('td, th');
       celdas.forEach((celda) => {
         if (celda instanceof HTMLElement) {

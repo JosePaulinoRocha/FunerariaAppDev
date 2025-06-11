@@ -108,7 +108,7 @@ export class IngresosEgresosModalComponent implements OnInit {
   
 
   ngOnInit() {
-    console.log('registro datos:', this.ingreso);
+    // console.log('registro datos:', this.ingreso);
 
     this.loadConceptos();
     this.loadSegmentos();
@@ -154,7 +154,7 @@ export class IngresosEgresosModalComponent implements OnInit {
 
   loadCombinaciones() {
     this._ingresoServ.getCombinaciones().subscribe((data: Combinacion[]) => {
-      console.log("esta es mi data en combinaciones: ", data)
+      // console.log("esta es mi data en combinaciones: ", data)
       this.combinacion = data;
     }, (error) => {
       this.presentAlert('Error fetching combinations');
@@ -180,10 +180,10 @@ export class IngresosEgresosModalComponent implements OnInit {
       SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
     };
   
-    console.log("esta es mi info de cambio de combinacion: ", updatedIngreso);
+    // console.log("esta es mi info de cambio de combinacion: ", updatedIngreso);
   
     this._ingresoServ.updateCombination(updatedIngreso).subscribe(async response => {
-      console.log('Ingreso actualizado:', response);
+      // console.log('Ingreso actualizado:', response);
   
       const alert = await this.alertController.create({
         header: 'Éxito',

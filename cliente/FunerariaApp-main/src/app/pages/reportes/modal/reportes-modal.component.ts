@@ -73,8 +73,8 @@ export class ReportesModalComponent implements OnInit {
 
 
   ngOnInit() {
-    console.log("datos recibidos en el modal:", this.reporteMesActual);
-    console.log("Modo edición:", this.isEditMode);
+    // console.log("datos recibidos en el modal:", this.reporteMesActual);
+    // console.log("Modo edición:", this.isEditMode);
 
   }
 
@@ -100,12 +100,12 @@ export class ReportesModalComponent implements OnInit {
       FrecuenciaDictaminada: this.reporteMesActual.FrecuenciaDictaminada,
     };
   
-    console.log("Datos del presupuesto:", montoFrecuenciaDictaminados);
+    // console.log("Datos del presupuesto:", montoFrecuenciaDictaminados);
 
 
 
     this._presupuestoServ.updatePresupuesto(montoFrecuenciaDictaminados).subscribe(async response => {
-      console.log('Presupuesto actualizado exitosamente:', response);
+      // console.log('Presupuesto actualizado exitosamente:', response);
 
       const alert = await this.alertController.create({
         header: 'Éxito',

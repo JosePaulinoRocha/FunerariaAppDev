@@ -198,14 +198,14 @@ export class ConceptosModalComponent {
     });
 
     this.conceptos = Object.values(conceptosAgrupados).sort((a, b) => (a.Actual + a.Planeado) - (b.Actual + b.Planeado));
-    console.log("Conceptos procesados:", this.conceptos);
+    // console.log("Conceptos procesados:", this.conceptos);
   }
 
 
 loadGastoMensualExtraordinario() {
   this._resumenPresupuesto_Serv.getGastoExtraordinarioPorSubcategoria(this.segmentoID, this.categoriaID, this.subcategoriaID).subscribe(
     (data: GastosExtraordinarios[]) => {
-      console.log("Gastos extraordinarios filtrados:", data);
+      // console.log("Gastos extraordinarios filtrados:", data);
       this.gastosExtraordinarios = data;
       this.procesarConceptos();
     },
@@ -216,7 +216,7 @@ loadGastoMensualExtraordinario() {
 loadPresupuestoSemanal() {
   this._resumenPresupuesto_Serv.getPresupuestoSemanalPorSubcategoria(this.segmentoID, this.categoriaID, this.subcategoriaID).subscribe(
     (data: PresupuestoSemanal[]) => {
-      console.log("Presupuesto semanal filtrado:", data);
+      // console.log("Presupuesto semanal filtrado:", data);
       this.presupuestoSemanal = data;
       this.procesarConceptos();
     },
@@ -227,7 +227,7 @@ loadPresupuestoSemanal() {
 loadGastosMensualesFrecuencia() {
   this._resumenPresupuesto_Serv.getPresupuestoFrecuenciaPorSubcategoria(this.segmentoID, this.categoriaID, this.subcategoriaID).subscribe(
     (data: GastoMensualPorFrecuencia[]) => {
-      console.log("Gastos mensuales por frecuencia filtrados:", data);
+      // console.log("Gastos mensuales por frecuencia filtrados:", data);
       this.gastoMensualFrecuencia = data;
       this.procesarConceptos();
     },
@@ -238,7 +238,7 @@ loadGastosMensualesFrecuencia() {
 loadEgresosMensuales() {
   this._resumenPresupuesto_Serv.getEgresosMensualesPorSubcategoria(this.segmentoID, this.categoriaID, this.subcategoriaID).subscribe(
     (data: any[]) => {
-      console.log("Egresos mensuales filtrados:", data);
+      // console.log("Egresos mensuales filtrados:", data);
       this.egresosMensuales = data;
       this.procesarConceptos();
     },

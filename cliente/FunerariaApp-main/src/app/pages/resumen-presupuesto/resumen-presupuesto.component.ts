@@ -68,7 +68,7 @@ export class ResumenPresupuestoComponent  implements OnInit {
       this.presupuestoSemanal = data || [];
       this.loadedPresupuestoSemanal = true;
       this.checkAndCalculateEgresoOtorgado();
-      console.log("egreso semanal planeado: ", data)
+      // console.log("egreso semanal planeado: ", data)
     }, (error) => {
       console.error('Error fetching presupuesto', error);
       this.loadedPresupuestoSemanal = true;
@@ -81,9 +81,9 @@ export class ResumenPresupuestoComponent  implements OnInit {
       this.gastoMensualFrecuenciaExtraordinaria = data || [];
       this.loadedGastoMensualExtraordinario = true;
       this.checkAndCalculateEgresoOtorgado();
-      console.log("egreso extraordinario planeado: ", data)
+      // console.log("egreso extraordinario planeado: ", data)
     }, (error) => {
-      console.error('Error fetching presupuesto', error);
+      // console.error('Error fetching presupuesto', error);
       this.loadedGastoMensualExtraordinario = true;
       this.checkAndCalculateEgresoOtorgado();
     });
@@ -94,9 +94,9 @@ export class ResumenPresupuestoComponent  implements OnInit {
       this.gastoMensualFrecuencia = data || [];
       this.loadedGastoMensualFrecuencia = true;
       this.checkAndCalculateEgresoOtorgado();
-      console.log("egreso periodico planeado: ", data)
+      // console.log("egreso periodico planeado: ", data)
     }, (error) => {
-      console.error('Error fetching incomes', error);
+      // console.error('Error fetching incomes', error);
       this.loadedGastoMensualFrecuencia = true;
       this.checkAndCalculateEgresoOtorgado();
     });
@@ -108,7 +108,7 @@ export class ResumenPresupuestoComponent  implements OnInit {
         this.egresoActual = data.length > 0 && data[0].EgresoActual
           ? parseFloat(data[0].EgresoActual)
           : 0; 
-          console.log("egreso actual: ", data)
+          // console.log("egreso actual: ", data)
       },
       (error) => {
         console.error('Error fetching egreso mensual:', error);
@@ -122,7 +122,7 @@ export class ResumenPresupuestoComponent  implements OnInit {
         this.ingresoActual = data.length > 0 && data[0].IngresoActual
           ? parseFloat(data[0].IngresoActual)
           : 0; // Valor predeterminado
-          console.log("ingreso actual: ", data)
+          // console.log("ingreso actual: ", data)
       },
       (error) => {
         console.error('Error fetching ingreso mensual:', error);

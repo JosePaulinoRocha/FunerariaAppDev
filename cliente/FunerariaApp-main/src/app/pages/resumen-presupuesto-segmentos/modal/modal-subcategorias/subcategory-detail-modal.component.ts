@@ -105,8 +105,8 @@ export class SubcategoryDetailModalComponent {
   ) {}
 
   ngOnInit() {
-    console.log("Segmento recibido en el modal:", this.segmentoID);
-    console.log("Categoria recibida en el modal:", this.categoriaID);
+    // console.log("Segmento recibido en el modal:", this.segmentoID);
+    // console.log("Categoria recibida en el modal:", this.categoriaID);
   
     this.loadGastoMensualExtraordinario();
     this.loadPresupuestoSemanal();
@@ -115,7 +115,7 @@ export class SubcategoryDetailModalComponent {
   }
 
   async openConceptosModal(subcategoria: any) {
-    console.log("Subcategoría seleccionada:", subcategoria);
+    // console.log("Subcategoría seleccionada:", subcategoria);
   
     const modal = await this.modalController.create({
       component: ConceptosModalComponent,
@@ -183,7 +183,7 @@ export class SubcategoryDetailModalComponent {
     // Convertimos los objetos agrupados en un array y ordenamos de menor a mayor por Actual
     this.subcategorias = Object.values(subcategoriasAgrupadas).sort((a, b) => a.Actual - b.Actual);
   
-    console.log("Subcategorías procesadas:", this.subcategorias); // Verifica que ahora incluyen los nombres de segmento y categoría
+    // console.log("Subcategorías procesadas:", this.subcategorias); // Verifica que ahora incluyen los nombres de segmento y categoría
   }
   
 
@@ -191,7 +191,7 @@ export class SubcategoryDetailModalComponent {
 loadGastoMensualExtraordinario() {
   this._resumenPresupuesto_Serv.getGastoExtraordinarioPorCategoria(this.segmentoID, this.categoriaID).subscribe(
     (data: GastosExtraordinarios[]) => {
-      console.log("Gastos extraordinarios filtrados:", data);
+      // console.log("Gastos extraordinarios filtrados:", data);
       this.gastosExtraordinarios = data;
       this.procesarSubcategorias();
     },
@@ -202,7 +202,7 @@ loadGastoMensualExtraordinario() {
 loadPresupuestoSemanal() {
   this._resumenPresupuesto_Serv.getPresupuestoSemanalPorCategoria(this.segmentoID, this.categoriaID).subscribe(
     (data: PresupuestoSemanal[]) => {
-      console.log("Presupuesto semanal filtrado:", data);
+      // console.log("Presupuesto semanal filtrado:", data);
       this.presupuestoSemanal = data;
       this.procesarSubcategorias();
     },
@@ -213,7 +213,7 @@ loadPresupuestoSemanal() {
 loadGastosMensualesFrecuencia() {
   this._resumenPresupuesto_Serv.getPresupuestoFrecuenciaPorCategoria(this.segmentoID, this.categoriaID).subscribe(
     (data: GastoMensualPorFrecuencia[]) => {
-      console.log("Gastos mensuales por frecuencia filtrados:", data);
+      // console.log("Gastos mensuales por frecuencia filtrados:", data);
       this.gastoMensualFrecuencia = data;
       this.procesarSubcategorias();
     },
@@ -224,7 +224,7 @@ loadGastosMensualesFrecuencia() {
 loadEgresosMensuales() {
   this._resumenPresupuesto_Serv.getEgresosMensualesPorCategoria(this.segmentoID, this.categoriaID).subscribe(
     (data: any[]) => {
-      console.log("Egresos mensuales filtrados:", data);
+      // console.log("Egresos mensuales filtrados:", data);
       this.egresosMensuales = data;
       this.procesarSubcategorias();
     },

@@ -326,12 +326,12 @@ export class PresupuestoMensualComponent  implements OnInit {
 
 
   eliminarPeriodoCongelado(periodo: any) {
-    console.log("Intentando eliminar periodo congelado:", periodo);
+    // console.log("Intentando eliminar periodo congelado:", periodo);
   
     // Confirmación antes de eliminar
     const confirmacion = window.confirm("¿Estás seguro de que deseas eliminar este periodo congelado?");
     if (!confirmacion) {
-      console.log("Eliminación cancelada.");
+      // console.log("Eliminación cancelada.");
       return;
     }
   
@@ -360,12 +360,12 @@ export class PresupuestoMensualComponent  implements OnInit {
     }
   
     // Mostrar qué información se va a enviar al servicio
-    console.log("Datos que se enviarán al servicio para eliminar el periodo:", periodoAEliminar);
+    // console.log("Datos que se enviarán al servicio para eliminar el periodo:", periodoAEliminar);
   
     // Llamar al servicio para eliminar
     this._presupuestoServ.deletePeriodoCongelado(periodoAEliminar).subscribe(
       response => {
-        console.log("Periodo eliminado exitosamente:", response);
+        // console.log("Periodo eliminado exitosamente:", response);
         this.presentAlert("El periodo ha sido eliminado correctamente.", "Éxito");
         this.loadPeriodosCongelados(); // Recargar periodos congelados
       },
@@ -384,7 +384,7 @@ export class PresupuestoMensualComponent  implements OnInit {
       const cantidadRegistros = data.length;
       this.steps[3].total = `Gastos semanales de este mes: ${cantidadRegistros}`;
   
-      console.log("esta es la data de presupuesto semanal: ", data);
+      // console.log("esta es la data de presupuesto semanal: ", data);
     }, (error) => {
       console.error('Error fetching presupuesto', error); 
     });
@@ -407,9 +407,9 @@ export class PresupuestoMensualComponent  implements OnInit {
 
       this.steps[3].assigned = `Gastos por frecuencia guardados: ${guardados}`;
   
-      console.log("Esta es la data de gastos mensuales por frecuencia: ", this.gastoMensualFrecuencia);
-      console.log("Registros con Guardado en 1: ", guardados);
-      console.log("Registros con Guardado en 0: ", noGuardados);
+      // console.log("Esta es la data de gastos mensuales por frecuencia: ", this.gastoMensualFrecuencia);
+      // console.log("Registros con Guardado en 1: ", guardados);
+      // console.log("Registros con Guardado en 0: ", noGuardados);
   
     }, (error: any) => {
       console.error('Error fetching incomes', error);
@@ -475,11 +475,11 @@ export class PresupuestoMensualComponent  implements OnInit {
         fecha_fin: this.formatDate(periodo.end)
       }));
   
-    console.log('Periodos congelados:', periodosSeleccionados);
+    // console.log('Periodos congelados:', periodosSeleccionados);
   
     this._presupuestoServ.savePeriodosCongelados(periodosSeleccionados).subscribe(
       response => {
-        console.log('Periodos congelados guardados exitosamente:', response);
+        // console.log('Periodos congelados guardados exitosamente:', response);
         this.presentAlert('Los periodos seleccionados han sido congelados exitosamente.', 'Éxito');
         this.loadPeriodosCongelados();
         this.generarPeriodosMes();
@@ -516,7 +516,7 @@ export class PresupuestoMensualComponent  implements OnInit {
   onRadioChange(event: any) {
     const selectedValue = this.selectedCardIndex; // Usa el índice del card seleccionado
     
-    console.log("esta cambiando de card: ", selectedValue);
+    // console.log("esta cambiando de card: ", selectedValue);
     
     // Cambiar el paso actual
     this.currentStep = selectedValue; // Cambia al paso correspondiente
@@ -538,9 +538,9 @@ export class PresupuestoMensualComponent  implements OnInit {
     // Cargar la tabla con el nuevo filtro
     // this.loadPresupuesto();
     
-    console.log('Modo Filtro:', this.modoFiltro);
-    console.log('Filtro Asignar Cuenta:', this.filtroAsignarCuenta);
-    console.log('Paso actual:', this.currentStep);
+    // console.log('Modo Filtro:', this.modoFiltro);
+    // console.log('Filtro Asignar Cuenta:', this.filtroAsignarCuenta);
+    // console.log('Paso actual:', this.currentStep);
   }
 
 
@@ -592,7 +592,7 @@ export class PresupuestoMensualComponent  implements OnInit {
         }
       });
   
-      console.log("Esta es la data de gastos mensuales: ", this.gastos);
+      // console.log("Esta es la data de gastos mensuales: ", this.gastos);
       this.totalPages = Math.ceil(this.gastos.length / this.itemsPerPage);
       this.updatePaginated();
     }, (error) => {
@@ -607,7 +607,7 @@ export class PresupuestoMensualComponent  implements OnInit {
         this.periodosCongelados = response;
         this.marcarPeriodosCongelados();
         this.updateSemanasCongeladas();
-        console.log("esta es la data de periodos congelados: ", this.periodosCongelados);
+        // console.log("esta es la data de periodos congelados: ", this.periodosCongelados);
       },
       error => {
         console.error("Error al cargar periodos congelados", error);
@@ -760,7 +760,7 @@ export class PresupuestoMensualComponent  implements OnInit {
           Fecha: new Date(gastos.Fecha).toISOString().split('T')[0],
         }));
   
-      console.log("Esta es la data de gastos después del filtro: ", this.gastos);
+      // console.log("Esta es la data de gastos después del filtro: ", this.gastos);
       this.totalPages = Math.ceil(this.gastos.length / this.itemsPerPage);
       this.updatePaginated();
     }, (error) => {
@@ -843,7 +843,7 @@ export class PresupuestoMensualComponent  implements OnInit {
 
   async asignarDatos(gastos?: Gastos) {
 
-    console.log("estos son los datos de edicion: ", gastos)
+    // console.log("estos son los datos de edicion: ", gastos)
 
     const modal = await this.modalController.create({
       component: PresupuestoModalComponent,
@@ -865,7 +865,7 @@ export class PresupuestoMensualComponent  implements OnInit {
 
   async asignarEstatus(gastos?: Gastos) {
 
-    console.log("estos son los datos de edicion en cuenta y estatus: ", gastos)
+    // console.log("estos son los datos de edicion en cuenta y estatus: ", gastos)
 
     const modal = await this.modalController.create({
       component: PresupuestoCuentaModalComponent,

@@ -85,11 +85,11 @@ export class IngresosApiComponent implements OnInit {
       total_amount: ingreso.total_amount
     }));
   
-    console.log("Estos son los registros a importar: ", registrosParaImportar);
+    // console.log("Estos son los registros a importar: ", registrosParaImportar);
   
     this._ingresoApiServ.importarIngresos(registrosParaImportar).subscribe(
       () => {
-        console.log('Registros importados correctamente');
+        // console.log('Registros importados correctamente');
       },
       (error: any) => {
         console.error('Error al importar los registros', error);
@@ -139,7 +139,7 @@ export class IngresosApiComponent implements OnInit {
             })
           )
           .subscribe((data: Ingreso[]) => {
-            console.log("Datos recibidos de afectaciones: ", data);
+            // console.log("Datos recibidos de afectaciones: ", data);
             this.ingresos = data;
             this.totalPages = Math.ceil(this.ingresos.length / this.itemsPerPage);
             this.updatePaginatedIngresos();
@@ -163,7 +163,7 @@ export class IngresosApiComponent implements OnInit {
             })
           )
           .subscribe((data: Ingreso[]) => {
-            console.log("Datos recibidos de funeraria: ", data);
+            // console.log("Datos recibidos de funeraria: ", data);
             this.ingresos = data;
             this.totalPages = Math.ceil(this.ingresos.length / this.itemsPerPage);
             this.updatePaginatedIngresos();
@@ -187,7 +187,7 @@ export class IngresosApiComponent implements OnInit {
             })
           )
           .subscribe((data: Ingreso[]) => {
-            console.log("Datos recibidos de pagos iniciales: ", data);
+            // console.log("Datos recibidos de pagos iniciales: ", data);
             this.ingresos = data;
             this.totalPages = Math.ceil(this.ingresos.length / this.itemsPerPage);
             this.updatePaginatedIngresos();

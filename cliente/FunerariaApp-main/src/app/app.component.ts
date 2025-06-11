@@ -157,7 +157,7 @@ export class AppComponent {
   loadHistorialIngresos() {
     this._ingresoApiServ.getHistorialIngresos().subscribe(
       (data: Historial_Ingresos[]) => {
-        console.log('Esta es mi data del historial de importaciones de ingresos: ', data);
+        // console.log('Esta es mi data del historial de importaciones de ingresos: ', data);
         this.historial_ingresos = data;
   
         // Verificar si el historial tiene registros
@@ -165,10 +165,10 @@ export class AppComponent {
           // Obtener el registro más reciente
           const ultimoHistorial = this.historial_ingresos[0];
           const fechaCierre = new Date(ultimoHistorial.FechaCierre);
-          console.log("Esta es la fecha de cierre: ", fechaCierre);
+          // console.log("Esta es la fecha de cierre: ", fechaCierre);
 
           const fechaCierreUTC = new Date(fechaCierre.getUTCFullYear(), fechaCierre.getUTCMonth(), fechaCierre.getUTCDate());
-          console.log("Esta es la fecha de cierre en UTC: ", fechaCierreUTC);
+          // console.log("Esta es la fecha de cierre en UTC: ", fechaCierreUTC);
           
           const fechaActual = new Date();
   
@@ -178,14 +178,14 @@ export class AppComponent {
   
           // Si la FechaCierre es menor a la fecha actual, hacer la importación
           if (fechaCierreSinHora < fechaActualSinHora) {
-            console.log("La fecha de cierre es menor al día actual: ", fechaCierreSinHora, fechaActualSinHora);
+            // console.log("La fecha de cierre es menor al día actual: ", fechaCierreSinHora, fechaActualSinHora);
             this.getAfectacionesDesdeFecha(fechaCierreSinHora);
           } else {
-            console.log('No es necesaria una nueva importación, la FechaCierre es más reciente o igual a hoy. ', ' Fecha de cierre: ',fechaCierreSinHora, 'Fecha actual: ',fechaActualSinHora);
+            // console.log('No es necesaria una nueva importación, la FechaCierre es más reciente o igual a hoy. ', ' Fecha de cierre: ',fechaCierreSinHora, 'Fecha actual: ',fechaActualSinHora);
           }
         } else {
           // Si el historial está vacío, traer registros desde el 1 de enero del 2000
-          console.log('Se hará la importación masiva.');
+          // console.log('Se hará la importación masiva.');
           this.getAfectacionesDesde2000();
         }
       },
@@ -204,7 +204,7 @@ export class AppComponent {
     const fechaInicio = new Date(fechaCierreSinHora);
     fechaInicio.setDate(fechaInicio.getDate() - 1); // Restar un día
     const fechaInicioStr = fechaInicio.toISOString().split('T')[0]; // Convertir a string
-    console.log("esta es la nueva fecha de inicio: ", fechaInicioStr);
+    // console.log("esta es la nueva fecha de inicio: ", fechaInicioStr);
 
     const fechaFin = new Date().toISOString().split('T')[0]; // Fecha actual
   
@@ -227,7 +227,7 @@ export class AppComponent {
         })
       ).subscribe((data: Ingreso_Importado[]) => {
         this.afectaciones_ingresos = data;
-        console.log('Datos de Afectaciones:', data);
+        // console.log('Datos de Afectaciones:', data);
         responsesCount++;
         this.checkImportarIngresos(responsesCount);
       });
@@ -244,7 +244,7 @@ export class AppComponent {
         })
       ).subscribe((results: [Ingreso_Importado[], Ingreso_Importado[]]) => {
         this.funeraria_ingresos = [...results[0], ...results[1]];
-        console.log('Datos de Funeraria:', this.funeraria_ingresos);
+        // console.log('Datos de Funeraria:', this.funeraria_ingresos);
         responsesCount++;
         this.checkImportarIngresos(responsesCount);
       });
@@ -257,7 +257,7 @@ export class AppComponent {
         })
       ).subscribe((data: Ingreso_Importado[]) => {
         this.pagos_iniciales = data;
-        console.log('Datos de Pagos Iniciales:', data);
+        // console.log('Datos de Pagos Iniciales:', data);
         responsesCount++;
         this.checkImportarIngresos(responsesCount);
       });
@@ -290,7 +290,7 @@ export class AppComponent {
             })
         ).subscribe((data: Ingreso_Importado[]) => {
             this.afectaciones_ingresos = data;
-            console.log('Datos de Afectaciones:', data);
+            // console.log('Datos de Afectaciones:', data);
             responsesCount++; // Incrementar el contador
             this.checkImportarIngresos(responsesCount); // Verificar si se debe llamar a importarIngresos
         });
@@ -307,7 +307,7 @@ export class AppComponent {
             })
         ).subscribe((results: [Ingreso_Importado[], Ingreso_Importado[]]) => {
             this.funeraria_ingresos = [...results[0], ...results[1]];
-            console.log('Datos de Funeraria:', this.funeraria_ingresos);
+            // console.log('Datos de Funeraria:', this.funeraria_ingresos);
             responsesCount++; // Incrementar el contador
             this.checkImportarIngresos(responsesCount); // Verificar si se debe llamar a importarIngresos
         });
@@ -320,7 +320,7 @@ export class AppComponent {
             })
         ).subscribe((data: Ingreso_Importado[]) => {
             this.pagos_iniciales = data;
-            console.log('Datos de Pagos Iniciales:', data);
+            // console.log('Datos de Pagos Iniciales:', data);
             responsesCount++; // Incrementar el contador
             this.checkImportarIngresos(responsesCount); // Verificar si se debe llamar a importarIngresos
         });
@@ -377,7 +377,7 @@ importarIngresos() {
         }))
     ];
 
-    console.log("Estos son los registros a importar: ", registrosParaImportar);
+    // console.log("Estos son los registros a importar: ", registrosParaImportar);
     
     // Inicia el indicador de carga
     this.isLoading = true;
@@ -412,7 +412,7 @@ importarIngresos() {
 
         // Si no hay más registros que enviar, finaliza
         if (batch.length === 0) {
-            console.log('Todos los registros han sido importados.');
+            // console.log('Todos los registros han sido importados.');
 
             const fechaCierre = new Date(); // Almacena la fecha de cierre de la importación
             const fechaCierreFormateada = fechaCierre.toISOString().split('T')[0]; // Formatear fecha de cierre (YYYY-MM-DD)
@@ -420,7 +420,7 @@ importarIngresos() {
             // Llama a crearHistorial con las fechas formateadas
             this._ingresoApiServ.crearHistorial(fechaInicio, fechaCierre, totalRegistros).subscribe(
               () => {
-                  console.log('Historial de importación creado con éxito.');
+                  // console.log('Historial de importación creado con éxito.');
               },
               (error) => {
                   console.error('Error al crear el historial de importación:', error);
@@ -435,7 +435,7 @@ importarIngresos() {
         // Enviar el batch al endpoint
         this._ingresoApiServ.importarIngresos(batch).subscribe(
             () => {
-                console.log(`Batch de ${batch.length} registros importados correctamente`);
+                // console.log(`Batch de ${batch.length} registros importados correctamente`);
                 offset += this.BATCH_SIZE; // Incrementar el offset para el siguiente batch
                 sendNextBatch(); // Llamar de nuevo para enviar el siguiente batch
             },

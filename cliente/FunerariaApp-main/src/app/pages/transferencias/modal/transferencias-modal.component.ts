@@ -69,7 +69,7 @@ export class TransferenciasModalComponent implements OnInit {
 
   loadCuentas() {
     this._ingresoServ.getCuentas().subscribe((data: Cuenta[]) => {
-      console.log("esta es la info de cuentas: ", data);
+      // console.log("esta es la info de cuentas: ", data);
       this.cuenta = data;
       this.onTipoCuentaChange('envia');
       this.onTipoCuentaChange('recibe');
@@ -111,10 +111,10 @@ export class TransferenciasModalComponent implements OnInit {
       Fecha: this.transferencia.Fecha,
     };
   
-    console.log("Datos de transferencia:", nuevaTransferencia);
+    // console.log("Datos de transferencia:", nuevaTransferencia);
   
     this._transferenciaServ.realizarTransferencia(nuevaTransferencia).subscribe(async response => {
-      console.log('Proveedor agregado exitosamente:', response);
+      // console.log('Proveedor agregado exitosamente:', response);
   
       const alert = await this.alertController.create({
         header: 'Éxito',

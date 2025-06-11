@@ -198,8 +198,8 @@ export class IncomeModalComponent implements OnInit {
 
   ngOnInit() {
 
-    console.log("Ingreso recibido en el modal:", this.ingreso);
-    console.log("Modo edición:", this.isEditMode);
+    // console.log("Ingreso recibido en el modal:", this.ingreso);
+    // console.log("Modo edición:", this.isEditMode);
 
     this.newProveedor = this.ingreso.Proveedor || '';
 
@@ -211,7 +211,7 @@ export class IncomeModalComponent implements OnInit {
       this.ingreso.TipoIngreso = this.ingreso.TipoIngreso || 0;
     }
 
-    console.log("Valor de TipoIngreso antes de inicializar el formulario:", this.ingreso.TipoIngreso);
+    // console.log("Valor de TipoIngreso antes de inicializar el formulario:", this.ingreso.TipoIngreso);
 
     this.form = this.fb.group({
       CategoriaID: [null, Validators.required],
@@ -259,7 +259,7 @@ export class IncomeModalComponent implements OnInit {
 
     modal.onDidDismiss().then((data) => {
       if (data.data) {
-        console.log('Concepto seleccionado: ', data.data);
+        // console.log('Concepto seleccionado: ', data.data);
         this.ingreso.ConceptoID = data.data.ConceptoID;
         this.ingreso.NombreConcepto = data.data.NombreConcepto; // Muestra el nombre seleccionado
       }
@@ -277,7 +277,7 @@ export class IncomeModalComponent implements OnInit {
 
 
   async openCombinacionesModal(segmentoId: number) {
-    console.log("este es el segmento ID que estoy enviando a las combinaciones: " ,segmentoId)
+    // console.log("este es el segmento ID que estoy enviando a las combinaciones: " ,segmentoId)
     const modal = await this.modalController.create({
       component: CombinacionesModalComponent,
       componentProps: {
@@ -287,7 +287,7 @@ export class IncomeModalComponent implements OnInit {
 
     modal.onDidDismiss().then((data) => {
       if (data.data) {
-        console.log("esta es la data en el componente principal con la combinacion: ", data.data)
+        // console.log("esta es la data en el componente principal con la combinacion: ", data.data)
         this.fillFormWithCombination(data.data);
         this.filterProveedoresByCombinacion();
       }
@@ -314,7 +314,7 @@ export class IncomeModalComponent implements OnInit {
       this.ingreso.SubcategoriaID = combinacion.SubcategoriaID;
       this.ingreso.NombreConcepto = combinacion.NombreConcepto; // Actualiza el nombre del concepto
 
-      console.log("Datos del formulario actualizados con la combinación:", this.form.value);
+      // console.log("Datos del formulario actualizados con la combinación:", this.form.value);
     }
   }
 
@@ -388,7 +388,7 @@ export class IncomeModalComponent implements OnInit {
       (data: Segmento[]) => {
         // Ordenar los segmentos alfabéticamente por el campo 'Nombre'
         this.segmento = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
-        console.log('segmentos:', this.segmento)
+        // console.log('segmentos:', this.segmento)
       },
       (error) => {
         this.presentAlert('Error fetching segments');
@@ -428,7 +428,7 @@ export class IncomeModalComponent implements OnInit {
   loadProveedores() {
     this._ingresoServ.getProveedores().subscribe(
       (data: Proveedor[]) => {
-        console.log('Esta es mi data en proveedores: ', data);
+        // console.log('Esta es mi data en proveedores: ', data);
         this.allProveedores = data;
         this.proveedor = [...this.allProveedores];
       },
@@ -452,7 +452,7 @@ export class IncomeModalComponent implements OnInit {
   loadCombinaciones() {
     this._ingresoServ.getCombinaciones().subscribe(
       (data: Combinacion[]) => {
-        console.log('Esta es mi data en combinaciones: ', data);
+        // console.log('Esta es mi data en combinaciones: ', data);
         this.combinacion = data;
       },
       (error) => {
@@ -475,7 +475,7 @@ export class IncomeModalComponent implements OnInit {
   loadCuentas() {
     this._ingresoServ.getCuentas().subscribe(
       (data: Cuenta[]) => {
-        console.log('Esta es mi data en cuentas: ', data);
+        // console.log('Esta es mi data en cuentas: ', data);
         this.cuenta = data;
         this.onTipoCuentaChange();
       },
@@ -559,14 +559,14 @@ export class IncomeModalComponent implements OnInit {
         ObservacionesDifConciliacion: this.ingreso.ObservacionesDifConciliacion
     };
 
-    console.log("Estos son los datos que estoy mandando Ingreso / Egreso: ", incomeData);
+    // console.log("Estos son los datos que estoy mandando Ingreso / Egreso: ", incomeData);
 
 
     if (this.isEditMode) {
         // Lógica para actualizar ingreso
         this._ingresoServ.UpdateIngresos(incomeData).subscribe(
             response => {
-                console.log('Ingreso actualizado correctamente:', response);
+                // console.log('Ingreso actualizado correctamente:', response);
                 this.presentSuccessAlert();
 
                 if (this.selectedFile) {
@@ -576,7 +576,7 @@ export class IncomeModalComponent implements OnInit {
                     // Usamos el IngresoID del incomeData en lugar del response
                     this._ingresoServ.uploadComprobante(incomeData.IngresoID, formData).subscribe(
                         fileResponse => {
-                            console.log('Archivo guardado correctamente:', fileResponse);
+                            // console.log('Archivo guardado correctamente:', fileResponse);
                             this.closeModal(true);
                         },
                         fileError => {
@@ -596,7 +596,7 @@ export class IncomeModalComponent implements OnInit {
         // Lógica para crear un nuevo ingreso
         this._ingresoServ.addIngreso(incomeData).subscribe(
             response => {
-                console.log('Ingreso guardado correctamente:', response);
+                // console.log('Ingreso guardado correctamente:', response);
                 this.presentSuccessAlert();
 
                 if (this.selectedFile) {
@@ -606,7 +606,7 @@ export class IncomeModalComponent implements OnInit {
                     // Usamos el IngresoID del response, ya que es nuevo
                     this._ingresoServ.uploadComprobante(response.IngresoID, formData).subscribe(
                         fileResponse => {
-                            console.log('Archivo guardado correctamente:', fileResponse);
+                            // console.log('Archivo guardado correctamente:', fileResponse);
                             // this.closeModal(true);
                             this.resetForm();
                         },
@@ -637,8 +637,8 @@ export class IncomeModalComponent implements OnInit {
     const categoriaId = this.ingreso.CategoriaID;
     const subcategoriaId = this.ingreso.SubcategoriaID;
 
-    console.log('CategoriaID:', categoriaId);
-    console.log('SubcategoriaID:', subcategoriaId);
+    // console.log('CategoriaID:', categoriaId);
+    // console.log('SubcategoriaID:', subcategoriaId);
 
     // Verifica si CategoriaID y SubcategoriaID son mayores que 0
     if (categoriaId > 0 && subcategoriaId > 0) {
@@ -648,13 +648,13 @@ export class IncomeModalComponent implements OnInit {
         p.SubcategoriaID === subcategoriaId
       );
 
-      console.log('Filtered Proveedores:', filteredProveedores);
+      // console.log('Filtered Proveedores:', filteredProveedores);
 
       // Actualiza la lista de proveedores
       this.proveedor = filteredProveedores;
     } else {
       // Si CategoriaID o SubcategoriaID no son mayores que 0, carga todos los proveedores
-      console.log("Se fue al else de proveedores");
+      // console.log("Se fue al else de proveedores");
       this.proveedor = [...this.allProveedores];
     }
   }

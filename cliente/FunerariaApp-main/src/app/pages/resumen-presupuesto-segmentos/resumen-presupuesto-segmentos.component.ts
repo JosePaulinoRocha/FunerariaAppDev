@@ -32,7 +32,7 @@ export class ResumenPresupuestoSegmentosComponent implements OnInit {
     this.isLoading = true;
     this._resumenPresupuesto_Serv.getResumenSegmentos().subscribe(
       (data: any[]) => {
-        console.log("Resumen de egresos por segmento: ", data);
+        // console.log("Resumen de egresos por segmento: ", data);
         this.segmentos = data.map(seg => ({
           segmentoID: seg.SegmentoID,
           nombre: seg.NombreSegmento,
@@ -50,7 +50,7 @@ export class ResumenPresupuestoSegmentosComponent implements OnInit {
   
 
   async openSegmentDetail(segmento: any) {
-    console.log("Segmento seleccionado:", segmento);
+    // console.log("Segmento seleccionado:", segmento);
     const modal = await this.modalController.create({
       component: SegmentDetailModalComponent,
       componentProps: { segmento } 

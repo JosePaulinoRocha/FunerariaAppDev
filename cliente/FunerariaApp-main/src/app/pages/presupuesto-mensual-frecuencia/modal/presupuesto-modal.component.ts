@@ -88,7 +88,7 @@ export class ReintegrosReconciliacionesModalComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    console.log('esta es la info que traigo al modal de periodos a vencer:', this.gastoMensualFrecuencia);
+    // console.log('esta es la info que traigo al modal de periodos a vencer:', this.gastoMensualFrecuencia);
     this.loadPeriodosCongelados();
   }
 
@@ -97,10 +97,10 @@ export class ReintegrosReconciliacionesModalComponent implements OnInit {
     this._presupuestoServ.getPeriodosCongelados().subscribe(
       (response: Periodos[]) => {
         this.periodosCongelados = response;
-        console.log("esta es la data de periodos congelados: ", this.periodosCongelados);
+        // console.log("esta es la data de periodos congelados: ", this.periodosCongelados);
       },
       error => {
-        console.error("Error al cargar periodos congelados", error);
+        // console.error("Error al cargar periodos congelados", error);
       }
     );
   }
@@ -135,12 +135,12 @@ export class ReintegrosReconciliacionesModalComponent implements OnInit {
 
     };
   
-    console.log("Datos del gasto por frecuencia:", gastoMensualFrecuencia);
+    // console.log("Datos del gasto por frecuencia:", gastoMensualFrecuencia);
 
 
     this._presupuestoMensualFrecuenciaServ.addGastoFrecuencia(gastoMensualFrecuencia).subscribe(
       response => {
-          console.log('Gasto guardado correctamente:', response);
+          // console.log('Gasto guardado correctamente:', response);
           this.presentSuccessAlert();
 
 

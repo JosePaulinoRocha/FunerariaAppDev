@@ -33,7 +33,7 @@ export class ConceptosModalComponent implements OnInit {
 
   loadConceptos() {
     this._ingresoServ.getConceptos().subscribe((conceptos: any[]) => {
-      console.log('Respuesta del servicio:', conceptos);
+      // console.log('Respuesta del servicio:', conceptos);
   
       this.conceptos = conceptos.map(concepto => ({
         ConceptoID: concepto.ConceptoID,
@@ -54,6 +54,6 @@ export class ConceptosModalComponent implements OnInit {
 
   selectCombination(concepto: Concepto) {
     this.modalController.dismiss(concepto);
-    console.log('Concepto seleccionado: ', concepto);
+    // console.log('Concepto seleccionado: ', concepto);
   }
 }

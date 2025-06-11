@@ -110,8 +110,8 @@ export class PresupuestoModalComponent implements OnInit {
 
 
   ngOnInit() {
-    console.log("Proveedor recibido en el modal:", this.gastos);
-    console.log("Modo edición:", this.isEditMode);
+    // console.log("Proveedor recibido en el modal:", this.gastos);
+    // console.log("Modo edición:", this.isEditMode);
 
     this.isNewProveedor = !this.isEditMode;
 
@@ -134,7 +134,7 @@ export class PresupuestoModalComponent implements OnInit {
   loadProveedores() {
     this._ingresoServ.getProveedores().subscribe(
       (data: Proveedor[]) => {
-        console.log('Esta es mi data en proveedores: ', data);
+        // console.log('Esta es mi data en proveedores: ', data);
         this.allProveedores = data; 
         this.proveedor = [...this.allProveedores]; 
       },
@@ -183,13 +183,13 @@ export class PresupuestoModalComponent implements OnInit {
       SegmentoID: this.isNewSegmento ? this.newSegmento : this.gastos.SegmentoID,
     };
   
-    console.log("Datos del gasto:", gastos);
+    // console.log("Datos del gasto:", gastos);
 
 
     if (this.isEditMode) {
       this._presupuestoServ.UpdateGasto(gastos).subscribe(
           response => {
-              console.log('Ingreso actualizado correctamente:', response);
+              // console.log('Ingreso actualizado correctamente:', response);
               this.presentSuccessAlert();
 
               this.closeModal(true);
@@ -202,7 +202,7 @@ export class PresupuestoModalComponent implements OnInit {
     } else {
       this._presupuestoServ.addGasto(gastos).subscribe(
           response => {
-              console.log('Gasto guardado correctamente:', response);
+              // console.log('Gasto guardado correctamente:', response);
               this.presentSuccessAlert();
 
 

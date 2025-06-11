@@ -87,8 +87,8 @@ export class PresupuestoCuentaModalComponent implements OnInit {
 
 
   ngOnInit() {
-    console.log("presupuesto recibido en el modal:", this.presupuesto);
-    console.log("Modo edición:", this.isEditMode);
+    // console.log("presupuesto recibido en el modal:", this.presupuesto);
+    // console.log("Modo edición:", this.isEditMode);
 
     this.loadCuentas();
     this.onTipoCuentaChange();
@@ -107,7 +107,7 @@ export class PresupuestoCuentaModalComponent implements OnInit {
   loadCuentas() {
     this._ingresoServ.getCuentas().subscribe(
       (data: Cuenta[]) => {
-        console.log('Esta es mi data en cuentas: ', data);
+        // console.log('Esta es mi data en cuentas: ', data);
         this.cuenta = data;
         this.onTipoCuentaChange();
       },
@@ -160,11 +160,11 @@ export class PresupuestoCuentaModalComponent implements OnInit {
       DiaLimite: diaLimite,
     };
   
-    console.log("Datos del presupuesto para asignar cuenta y dia limite:", cuentaDiaLimiteDictaminados);
+    // console.log("Datos del presupuesto para asignar cuenta y dia limite:", cuentaDiaLimiteDictaminados);
 
 
     this._presupuestoServ.updatePresupuestoCuenta(cuentaDiaLimiteDictaminados).subscribe(async response => {
-      console.log('Presupuesto actualizado exitosamente:', response);
+      // console.log('Presupuesto actualizado exitosamente:', response);
 
       const alert = await this.alertController.create({
         header: 'Éxito',

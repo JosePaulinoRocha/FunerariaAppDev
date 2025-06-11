@@ -40,14 +40,14 @@ export class CombinacionesModalComponent implements OnInit {
   ngOnInit() {
     this.loadCombinacionesSegmento();
 
-    console.log("SegmentoID recibido en el modal: ", this.segmentoId);
+    // console.log("SegmentoID recibido en el modal: ", this.segmentoId);
   }
 
   loadCombinacionesSegmento() {
     this._ingresoServ.getCombinacionesSegmento(this.segmentoId).subscribe(combinaciones => {
       this.combinaciones = combinaciones;
       this.filteredCombinaciones = combinaciones;
-      console.log('Combinaciones filtradas por segmentoId en el submodal: ', combinaciones);
+      // console.log('Combinaciones filtradas por segmentoId en el submodal: ', combinaciones);
     });
   }
 
@@ -62,7 +62,7 @@ export class CombinacionesModalComponent implements OnInit {
 
   selectCombination(combination: any) {
     this.modalController.dismiss(combination);
-    console.log("esta es la combinacion seleccionada: ", combination)
+    // console.log("esta es la combinacion seleccionada: ", combination)
   }
 
 }

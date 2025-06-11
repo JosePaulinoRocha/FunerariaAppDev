@@ -50,7 +50,7 @@ export class UserModalComponent implements OnInit {
   loadRoles() {
     this.userService.getRoles().subscribe((data: Rol[]) => {
       this.rol = data;
-      console.log("estos son los roles: ", this.rol)
+      // console.log("estos son los roles: ", this.rol)
     }, (error) => {
       this.presentAlert('Error fetching rols');
     });
@@ -73,16 +73,16 @@ export class UserModalComponent implements OnInit {
   saveUser() {
     if (this.isEditMode) {
       this.userService.updateUser(this.user).subscribe(response => {
-        console.log('User updated:', response);
-        console.log("estos son los datos: ", this.user)
+        // console.log('User updated:', response);
+        // console.log("estos son los datos: ", this.user)
         this.modalController.dismiss(this.user, 'edit');
       }, error => {
         console.error('Error updating user:', error);
       });
     } else {
       this.userService.addUser(this.user).subscribe(response => {
-        console.log('User added:', response);
-        console.log("estos son los datos: ", this.user)
+        // console.log('User added:', response);
+        // console.log("estos son los datos: ", this.user)
         this.modalController.dismiss(this.user, 'add');
       }, error => {
         console.error('Error adding user:', error);

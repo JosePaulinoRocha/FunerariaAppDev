@@ -89,14 +89,38 @@
     <div style="margin-top: 1rem;" class="button-group">
       <button (click)="setFilter('all')" [disabled]="filtroSeleccionado === 'all'">Todos</button>
       <button (click)="setFilter('ingresos')" [disabled]="filtroSeleccionado === 'ingresos'">Ingresos</button>
-      <button (click)="setFilter('ingresosSinCuenta')" [disabled]="filtroSeleccionado === 'ingresosSinCuenta'">Ingresos sin cuenta</button>
-      <button (click)="setFilter('ingresosConCuenta')" [disabled]="filtroSeleccionado === 'ingresosConCuenta'">Ingresos con cuenta</button>
+
+      <div class="button-select-group">
+        <button style="margin-right: 0;" (click)="setFilter('ingresosSinCuenta')" [disabled]="filtroSeleccionado === 'ingresosSinCuenta'">Ingresos sin cuenta</button>
+        <select 
+          class="subfilter-select" 
+          (change)="onSegmentoChange($event)" 
+          [disabled]="filtroSeleccionado !== 'ingresosSinCuenta'">
+          <option value="todos">Todos</option>
+          <option value="cobranza">Cobranza</option>
+          <option value="funeraria">Funeraria</option>
+          <option value="ventas">Ventas</option>
+        </select>
+      </div>
+
+      <div class="button-select-group">
+        <button style="margin-right: 0;" (click)="setFilter('ingresosConCuenta')" [disabled]="filtroSeleccionado === 'ingresosConCuenta'">Ingresos con cuenta</button>
+        <select 
+          class="subfilter-select" 
+          (change)="onSegmentoChange($event)" 
+          [disabled]="filtroSeleccionado !== 'ingresosConCuenta'">
+          <option value="todos">Todos</option>
+          <option value="cobranza">Cobranza</option>
+          <option value="funeraria">Funeraria</option>
+          <option value="ventas">Ventas</option>
+        </select>
+      </div>
+
       <button (click)="setFilter('egresos')" [disabled]="filtroSeleccionado === 'egresos'">Egresos</button>
-      <button (click)="setFilter('cuentaContable')" [disabled]="filtroSeleccionado === 'cuentaContable'">Imports con cuenta y combinacion</button>
-      <button (click)="setFilter('sinCuentaContable')" [disabled]="filtroSeleccionado === 'sinCuentaContable'">Imports sin cuenta o combinacion</button>
+      <button (click)="setFilter('cuentaContable')" [disabled]="filtroSeleccionado === 'cuentaContable'">Cuenta contable</button>
+      <button (click)="setFilter('sinCuentaContable')" [disabled]="filtroSeleccionado === 'sinCuentaContable'">Sin cuenta contable</button>
       <button (click)="setFilter('reconciliados')" [disabled]="filtroSeleccionado === 'reconciliados'">Reconciliados</button>
     </div>
-
 
   </div>
 

@@ -108,7 +108,7 @@ export class SegmentDetailModalComponent {
   constructor(private _resumenPresupuesto_Serv: ResumenPresupuestoServices, private _presupuestoServ: PresupuestoServices, private modalController: ModalController) {}
 
   ngOnInit() {
-    console.log("Segmento recibido en el modal:", this.segmento);
+    // console.log("Segmento recibido en el modal:", this.segmento);
     this.loadGastoMensualExtraordinario();
     this.loadPresupuestoSemanal();
     this.loadGastosMensualesFrecuencia();
@@ -167,7 +167,7 @@ export class SegmentDetailModalComponent {
   loadEgresosMensualesSegmentos() {
     this._resumenPresupuesto_Serv.getEgresosMensualSegmentos(this.segmento.segmentoID).subscribe(
       (data: any[]) => {
-        console.log("Datos de egresos actuales mensuales por segmentos:", data);
+        // console.log("Datos de egresos actuales mensuales por segmentos:", data);
   
         if (Array.isArray(data)) {
           this.egresosMensuales = data;
@@ -203,7 +203,7 @@ export class SegmentDetailModalComponent {
           };
         });
         this.procesarEgresos();
-        console.log("esta es la data de gastos por frecuencia: ", this.gastoMensualFrecuencia);
+        // console.log("esta es la data de gastos por frecuencia: ", this.gastoMensualFrecuencia);
       },
       error => {
         console.error('Error fetching incomes', error);
@@ -226,7 +226,7 @@ export class SegmentDetailModalComponent {
         PeriodoCongelado: presupuestoSemanal.PeriodoCongelado ? this.formatPeriodoCongelado(presupuestoSemanal.PeriodoCongelado) : null
       }));
       this.procesarEgresos();
-      console.log("esta es la data de presupuesto semanal: ", this.presupuestoSemanal);
+      // console.log("esta es la data de presupuesto semanal: ", this.presupuestoSemanal);
     }, (error) => {
       console.error('Error fetching presupuesto', error); 
     });
@@ -234,7 +234,7 @@ export class SegmentDetailModalComponent {
   
   loadGastoMensualExtraordinario() {
     if (!this.segmento || !this.segmento.segmentoID) {
-      console.warn("No se recibió SegmentoID");
+      // console.warn("No se recibió SegmentoID");
       return;
     }
   
@@ -246,7 +246,7 @@ export class SegmentDetailModalComponent {
             FechaPreautorizada: new Date(gasto.FechaPreautorizada).toISOString().split('T')[0],
             Fecha: new Date(gasto.Fecha).toISOString().split('T')[0],
           }));
-          console.log("Gastos extraordinarios filtrados por SegmentoID:", this.gastosExtraordinarios);
+          // console.log("Gastos extraordinarios filtrados por SegmentoID:", this.gastosExtraordinarios);
           this.procesarEgresos();
       }, (error) => {
         console.error('Error al obtener gastos por segmento', error);
@@ -284,7 +284,7 @@ export class SegmentDetailModalComponent {
 
 
   async openSubcategoryModal(categoria: any) {
-    console.log("Categoría seleccionada:", categoria);
+    // console.log("Categoría seleccionada:", categoria);
   
     const modal = await this.modalController.create({
       component: SubcategoryDetailModalComponent,

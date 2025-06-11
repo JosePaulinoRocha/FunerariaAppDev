@@ -103,7 +103,7 @@ export class SubcategoriaModalComponent {
   ) {}
 
   ngOnInit() {
-    console.log("Categoria recibida en el modal:", this.categoriaID);
+    // console.log("Categoria recibida en el modal:", this.categoriaID);
   
     this.loadGastoMensualExtraordinario();
     this.loadPresupuestoSemanal();
@@ -169,7 +169,7 @@ export class SubcategoriaModalComponent {
       })
       .sort((a, b) => a.Desfase - b.Desfase); // Orden de menor a mayor
   
-    console.log("Subcategorías procesadas (ordenadas por desfase):", this.subcategorias);
+    // console.log("Subcategorías procesadas (ordenadas por desfase):", this.subcategorias);
   }
   
 
@@ -177,7 +177,7 @@ export class SubcategoriaModalComponent {
   loadGastoMensualExtraordinario() {
     this._resumenPresupuesto_Serv.getGastoExtraordinarioPorCategoriaUnificada(this.categoriaID).subscribe(
       (data: GastosExtraordinarios[]) => {
-        console.log("Gastos extraordinarios filtrados:", data);
+        // console.log("Gastos extraordinarios filtrados:", data);
         this.gastosExtraordinarios = data;
         this.procesarSubcategorias();
       },
@@ -188,7 +188,7 @@ export class SubcategoriaModalComponent {
   loadPresupuestoSemanal() {
     this._resumenPresupuesto_Serv.getPresupuestoSemanalPorCategoriaUnificada(this.categoriaID).subscribe(
       (data: PresupuestoSemanal[]) => {
-        console.log("Presupuesto semanal filtrado:", data);
+        // console.log("Presupuesto semanal filtrado:", data);
         this.presupuestoSemanal = data;
         this.procesarSubcategorias();
       },
@@ -199,7 +199,7 @@ export class SubcategoriaModalComponent {
   loadGastosMensualesFrecuencia() {
     this._resumenPresupuesto_Serv.getPresupuestoFrecuenciaPorCategoriaUnificada(this.categoriaID).subscribe(
       (data: GastoMensualPorFrecuencia[]) => {
-        console.log("Gastos mensuales por frecuencia filtrados:", data);
+        // console.log("Gastos mensuales por frecuencia filtrados:", data);
         this.gastoMensualFrecuencia = data;
         this.procesarSubcategorias();
       },
@@ -210,7 +210,7 @@ export class SubcategoriaModalComponent {
   loadEgresosMensuales() {
     this._resumenPresupuesto_Serv.getEgresosMensualesPorCategoriaUnificada(this.categoriaID).subscribe(
       (data: any[]) => {
-        console.log("Egresos mensuales filtrados:", data);
+        // console.log("Egresos mensuales filtrados:", data);
         this.egresosMensuales = data;
         this.procesarSubcategorias();
       },

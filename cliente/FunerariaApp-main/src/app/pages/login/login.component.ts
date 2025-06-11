@@ -53,7 +53,7 @@ export class LoginComponent implements OnInit {
     const { email, password } = this.loginForm.value;
     this.authService.login(email, password).subscribe(
       (response) => {
-        console.log(response)
+        // console.log(response)
         if (response.success) {
           this.authService.setSession(response); // Guarda la sesión
           this.authService.loggedInSubject.next(true); // Actualiza el estado de loggedIn

@@ -22,7 +22,7 @@ export class ReintegrosReconciliacionesModalComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    console.log('esta es la info que traigo al modal de reintegro:', this.ingreso);
+    // console.log('esta es la info que traigo al modal de reintegro:', this.ingreso);
     // Aquí puedes inicializar cualquier lógica relacionada con el ingreso.
   }
 
@@ -38,7 +38,7 @@ export class ReintegrosReconciliacionesModalComponent implements OnInit {
             ReconciliacionID: this.ingreso.ReconciliacionID
         };
 
-        console.log("Esta es mi info a reintegrar: ", reintegroData);
+        // console.log("Esta es mi info a reintegrar: ", reintegroData);
 
         try {
             // Enviar la solicitud de reintegro

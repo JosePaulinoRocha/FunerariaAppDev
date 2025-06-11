@@ -97,7 +97,7 @@ export class CombinacionesComponent  implements OnInit {
         FechaModificacion: new Date(combinacion.FechaModificacion).toISOString().split('T')[0], // Formatear la fecha
       }));
       
-      console.log("esta es la data de combinaciones: ", this.combinaciones);
+      // console.log("esta es la data de combinaciones: ", this.combinaciones);
       this.totalPages = Math.ceil(this.combinaciones.length / this.itemsPerPage);
       this.updatePaginatedCombinaciones();
     }, (error) => {
@@ -203,7 +203,7 @@ export class CombinacionesComponent  implements OnInit {
             combinacion.CombinacionID === combinacionID ? { ...combinacion, validado: !validado } : combinacion
           );
           this.updatePaginatedCombinaciones();
-          console.log(`Combinación ${!validado ? 'validada' : 'anulada'} exitosamente.`);
+          // console.log(`Combinación ${!validado ? 'validada' : 'anulada'} exitosamente.`);
         },
         error: (err) => {
           console.error(`Error al ${!validado ? 'validar' : 'anular'} la combinación:`, err);
@@ -221,7 +221,7 @@ export class CombinacionesComponent  implements OnInit {
           this.loadCombinaciones();
           this.updatePaginatedCombinaciones();
           alert('Se realizó la eliminacion exitosamente');
-          console.log(`Combinación eliminada exitosamente.`);
+          // console.log(`Combinación eliminada exitosamente.`);
         },
         error: (err: any) => {
           console.error(`Error al eliminar la combinación:`, err);

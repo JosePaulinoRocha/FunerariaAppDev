@@ -123,8 +123,8 @@ export class PresupuestoCuentaModalComponent implements OnInit {
 
 
   ngOnInit() {
-    console.log("presupuesto recibido en el modal:", this.gastos);
-    console.log("Modo edición:", this.isEditMode);
+    // console.log("presupuesto recibido en el modal:", this.gastos);
+    // console.log("Modo edición:", this.isEditMode);
 
     if (this.gastos.Fecha === '1970-01-01' || !this.gastos.Fecha) {
       this.gastos.Fecha = new Date().toISOString().split('T')[0];
@@ -196,7 +196,7 @@ export class PresupuestoCuentaModalComponent implements OnInit {
   loadCuentas() {
     this._ingresoServ.getCuentas().subscribe(
       (data: Cuenta[]) => {
-        console.log('Esta es mi data en cuentas: ', data);
+        // console.log('Esta es mi data en cuentas: ', data);
         this.cuenta = data;
         this.onTipoCuentaChange();
       },
@@ -246,11 +246,11 @@ export class PresupuestoCuentaModalComponent implements OnInit {
       ConceptoID: this.isNewConcepto ? this.newConcepto : this.gastos.ConceptoID,
     };
   
-    console.log("Datos del presupuesto para asignar cuenta y estatus:", datosCuentaEstatus);
+    // console.log("Datos del presupuesto para asignar cuenta y estatus:", datosCuentaEstatus);
 
 
     this._presupuestoServ.updateGastoEstatus(datosCuentaEstatus).subscribe(async response => {
-      console.log('Presupuesto actualizado exitosamente:', response);
+      // console.log('Presupuesto actualizado exitosamente:', response);
 
       const alert = await this.alertController.create({
         header: 'Éxito',

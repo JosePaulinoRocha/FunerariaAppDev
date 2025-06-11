@@ -116,7 +116,7 @@ export class IngresosArchivoModalComponent implements OnInit {
   constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private alertController: AlertController) {}
 
   ngOnInit() {
-    console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
+    // console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
   
     if (this.bulkAssignment) {
       this.isMassiveAssignMode = true;
@@ -151,7 +151,7 @@ export class IngresosArchivoModalComponent implements OnInit {
   loadCuentas() {
     this._ingresoServ.getCuentas().subscribe(
       (data: Cuenta[]) => {
-        console.log('Esta es mi data en cuentas: ', data);
+        // console.log('Esta es mi data en cuentas: ', data);
         this.cuenta = data;
         this.onTipoCuentaChange();
       },
@@ -164,7 +164,7 @@ export class IngresosArchivoModalComponent implements OnInit {
   loadCuentasContables() {
     this._ingresoServ.getCuentasContables().subscribe(
       (data: CuentaContable[]) => {
-        console.log('Esta es mi data en Combinaciones de cuentas contables: ', data);
+        // console.log('Esta es mi data en Combinaciones de cuentas contables: ', data);
         this.cuentacontable = data;
       },
       (error) => {
@@ -249,7 +249,7 @@ export class IngresosArchivoModalComponent implements OnInit {
 
   async asignarCuenta() {
 
-    console.log("entro en asignacion de cuenta contable");
+    // console.log("entro en asignacion de cuenta contable");
 
     // Validar si la CuentaContable ya existe en otro ingreso
     const cuentaExistente = this.cuentacontable.find(cuenta =>
@@ -267,7 +267,7 @@ export class IngresosArchivoModalComponent implements OnInit {
     );
 
     if (cuentaExistente) {
-      console.log("Ya existe un ingreso con la misma cuenta contable", cuentaExistente);
+      // console.log("Ya existe un ingreso con la misma cuenta contable", cuentaExistente);
       this.presentAlert(
         `No se puede guardar: ya existe un ingreso con la misma Cuenta Contable (${cuentaExistente.CuentaContable}). ` +
         `IngresoID: ${cuentaExistente.IngresoID}, ` +
@@ -280,7 +280,7 @@ export class IngresosArchivoModalComponent implements OnInit {
     }
     
     if (combinacionExistente) {
-      console.log("Ya existe un ingreso con la misma combinación de segmento, categoría, subcategoría y concepto", combinacionExistente);
+      // console.log("Ya existe un ingreso con la misma combinación de segmento, categoría, subcategoría y concepto", combinacionExistente);
       this.presentAlert(
         `No se puede guardar: ya existe un ingreso con la misma combinación de Segmento, Categoría, Subcategoría y Concepto. ` +
         `IngresoID: ${combinacionExistente.IngresoID}, ` +
@@ -304,7 +304,7 @@ export class IngresosArchivoModalComponent implements OnInit {
       CuentaContable: this.ingreso.CuentaContable,
     };
 
-    console.log("Informacion de la actualizacion de cuenta y datos: ", incomeData);
+    // console.log("Informacion de la actualizacion de cuenta y datos: ", incomeData);
 
 
     this._ingresoServ.actualizarCuentaContable(incomeData).subscribe(

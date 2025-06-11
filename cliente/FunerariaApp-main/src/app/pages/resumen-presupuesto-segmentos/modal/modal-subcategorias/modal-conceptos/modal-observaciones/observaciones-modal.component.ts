@@ -127,19 +127,19 @@ export class ObservacionesModalComponent {
   constructor(private _resumenPresupuesto_Serv: ResumenPresupuestoServices, private modalController: ModalController) {}
 
   ngOnInit() {
-    console.log("Props recibidos en el modal de observaciones:", {
-      segmentoID: this.segmentoID,
-      nombreSegmento: this.nombreSegmento,
-      categoriaID: this.categoriaID,
-      nombreCategoria: this.nombreCategoria,
-      subcategoriaID: this.subcategoriaID,
-      nombreSubcategoria: this.nombreSubcategoria,
-      conceptoID: this.conceptoID,
-      NombreConcepto: this.NombreConcepto,
-      planeado: this.planeado,
-      actual: this.actual,
+    // console.log("Props recibidos en el modal de observaciones:", {
+    //   segmentoID: this.segmentoID,
+    //   nombreSegmento: this.nombreSegmento,
+    //   categoriaID: this.categoriaID,
+    //   nombreCategoria: this.nombreCategoria,
+    //   subcategoriaID: this.subcategoriaID,
+    //   nombreSubcategoria: this.nombreSubcategoria,
+    //   conceptoID: this.conceptoID,
+    //   NombreConcepto: this.NombreConcepto,
+    //   planeado: this.planeado,
+    //   actual: this.actual,
 
-    });
+    // });
 
     this.loadEgresosMensuales();
   }
@@ -149,7 +149,7 @@ export class ObservacionesModalComponent {
       this.segmentoID, this.categoriaID, this.subcategoriaID, this.conceptoID
     ).subscribe(
       (data: any[]) => {
-        console.log("Egresos mensuales filtrados:", data);
+        // console.log("Egresos mensuales filtrados:", data);
         this.egresosMensuales = data;
   
         // Extraer solo observaciones de los egresos que las tienen

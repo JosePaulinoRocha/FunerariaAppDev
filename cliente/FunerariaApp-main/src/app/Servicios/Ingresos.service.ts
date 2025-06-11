@@ -92,8 +92,8 @@ export class IngresosServices {
     return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosParametros/`, { params });
   }
 
-  getIngresosPorFiltro(filtro: string, pagina: number, resultadosPorPagina: number, fechaDesde: string, orden: string): Observable<Ingreso[]> {
-    const url = `${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPorFiltro}${filtro}?pagina=${pagina}&resultadosPorPagina=${resultadosPorPagina}&fechaDesde=${fechaDesde}&orden=${orden}`;
+  getIngresosPorFiltro(filtro: string, pagina: number, resultadosPorPagina: number, fechaDesde: string, orden: string, segmento: string): Observable<Ingreso[]> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPorFiltro}${filtro}?pagina=${pagina}&resultadosPorPagina=${resultadosPorPagina}&fechaDesde=${fechaDesde}&orden=${orden}&segmento=${segmento}`;
     return this.http.get<Ingreso[]>(url);
   }
 

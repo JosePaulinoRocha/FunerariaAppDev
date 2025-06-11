@@ -193,7 +193,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     const filtro = parseInt(this.estadoReconciliado, 10); // ← usa el filtro correcto de egresos
     this._proyeccionServ.getEgresosMensualSegmentos(filtro).subscribe(
       (data: any[]) => {
-        console.log("Datos de egresos mensual por segmentos:", data);
+        // console.log("Datos de egresos mensual por segmentos:", data);
         this.createEgresosMensualesChart(data);
       },
       (error) => console.error('Error fetching egresos mensuales:', error)
@@ -206,7 +206,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     const filtro = parseInt(this.estadoReconciliadoIngresos, 10); // convierte de string a number
     this._proyeccionServ.getIngresosMensualSegmentos(filtro).subscribe(
       (data: any[]) => {
-        console.log('Datos de ingresos mensual por segmentos:', data);
+        // console.log('Datos de ingresos mensual por segmentos:', data);
         this.createIngresosMensualesChart(data);
       },
       (error) => console.error('Error fetching ingresos mensuales:', error)
@@ -217,7 +217,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   loadUtilidadesNetasMensuales() {
     this._proyeccionServ.getUtilidadesNetasMensuales().subscribe(
       (data: any[]) => {
-        console.log("Datos de utilidades netas mensuales:", data);
+        // console.log("Datos de utilidades netas mensuales:", data);
 
         // Extraemos los datos para la gráfica
         const labels = data.map(item => `${item.MesNumero} / ${item.Anio}`);
@@ -308,7 +308,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   
 
   LoadIngresosporFiltros() {
-    console.log(this.selectedSegmentosIngresos, this.selectedCategoriasIngresos, this.selectedSubcategoriasIngresos, this.selectedConceptosIngresos, this.selectedInitialDateIngresos, this.selectedFinalDateIngresos)
+    // console.log(this.selectedSegmentosIngresos, this.selectedCategoriasIngresos, this.selectedSubcategoriasIngresos, this.selectedConceptosIngresos, this.selectedInitialDateIngresos, this.selectedFinalDateIngresos)
     this._proyeccionServ.ObtenerIngresosPorFiltros(
       this.selectedSegmentosIngresos,
       this.selectedCategoriasIngresos,
@@ -318,7 +318,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       this.selectedFinalDateIngresos,
       this.estadoReconciliadoIngresos).subscribe(
       (data: any) => {
-        console.log("ingresos recibidos desde el SP:", data);
+        // console.log("ingresos recibidos desde el SP:", data);
         this.ingresosPorFiltrosData = data;
 
         if (this.ingresosPorFiltrosData && this.ingresosPorFiltrosData.length > 0) {
@@ -342,7 +342,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   graficarIngresosPorFiltros(ingresos: any[]) {
-    console.log(ingresos[0]);
+    // console.log(ingresos[0]);
 
     // Si la gráfica ya existe, la destruimos antes de crear una nueva
     if (this.chartInstanceIngresos) {
@@ -377,7 +377,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   
 
   ObtenerEgresosPorFiltros() {
-    console.log(this.selectedSegmentos, this.selectedCategorias, this.selectedSubcategorias, this.selectedConceptos, this.selectedInitialDateEgresos, this.selectedFinalDateEgresos, this.estadoReconciliado)
+    // console.log(this.selectedSegmentos, this.selectedCategorias, this.selectedSubcategorias, this.selectedConceptos, this.selectedInitialDateEgresos, this.selectedFinalDateEgresos, this.estadoReconciliado)
     this._proyeccionServ.ObtenerEgresosPorFiltros(
       this.selectedSegmentos, 
       this.selectedCategorias, 
@@ -412,7 +412,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
 
 
   graficarEgresosPorFiltros(egresos: any[]) {
-    console.log(egresos[0]);
+    // console.log(egresos[0]);
     if (this.chartInstance) {
       this.chartInstance.destroy();
     }
@@ -440,16 +440,16 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   ObtenerUtilidadesPorFiltros() {
-    console.log(this.selectedUtilidadesSegmentos,
-                this.selectedUtilidadesCategorias,
-                this.selectedUtilidadesSubcategorias,
-                this.selectedUtilidadesConceptos,
-                this.selectedInitialDateUtilidades,
-                this.selectedFinalDateUtilidades)
+    // console.log(this.selectedUtilidadesSegmentos,
+    //             this.selectedUtilidadesCategorias,
+    //             this.selectedUtilidadesSubcategorias,
+    //             this.selectedUtilidadesConceptos,
+    //             this.selectedInitialDateUtilidades,
+    //             this.selectedFinalDateUtilidades)
     this._proyeccionServ.ObtenerUtilidadesPorFiltros(this.selectedUtilidadesSegmentos, this.selectedUtilidadesCategorias, this.selectedUtilidadesSubcategorias, this.selectedUtilidadesConceptos, this.selectedInitialDateUtilidades, this.selectedFinalDateUtilidades).subscribe(
       (data: any) => {
         this.UtilidadesPorFiltrosData = data;
-        console.log(this.UtilidadesPorFiltrosData);
+        // console.log(this.UtilidadesPorFiltrosData);
         if (this.UtilidadesPorFiltrosData && this.UtilidadesPorFiltrosData.length > 0) {
           this.activeUtilidadChart = 'barChartUtilidadPorFiltros'; // Muestra la gráfica específica
           this.graficarUtilidadPorFiltros(this.UtilidadesPorFiltrosData); // Llama la función para graficar los datos
@@ -466,7 +466,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   graficarUtilidadPorFiltros(Utilidades: any[]) {
-    console.log(Utilidades[0]);
+    // console.log(Utilidades[0]);
     if (this.chartInstanceUtilidades) {
       this.chartInstanceUtilidades.destroy();
     }
@@ -494,19 +494,19 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
   actualizarDatos() {
-    console.log('Filtros:', this.filtros[0].resultados);
+    // console.log('Filtros:', this.filtros[0].resultados);
   }
 
   private calculatePercentage() {
-    console.log('Egreso actual:', this.egresoActual);
-    console.log('Total de egresos del mes pasado:', this.totalEgresos);
+    // console.log('Egreso actual:', this.egresoActual);
+    // console.log('Total de egresos del mes pasado:', this.totalEgresos);
 
     if (this.totalEgresos > 0) {
       this.percentageEgreso = ((this.egresoActual - this.totalEgresos) / this.totalEgresos) * 100;
-      console.log('Porcentaje de egreso:', this.percentageEgreso);
+      // console.log('Porcentaje de egreso:', this.percentageEgreso);
     } else {
       this.percentageEgreso = 0; // Evitar dividir por cero
-      console.log('No se puede calcular el porcentaje. Total de egresos es 0.');
+      // console.log('No se puede calcular el porcentaje. Total de egresos es 0.');
     }
   }
 
@@ -599,7 +599,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     const fechaInicio = this.selectedInitialDateEgresos?.split('T')[0];
     const fechaFin = this.selectedFinalDateEgresos?.split('T')[0];
 
-    console.log("fechas de inicio y fin: ", fechaInicio, fechaFin);
+    // console.log("fechas de inicio y fin: ", fechaInicio, fechaFin);
 
     this._proyeccionServ.EgresosMensualSemanales(filtro, fechaInicio, fechaFin).subscribe(
       (data: any[]) => {
@@ -609,7 +609,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
           fin_semana: new Date(item.fin_semana).toISOString().split('T')[0]
         }));
 
-        console.log("Datos de egresos semanales (formateados):", formattedData);
+        // console.log("Datos de egresos semanales (formateados):", formattedData);
         this.createEgresosSemanalesChart(formattedData);
         this.egresosSemanales = formattedData;
         this.createUtilidadNetaChart();
@@ -625,7 +625,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
     const fechaInicio = this.selectedInitialDateIngresos?.split('T')[0];
     const fechaFin = this.selectedFinalDateIngresos?.split('T')[0];
 
-    console.log("fechas de inicio y fin: ", fechaInicio, fechaFin);
+    // console.log("fechas de inicio y fin: ", fechaInicio, fechaFin);
 
     this._proyeccionServ.IngresosMensualSemanales(filtro, fechaInicio, fechaFin).subscribe(
       (data: any[]) => {
@@ -635,7 +635,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
           fin_semana: new Date(item.fin_semana).toISOString().split('T')[0]
         }));
 
-        console.log("Datos de ingresos semanales (formateados):", formattedData);
+        // console.log("Datos de ingresos semanales (formateados):", formattedData);
         this.createIngresosSemanalesChart(formattedData);
         this.ingresosSemanales = formattedData;
         this.createUtilidadNetaChart();
@@ -648,7 +648,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   loadEgresosPorCategoria() {
     this._proyeccionServ.getEgresosPorCategoriaMensuales(this.filtroReconciliadoEgresosCategoria).subscribe(
       (data: any[]) => {
-        console.log("Esta es la data de egresos por categoría mensuales:", data);
+        // console.log("Esta es la data de egresos por categoría mensuales:", data);
   
         this.egresosPorCategoria.labels = data.map(item => item.NombreCategoria);
         this.egresosPorCategoria.data = data.map(item => parseFloat(item.TotalEgresos));
@@ -662,7 +662,7 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   loadIngresosPorCategoria() {
     this._proyeccionServ.getIngresosPorCategoriaMensuales(this.filtroReconciliadoIngresosCat).subscribe(
       (data: any[]) => {
-        console.log("Data ingresos por categoría filtrada:", data);
+        // console.log("Data ingresos por categoría filtrada:", data);
         const ingresosData = {
           labels: data.map(item => item.NombreCategoria),
           data: data.map(item => parseFloat(item.TotalIngresos))

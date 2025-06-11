@@ -21,7 +21,7 @@ export class DescripcionesModalComponent {
     // Verificamos si el campo correcto es "Descripcion"
     if (this.income?.Descripcion) {
       this.observacion = this.income.Descripcion;
-      console.log('Descripción precargada:', this.observacion);
+      // console.log('Descripción precargada:', this.observacion);
     }
   }
 

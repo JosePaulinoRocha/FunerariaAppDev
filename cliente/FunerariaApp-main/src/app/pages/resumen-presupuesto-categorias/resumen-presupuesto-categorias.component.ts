@@ -113,7 +113,7 @@ export class ResumenPresupuestoCategoriasComponent {
   }
 
   async openSubcategoryModal(categoria: any) {
-    console.log("Categoría seleccionada:", categoria);
+    // console.log("Categoría seleccionada:", categoria);
   
     const modal = await this.modalController.create({
       component: SubcategoriaModalComponent,
@@ -177,7 +177,7 @@ export class ResumenPresupuestoCategoriasComponent {
       })
       .sort((a, b) => a.Desfase - b.Desfase); // Orden de menor a mayor (más déficit primero)
   
-    console.log("Categorías procesadas (ordenadas por desfase):", this.categorias);
+    // console.log("Categorías procesadas (ordenadas por desfase):", this.categorias);
   }
     
   
@@ -185,7 +185,7 @@ export class ResumenPresupuestoCategoriasComponent {
     this._resumenPresupuesto_Serv.getGastoMensualExtraordinarioAprobadoCategoriaUnificada().subscribe(
       (data: any[]) => {
         this.gastosExtraordinarios = data;
-        console.log("gastos planeados extraordinarios: ", data);
+        // console.log("gastos planeados extraordinarios: ", data);
         this.procesarCategorias();
       }
     );
@@ -195,7 +195,7 @@ export class ResumenPresupuestoCategoriasComponent {
     this._resumenPresupuesto_Serv.getPresupuestoSemanalCategoriaUnificada().subscribe(
       (data: any[]) => {
         this.presupuestoSemanal = data;
-        console.log("gastos planeados semanales: ", data);
+        // console.log("gastos planeados semanales: ", data);
         this.procesarCategorias();
       }
     );
@@ -205,7 +205,7 @@ export class ResumenPresupuestoCategoriasComponent {
     this._resumenPresupuesto_Serv.getPresupuestoMensualFrecuenciaAprobadosMesActualCategoriaUnificada().subscribe(
       (data: any[]) => {
         this.gastoMensualFrecuencia = data;
-        console.log("gastos planeados periodicos: ", data);
+        // console.log("gastos planeados periodicos: ", data);
         this.procesarCategorias();
       }
     );
@@ -215,7 +215,7 @@ export class ResumenPresupuestoCategoriasComponent {
     this._resumenPresupuesto_Serv.getEgresosMensualCategoriaUnificada().subscribe(
       (data: any[]) => {
         this.egresosMensuales = data;
-        console.log("gastos actuales: ", data);
+        // console.log("gastos actuales: ", data);
         this.procesarCategorias();
       }
     );

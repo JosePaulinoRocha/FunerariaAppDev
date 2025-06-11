@@ -38,12 +38,12 @@ export class IngresosEgresosArchivoModalComponent implements OnInit {
   onSave() {
     if (this.selectedFile) {
       const formData = new FormData();
-      console.log("IngresoID: ", this.ingreso.IngresoID)
+      // console.log("IngresoID: ", this.ingreso.IngresoID)
       formData.append('Comprobante', this.selectedFile);
 
       this._ingresoServ.uploadComprobante(this.ingreso.IngresoID, formData).subscribe(
         fileResponse => {
-          console.log('Archivo guardado correctamente:', fileResponse);
+          // console.log('Archivo guardado correctamente:', fileResponse);
           this.fileUploaded.emit(true);
           this.closeModal(true);  
         },

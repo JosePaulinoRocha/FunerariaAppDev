@@ -228,10 +228,10 @@ export class PresupuestoComponent  implements OnInit {
 
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     if (user && user.userId) {
-      console.log('User ID:', user.userId);
+      // console.log('User ID:', user.userId);
       this.loadPasoUsuario(user.userId); // Pasar userId a la función
     } else {
-      console.log('No se encontró el userId.');
+      // console.log('No se encontró el userId.');
     }
 
   }
@@ -250,7 +250,7 @@ export class PresupuestoComponent  implements OnInit {
   loadPasoUsuario(userId: number) { // Aceptar userId como parámetro
     this._presupuestoServ.getPasoUsuario(userId).subscribe(
       (data: PasoUsuario[]) => {
-        console.log('Esta es mi data en paso usuario: ', data);
+        // console.log('Esta es mi data en paso usuario: ', data);
         this.pasoUsuario = data;
 
         // Asigna el paso correspondiente al selectedCardIndex
@@ -277,7 +277,7 @@ export class PresupuestoComponent  implements OnInit {
   onRadioChange(event: any) {
     const selectedValue = this.selectedCardIndex; // Usa el índice del card seleccionado
     
-    console.log("esta cambiando de card: ", selectedValue);
+    // console.log("esta cambiando de card: ", selectedValue);
     
     // Cambiar el paso actual
     this.currentStep = selectedValue; // Cambia al paso correspondiente
@@ -305,9 +305,9 @@ export class PresupuestoComponent  implements OnInit {
     // Cargar la tabla con el nuevo filtro
     this.loadPresupuesto();
     
-    console.log('Modo Filtro:', this.modoFiltro);
-    console.log('Filtro Asignar Cuenta:', this.filtroAsignarCuenta);
-    console.log('Paso actual:', this.currentStep);
+    // console.log('Modo Filtro:', this.modoFiltro);
+    // console.log('Filtro Asignar Cuenta:', this.filtroAsignarCuenta);
+    // console.log('Paso actual:', this.currentStep);
   }
 
 
@@ -419,7 +419,7 @@ export class PresupuestoComponent  implements OnInit {
         this.router.navigate(['/presupuesto-mensual']);
       }
   
-      console.log("esta es la data de presupuesto: ", this.presupuesto);
+      // console.log("esta es la data de presupuesto: ", this.presupuesto);
       this.totalPages = Math.ceil(this.presupuesto.length / this.itemsPerPage);
       this.updatePaginated();
     }, (error) => {
@@ -527,7 +527,7 @@ export class PresupuestoComponent  implements OnInit {
           UltimaFecha: new Date(presupuesto.UltimaFecha).toISOString().split('T')[0],
         }));
   
-      console.log("Esta es la data de presupuesto después del filtro: ", this.presupuesto);
+      // console.log("Esta es la data de presupuesto después del filtro: ", this.presupuesto);
       this.totalPages = Math.ceil(this.presupuesto.length / this.itemsPerPage);
       this.updatePaginated();
     }, (error) => {
@@ -606,7 +606,7 @@ export class PresupuestoComponent  implements OnInit {
 
   async asignarMonto_Frecuencia(presupuesto?: Presupuesto) {
 
-    console.log("estos son los datos de edicion: ", presupuesto)
+    // console.log("estos son los datos de edicion: ", presupuesto)
 
     const modal = await this.modalController.create({
       component: PresupuestoModalComponent,
@@ -628,7 +628,7 @@ export class PresupuestoComponent  implements OnInit {
 
   async asignarCuenta_DiaLimite(presupuesto?: Presupuesto) {
 
-    console.log("estos son los datos de edicion en cuenta y dia limite: ", presupuesto)
+    // console.log("estos son los datos de edicion en cuenta y dia limite: ", presupuesto)
 
     const modal = await this.modalController.create({
       component: PresupuestoCuentaModalComponent,

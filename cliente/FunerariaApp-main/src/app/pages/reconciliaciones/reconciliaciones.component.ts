@@ -86,7 +86,7 @@ export class ReconciliacionesComponent implements OnInit {
         this.checkedMonto -= monto;
       }
     }
-    console.log('Checked Monto:', this.checkedMonto);
+    // console.log('Checked Monto:', this.checkedMonto);
     this.calcularDiferencia();
   }
   
@@ -97,14 +97,14 @@ export class ReconciliacionesComponent implements OnInit {
     // Redondear la diferencia a dos decimales
     this.diferencia = parseFloat(this.diferencia.toFixed(2));
   
-    console.log('Diferencia:', this.diferencia);
+    // console.log('Diferencia:', this.diferencia);
   }
 
   loadCuentas() {
     // Cargar cuentas de caja chica
     this._reconciliacionServ.getCuentasCajaChica().subscribe(
       (data: any[]) => {
-        console.log('Cuentas Caja Chica: ', data);
+        // console.log('Cuentas Caja Chica: ', data);
         // Ordenar alfabéticamente por NombreCuenta
         this.incomesCajaChica = data.sort((a, b) => a.NombreCuenta.localeCompare(b.NombreCuenta));
       },
@@ -116,7 +116,7 @@ export class ReconciliacionesComponent implements OnInit {
     // Cargar cuentas bancarias
     this._reconciliacionServ.getCuentasBancarias().subscribe(
       (data: any[]) => {
-        console.log('Cuentas Bancarias: ', data);
+        // console.log('Cuentas Bancarias: ', data);
         // Ordenar alfabéticamente por NombreCuenta
         this.incomesCuentaBancaria = data.sort((a, b) => a.NombreCuenta.localeCompare(b.NombreCuenta));
       },
@@ -180,8 +180,8 @@ export class ReconciliacionesComponent implements OnInit {
       this.ingresos = this.incomes.filter(income => income.TipoIngreso.data[0] === 0);
       this.egresos = this.incomes.filter(income => income.TipoIngreso.data[0] === 1);
   
-      console.log("Ingresos reconciliados: ", this.ingresos);
-      console.log("Egresos reconciliados: ", this.egresos);
+      // console.log("Ingresos reconciliados: ", this.ingresos);
+      // console.log("Egresos reconciliados: ", this.egresos);
   
       this.showTables = true;
     }, (error) => {
@@ -251,9 +251,9 @@ export class ReconciliacionesComponent implements OnInit {
   }
 
   updateObservacion(ingresoID: number, observacion: string) {
-    console.log("este es mi id y observacion: ", ingresoID, observacion )
+    // console.log("este es mi id y observacion: ", ingresoID, observacion )
     this._reconciliacionServ.updateObservacion(ingresoID, observacion).subscribe(() => {
-      console.log('Observación actualizada exitosamente');
+      // console.log('Observación actualizada exitosamente');
       alert('Se realizó la observacion exitosamente');
       // Aquí puedes actualizar el array de ingresos o recargar los datos según sea necesario
     }, (error) => {

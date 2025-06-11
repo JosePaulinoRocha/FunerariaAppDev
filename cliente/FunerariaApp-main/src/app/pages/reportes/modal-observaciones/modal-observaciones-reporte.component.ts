@@ -26,10 +26,10 @@ export class ObservacionesModalComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    console.log('SegmentoID:', this.segmentoID);
-    console.log('CategoriaID:', this.categoriaID);
-    console.log('SubcategoriaID:', this.subcategoriaID);
-    console.log('ConceptoID:', this.conceptoID);
+    // console.log('SegmentoID:', this.segmentoID);
+    // console.log('CategoriaID:', this.categoriaID);
+    // console.log('SubcategoriaID:', this.subcategoriaID);
+    // console.log('ConceptoID:', this.conceptoID);
   }
 
   dismiss() {
@@ -47,7 +47,7 @@ export class ObservacionesModalComponent implements OnInit {
       )
       .subscribe(
         (response) => {
-          console.log('Observación guardada:', response);
+          // console.log('Observación guardada:', response);
           this.modalController.dismiss({ success: true });
         },
         (error) => {

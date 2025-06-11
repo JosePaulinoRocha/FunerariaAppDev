@@ -87,7 +87,7 @@ export class ProveedoresComponent  implements OnInit {
 
   async openModal(proveedor?: Proveedor) {
 
-    console.log("estos son los datos de edicion: ", proveedor)
+    // console.log("estos son los datos de edicion: ", proveedor)
 
     const modal = await this.modalController.create({
       component: ProveedoresModalComponent,
@@ -120,7 +120,7 @@ export class ProveedoresComponent  implements OnInit {
         FechaRegistro: new Date(proveedor.FechaRegistro).toISOString().split('T')[0],
       }));
       
-      console.log("esta es la data de proveedores: ", this.proveedores);
+      // console.log("esta es la data de proveedores: ", this.proveedores);
       this.totalPages = Math.ceil(this.proveedores.length / this.itemsPerPage);
       this.updatePaginatedProveedores();
     }, (error) => {
@@ -237,7 +237,7 @@ export class ProveedoresComponent  implements OnInit {
           text: 'Cancelar',
           role: 'cancel',
           handler: () => {
-            console.log('Acción cancelada');
+            // console.log('Acción cancelada');
           }
         },
         {

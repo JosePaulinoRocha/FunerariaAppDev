@@ -181,7 +181,7 @@ export class IngresosComponent implements OnInit {
           Cuenta: row[6] || ''
       }));
 
-      console.log("Datos procesados de ingresos:", processedData);
+      // console.log("Datos procesados de ingresos:", processedData);
       this.sendIngresosInBatches(processedData);
   }
 
@@ -192,7 +192,7 @@ export class IngresosComponent implements OnInit {
       const sendNextBatch = () => {
           const batch = registros.slice(offset, offset + this.BATCH_SIZE);
           if (batch.length === 0) {
-              console.log('Todos los ingresos han sido importados.');
+              // console.log('Todos los ingresos han sido importados.');
               this.isLoading = false;
               this.loadIngresos();
               return;
@@ -200,7 +200,7 @@ export class IngresosComponent implements OnInit {
 
           this.ingresosArchivoServices.importarIngresosArchivoImportado(batch).subscribe(
               () => {
-                  console.log(`Batch de ${batch.length} ingresos importados correctamente`);
+                  // console.log(`Batch de ${batch.length} ingresos importados correctamente`);
                   offset += this.BATCH_SIZE;
                   sendNextBatch();
               },
@@ -251,7 +251,7 @@ export class IngresosComponent implements OnInit {
       Piezas: row[9] || 0,
     }));
 
-    console.log("Datos procesados de egresos con proveedor y piezas:", processedData);
+    // console.log("Datos procesados de egresos con proveedor y piezas:", processedData);
     this.sendEgresosInBatches(processedData);
   }
 
@@ -262,7 +262,7 @@ export class IngresosComponent implements OnInit {
     const sendNextBatch = () => {
       const batch = registros.slice(offset, offset + this.BATCH_SIZE);
       if (batch.length === 0) {
-        console.log('Todos los registros han sido importados.');
+        // console.log('Todos los registros han sido importados.');
         this.isLoading = false;
         this.loadIngresos();
         return;
@@ -270,7 +270,7 @@ export class IngresosComponent implements OnInit {
 
       this.ingresosArchivoServices.importarEgresosArchivoImportacion(batch).subscribe(
         () => {
-          console.log(`Batch de ${batch.length} registros importados correctamente`);
+          // console.log(`Batch de ${batch.length} registros importados correctamente`);
           offset += this.BATCH_SIZE;
           sendNextBatch();
         },
@@ -341,7 +341,7 @@ export class IngresosComponent implements OnInit {
             Fecha: new Date(income.Fecha).toISOString().split('T')[0],
         }));
 
-        console.log("estos son mis registros de ingresos: ", data);
+        // console.log("estos son mis registros de ingresos: ", data);
 
         this.totalPages = response.totalPages;  // Actualizar el número total de páginas
         this.currentPage = response.currentPage;  // Actualizar la página actual
@@ -358,7 +358,7 @@ export class IngresosComponent implements OnInit {
 
   async openModal(income?: Income) {
 
-    console.log("estos son los datos de edicion: ", income)
+    // console.log("estos son los datos de edicion: ", income)
 
     const modal = await this.modalController.create({
       component: IncomeModalComponent,
@@ -381,7 +381,7 @@ export class IngresosComponent implements OnInit {
   updatePaginated() {
     const startIndex = 0;
     this.paginatedIncomes = this.incomes.slice(startIndex, startIndex + this.itemsPerPage);
-    console.log(this.paginatedIncomes)
+    // console.log(this.paginatedIncomes)
   }
 
 

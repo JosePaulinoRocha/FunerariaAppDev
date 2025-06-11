@@ -148,3 +148,61 @@
   font-size: 10px; /* Tamaño de la fuente reducido */
   padding: 0px 10px; /* Reduce el tamaño del botón */
 }
+
+
+.custom-select {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-left: 5px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.custom-select:disabled {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+
+.button-select-group {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+}
+
+.subfilter-select {
+  border: 1px solid #aaa;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  padding: 10px;
+  font-size: 14px;
+  height: 40px;
+  background-color: #fd7e14; /* naranja activo (Bootstrap orange) */
+  color: white;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.subfilter-select:disabled {
+  background-color: #ffd8b0; /* naranja apagado */
+  color: #666;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+
+.button-select-group button {
+  border-radius: 4px 0 0 4px;
+  border-right: none;
+  height: 40px;
+}
+

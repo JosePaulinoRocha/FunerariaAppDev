@@ -232,7 +232,7 @@ export class PresupuestoMensualFrecuenciaComponent  implements OnInit {
 
   async asignarPeriodo(gastoMensualFrecuencia?: GastoMensualPorFrecuencia) {
 
-    console.log("estos son los datos de edicion: ", gastoMensualFrecuencia)
+    // console.log("estos son los datos de edicion: ", gastoMensualFrecuencia)
 
     const modal = await this.modalController.create({
       component: ReintegrosReconciliacionesModalComponent,
@@ -285,7 +285,7 @@ export class PresupuestoMensualFrecuenciaComponent  implements OnInit {
         PeriodoCongelado: gasto.PeriodoCongelado ? this.formatPeriodoCongelado(gasto.PeriodoCongelado) : null
       }));
   
-      console.log("Esta es la data de gastos mensuales por frecuencia filtrada y ordenada: ", this.gastoMensualFrecuencia);
+      // console.log("Esta es la data de gastos mensuales por frecuencia filtrada y ordenada: ", this.gastoMensualFrecuencia);
       this.checkGuardadoStatus();
       this.totalPages = Math.ceil(this.gastoMensualFrecuencia.length / this.itemsPerPage);
       this.updatePaginatedGastos();
@@ -382,7 +382,7 @@ applySearch() {
         PeriodoCongelado: gastoMensualFrecuencia.PeriodoCongelado ? this.formatPeriodoCongelado(gastoMensualFrecuencia.PeriodoCongelado) : null
       }));
 
-      console.log("Esta es la data de gastos después del filtro: ", this.gastoMensualFrecuencia);
+      // console.log("Esta es la data de gastos después del filtro: ", this.gastoMensualFrecuencia);
       this.totalPages = Math.ceil(this.gastoMensualFrecuencia.length / this.itemsPerPage);
       this.updatePaginatedGastos();
     }, (error) => {

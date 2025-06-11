@@ -25,82 +25,96 @@ export const ObtenerIngresos = async (req: Request, res: Response) => {
 
 
 export const ObtenerIngresosParametros = async (req: Request, res: Response) => {
-    let con;
-    let result;
-    try {
-      con = await connect();
-  
-      const params = req.query;
-      const filtro = params.filtro; // Recibe el filtro principal
-      delete params.filtro; // Remueve el filtro del resto de los parámetros
-  
-      let query = 'SELECT * FROM vistaingresos WHERE 1=1';
-  
-      // Aplica el filtro principal
-      if (filtro === 'ingresos') {
-        query += ' AND TipoIngreso = 0';
-      } else if (filtro === 'egresos') {
-        query += ' AND TipoIngreso = 1';
-      } else if (filtro === 'ingresosSinCuenta') {
-        query += ' AND TipoIngreso = 0 AND CuentaID IS NULL';
-      } else if (filtro === 'ingresosConCuenta') {
-        query += ' AND TipoIngreso = 0 AND CuentaID IS NOT NULL';
-      } else if (filtro === 'cuentaContable') {
-        query += ' AND CuentaContable IS NOT NULL AND CuentaContable > 0';
-      } else if (filtro === 'sinCuentaContable') {
-        query += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
-      } else if (filtro === 'reconciliados') {
-        query += ' AND Reconciliado = 1';
+  let con;
+  let result;
+  try {
+    con = await connect();
+
+    const params = req.query;
+    const filtro = params.filtro;
+    const segmento = (params.segmento as string || 'todos').toLowerCase();
+    delete params.filtro;
+    delete params.segmento;
+
+    let query = 'SELECT * FROM vistaingresos WHERE 1=1';
+
+    // Aplica el filtro principal
+    if (filtro === 'ingresos') {
+      query += ' AND TipoIngreso = 0';
+    } else if (filtro === 'egresos') {
+      query += ' AND TipoIngreso = 1';
+    } else if (filtro === 'ingresosSinCuenta') {
+      query += ' AND TipoIngreso = 0 AND CuentaID IS NULL';
+    } else if (filtro === 'ingresosConCuenta') {
+      query += ' AND TipoIngreso = 0 AND CuentaID IS NOT NULL';
+    } else if (filtro === 'cuentaContable') {
+      query += ' AND CuentaContable IS NOT NULL AND CuentaContable > 0';
+    } else if (filtro === 'sinCuentaContable') {
+      query += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
+    } else if (filtro === 'reconciliados') {
+      query += ' AND Reconciliado = 1';
+    }
+
+    // Aplicar segmento sólo si corresponde
+    if ((filtro === 'ingresosSinCuenta' || filtro === 'ingresosConCuenta') && segmento !== 'todos') {
+      if (segmento === 'cobranza') {
+        query += ` AND NombreSegmento = 'Cobranza'`;
+      } else if (segmento === 'funeraria') {
+        query += ` AND NombreSegmento = 'Funeraria Anahuac'`;
+      } else if (segmento === 'ventas') {
+        query += ` AND NombreSegmento = 'Ventas'`;
       }
-  
-      // Aplica los parámetros de búsqueda adicionales
-      for (const [key, value] of Object.entries(params)) {
-        if (value) {
-          switch (key) {
-            case 'FechaDesde':
-              query += ` AND Fecha >= ${con.escape(value)}`;
-              break;
-            case 'FechaHasta':
-              query += ` AND Fecha < ${con.escape(value)}`;
-              break;
-            case 'MontoDesde':
-              query += ` AND Monto >= ${con.escape(value)}`;
-              break;
-            case 'MontoHasta':
-              query += ` AND Monto <= ${con.escape(value)}`;
-              break;
-            default:
-              query += ` AND ${key} LIKE ${con.escape(`%${value}%`)}`;
-              break;
-          }
+    }
+
+    // Aplica los parámetros de búsqueda adicionales
+    for (const [key, value] of Object.entries(params)) {
+      if (value) {
+        switch (key) {
+          case 'FechaDesde':
+            query += ` AND Fecha >= ${con.escape(value)}`;
+            break;
+          case 'FechaHasta':
+            query += ` AND Fecha < ${con.escape(value)}`;
+            break;
+          case 'MontoDesde':
+            query += ` AND Monto >= ${con.escape(value)}`;
+            break;
+          case 'MontoHasta':
+            query += ` AND Monto <= ${con.escape(value)}`;
+            break;
+          default:
+            query += ` AND ${key} LIKE ${con.escape(`%${value}%`)}`;
+            break;
         }
       }
-  
-      query += ' ORDER BY Fecha DESC';
-  
-      const ingresos = (await con.query(query))[0] as any[];
-      result = ingresos;
-    } catch (error) {
-      console.error('Error en ObtenerIngresosParametros:', error);
-      result = null;
-    } finally {
-      await con?.end();
-      return res.json(result);
     }
-  };
+
+    query += ' ORDER BY Fecha DESC';
+
+    const ingresos = (await con.query(query))[0] as any[];
+    result = ingresos;
+  } catch (error) {
+    console.error('Error en ObtenerIngresosParametros:', error);
+    result = null;
+  } finally {
+    await con?.end();
+    return res.json(result);
+  }
+};
+
   
   
 export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     let con;
     let result;
     let totalPages;
-    const filtro = req.params.filtro; // Obtener el filtro de los parámetros
-    const pagina = parseInt(req.query.pagina as string) || 1; // Página solicitada, por defecto es la página 1
-    const resultadosPorPagina = parseInt(req.query.resultadosPorPagina as string) || 10; // Resultados por página, por defecto 10
+    const filtro = req.params.filtro; 
+    const pagina = parseInt(req.query.pagina as string) || 1;
+    const resultadosPorPagina = parseInt(req.query.resultadosPorPagina as string) || 10; 
     const fechaDesde = req.query.fechaDesde as string;
-    const orden = (req.query.orden as string || 'DESC').toUpperCase(); // ASC o DESC
+    const orden = (req.query.orden as string || 'DESC').toUpperCase(); 
+    const segmento = (req.query.segmento as string || 'todos').toLowerCase();
 
-    // Calcular el OFFSET (desplazamiento) y el LIMIT (número de registros a devolver)
     const offset = (pagina - 1) * resultadosPorPagina;
 
     try {
@@ -108,7 +122,6 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
         
         let query = 'SELECT * FROM vistaingresos WHERE 1=1';
 
-        // Filtrar según el tipo de ingreso
         if (filtro === 'ingresos') {
             query += ' AND TipoIngreso = 0';
         } else if (filtro === 'egresos') {
@@ -125,7 +138,16 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
             query += ' AND Reconciliado = 1';
         }
 
-        // Filtro por fechaDesde
+        if ((filtro === 'ingresosSinCuenta' || filtro === 'ingresosConCuenta') && segmento !== 'todos') {
+            if (segmento === 'cobranza') {
+                query += ` AND NombreSegmento = 'Cobranza'`;
+            } else if (segmento === 'funeraria') {
+                query += ` AND NombreSegmento = 'Funeraria Anahuac'`;
+            } else if (segmento === 'ventas') {
+                query += ` AND NombreSegmento = 'Ventas'`;
+            }
+        }
+
         if (fechaDesde) {
             if (orden === 'ASC') {
                 query += ` AND DATE(Fecha) >= '${fechaDesde}'`;
@@ -134,7 +156,6 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
             }
         }
 
-        // Contar el número total de registros sin aplicar LIMIT
         let countQuery = `SELECT COUNT(*) as total FROM vistaingresos WHERE 1=1`;
         if (filtro === 'ingresos') countQuery += ' AND TipoIngreso = 0';
         else if (filtro === 'egresos') countQuery += ' AND TipoIngreso = 1';
@@ -144,7 +165,6 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
         else if (filtro === 'sinCuentaContable') countQuery += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
         else if (filtro === 'reconciliados') countQuery += ' AND Reconciliado = 1';
 
-        // Filtro por fechaDesde también en el count
         if (fechaDesde) {
             if (orden === 'ASC') {
                 countQuery += ` AND DATE(Fecha) >= '${fechaDesde}'`;
@@ -156,10 +176,8 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
         let countResult : any = (await con.query(countQuery))[0];
         const totalRecords = countResult[0].total;
 
-        // Calcular el total de páginas
         totalPages = Math.ceil(totalRecords / resultadosPorPagina);
 
-        // Ejecutar la consulta con LIMIT y OFFSET para obtener los registros
         query += ` ORDER BY DATE(Fecha) ${orden}, IngresoID ${orden} LIMIT ${resultadosPorPagina} OFFSET ${offset}`;
 
         const ingresos = (await con.query(query))[0] as any[];
@@ -170,11 +188,10 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     } finally {
         await con?.end();
 
-        // Enviar la respuesta con los datos de los ingresos y el total de páginas
         return res.json({
             ingresos: result,
-            totalPages: totalPages, // Total de páginas
-            currentPage: pagina,    // Página actual
+            totalPages: totalPages, 
+            currentPage: pagina,  
         });
     }
 };

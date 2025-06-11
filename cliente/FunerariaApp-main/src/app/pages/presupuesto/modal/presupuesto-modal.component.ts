@@ -68,8 +68,8 @@ export class PresupuestoModalComponent implements OnInit {
 
 
   ngOnInit() {
-    console.log("Proveedor recibido en el modal:", this.presupuesto);
-    console.log("Modo edición:", this.isEditMode);
+    // console.log("Proveedor recibido en el modal:", this.presupuesto);
+    // console.log("Modo edición:", this.isEditMode);
 
   }
 
@@ -95,12 +95,12 @@ export class PresupuestoModalComponent implements OnInit {
       FrecuenciaDictaminada: this.presupuesto.FrecuenciaDictaminada,
     };
   
-    console.log("Datos del presupuesto:", montoFrecuenciaDictaminados);
+    // console.log("Datos del presupuesto:", montoFrecuenciaDictaminados);
 
 
 
     this._presupuestoServ.updatePresupuesto(montoFrecuenciaDictaminados).subscribe(async response => {
-      console.log('Presupuesto actualizado exitosamente:', response);
+      // console.log('Presupuesto actualizado exitosamente:', response);
 
       const alert = await this.alertController.create({
         header: 'Éxito',

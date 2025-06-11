@@ -217,7 +217,7 @@ export class ReportesComponent  implements OnInit {
   
   async asignarMonto_Frecuencia(reporteMesActual?: ReporteMesActual) {
 
-    console.log("estos son los datos de edicion: ", reporteMesActual)
+    // console.log("estos son los datos de edicion: ", reporteMesActual)
 
     const modal = await this.modalController.create({
       component: ReportesModalComponent,
@@ -245,7 +245,7 @@ export class ReportesComponent  implements OnInit {
           UltimaFecha: reporteMesActual.UltimaFecha ? reporteMesActual.UltimaFecha.split('T')[0] : null
         }));
         this.loading = false;
-        console.log("Esta es la data del reporte del mes actual:", this.reporteMesActual);
+        // console.log("Esta es la data del reporte del mes actual:", this.reporteMesActual);
         this.totalPages = Math.ceil(this.reporteMesActual.length / this.itemsPerPage);
         this.updatePaginated();
       },
@@ -268,7 +268,7 @@ export class ReportesComponent  implements OnInit {
           FechaPreautorizada: gastoMensualFrecuenciaExtraordinaria.FechaPreautorizada ? gastoMensualFrecuenciaExtraordinaria.FechaPreautorizada.split('T')[0] : null
         }));
         this.loading = false;
-        console.log("Esta es la data de gastos por frecuencia extraordinaria:", this.gastoMensualFrecuenciaExtraordinaria);
+        // console.log("Esta es la data de gastos por frecuencia extraordinaria:", this.gastoMensualFrecuenciaExtraordinaria);
       },
       (error) => {
         console.error('Error fetching egresos:', error);
@@ -295,7 +295,7 @@ export class ReportesComponent  implements OnInit {
           };
         });
   
-        console.log("esta es la data de gastos por frecuencia: ", this.gastoMensualFrecuencia);
+        // console.log("esta es la data de gastos por frecuencia: ", this.gastoMensualFrecuencia);
       },
       error => {
         console.error('Error fetching incomes', error);
@@ -313,7 +313,7 @@ export class ReportesComponent  implements OnInit {
         PeriodoCongelado: presupuestoSemanal.PeriodoCongelado ? this.formatPeriodoCongelado(presupuestoSemanal.PeriodoCongelado) : null
       }));
   
-      console.log("esta es la data de presupuesto semanal: ", this.presupuestoSemanal);
+      // console.log("esta es la data de presupuesto semanal: ", this.presupuestoSemanal);
       }, (error) => {
       console.error('Error fetching presupuesto', error); 
     });
@@ -364,7 +364,7 @@ export class ReportesComponent  implements OnInit {
     this.loading = true;
     this._reportesServ.getReportePorFecha(this.selectedMonth, this.selectedYear).subscribe(
       (data: any) => {
-        console.log('Reporte recibido:', data);
+        // console.log('Reporte recibido:', data);
   
         // Asignar los datos recibidos del endpoint
         const totalIngresos = data.totalIngresos || 0;
@@ -446,7 +446,7 @@ export class ReportesComponent  implements OnInit {
       (data: any[]) => {
         this.egresos = data;
         this.loading = false;
-        console.log("egresos unificados: ", data)
+        // console.log("egresos unificados: ", data)
       },
       (error) => {
         console.error('Error fetching egresos:', error);
@@ -462,7 +462,7 @@ export class ReportesComponent  implements OnInit {
       (data: any[]) => {
         this.ingresos = data;
         this.loading = false;
-        console.log("ingresos unificados: ", data)
+        // console.log("ingresos unificados: ", data)
       },
       (error) => {
         console.error('Error fetching ingresos:', error);
@@ -478,7 +478,7 @@ export class ReportesComponent  implements OnInit {
         this.ingresoPasado = data.length > 0 && data[0].IngresoMesPasado
           ? parseFloat(data[0].IngresoMesPasado)
           : 0;
-        console.log("ingreso total: ", this.ingresoPasado)
+        // console.log("ingreso total: ", this.ingresoPasado)
       },
       (error) => {
         console.error('Error fetching ingreso mensual pasado:', error);
@@ -493,7 +493,7 @@ export class ReportesComponent  implements OnInit {
         this.egresoPasado = data.length > 0 && data[0].EgresoMesPasado
           ? parseFloat(data[0].EgresoMesPasado)
           : 0;
-        console.log("egreso total: ", this.egresoPasado)
+        // console.log("egreso total: ", this.egresoPasado)
       },
       (error) => {
         console.error('Error fetching egreso mensual pasado:', error);

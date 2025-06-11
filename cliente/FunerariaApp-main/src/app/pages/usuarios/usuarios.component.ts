@@ -39,7 +39,7 @@ export class UsuariosComponent implements OnInit {
   loadUsers() {
     this._userServ.getUsers().subscribe((data: User[]) => {
       this.users = data;
-      console.log("esta es la data de usuarios: ", data);
+      // console.log("esta es la data de usuarios: ", data);
     }, (error) => {
       console.error('Error fetching users', error);
     });

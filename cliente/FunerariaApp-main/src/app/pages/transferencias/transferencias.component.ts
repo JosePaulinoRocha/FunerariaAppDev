@@ -127,7 +127,7 @@ export class TransferenciasComponent  implements OnInit {
         Fecha: new Date(transferencia.Fecha).toISOString().split('T')[0],
       }));
       
-      console.log("esta es la data de transferencias: ", this.transferencias);
+      // console.log("esta es la data de transferencias: ", this.transferencias);
       this.totalPages = Math.ceil(this.transferencias.length / this.itemsPerPage);
       this.updatePaginatedTransferencias();
     }, (error) => {
