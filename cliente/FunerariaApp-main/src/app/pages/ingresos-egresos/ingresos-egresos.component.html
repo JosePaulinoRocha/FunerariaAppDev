@@ -94,6 +94,7 @@
         <button style="margin-right: 0;" (click)="setFilter('ingresosSinCuenta')" [disabled]="filtroSeleccionado === 'ingresosSinCuenta'">Ingresos sin cuenta</button>
         <select 
           class="subfilter-select" 
+          [(ngModel)]="segmentoSeleccionado"
           (change)="onSegmentoChange($event)" 
           [disabled]="filtroSeleccionado !== 'ingresosSinCuenta'">
           <option value="todos">Todos</option>
@@ -107,6 +108,7 @@
         <button style="margin-right: 0;" (click)="setFilter('ingresosConCuenta')" [disabled]="filtroSeleccionado === 'ingresosConCuenta'">Ingresos con cuenta</button>
         <select 
           class="subfilter-select" 
+          [(ngModel)]="segmentoSeleccionado"
           (change)="onSegmentoChange($event)" 
           [disabled]="filtroSeleccionado !== 'ingresosConCuenta'">
           <option value="todos">Todos</option>

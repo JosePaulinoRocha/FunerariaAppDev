@@ -750,7 +750,8 @@ export class IngresosEgresosComponent implements OnInit {
 
   setFilter(filtro: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados') {
     this.filtroSeleccionado = filtro;
-    this.currentPage = 1; 
+    this.currentPage = 1;
+    this.segmentoSeleccionado = 'todos'; 
     this.loadIngresos(); 
   }
 

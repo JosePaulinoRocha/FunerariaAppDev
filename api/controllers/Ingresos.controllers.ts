@@ -103,7 +103,6 @@ export const ObtenerIngresosParametros = async (req: Request, res: Response) => 
 };
 
   
-  
 export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     let con;
     let result;
@@ -120,70 +119,55 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     try {
         con = await connect();
         
-        let query = 'SELECT * FROM vistaingresos WHERE 1=1';
+        let whereClause = 'WHERE 1=1';
 
         if (filtro === 'ingresos') {
-            query += ' AND TipoIngreso = 0';
+            whereClause += ' AND TipoIngreso = 0';
         } else if (filtro === 'egresos') {
-            query += ' AND TipoIngreso = 1';
+            whereClause += ' AND TipoIngreso = 1';
         } else if (filtro === 'ingresosSinCuenta') {
-            query += ' AND TipoIngreso = 0 AND CuentaID IS NULL';
+            whereClause += ' AND TipoIngreso = 0 AND CuentaID IS NULL';
         } else if (filtro === 'ingresosConCuenta') {
-            query += ' AND TipoIngreso = 0 AND CuentaID IS NOT NULL';
+            whereClause += ' AND TipoIngreso = 0 AND CuentaID IS NOT NULL';
         } else if (filtro === 'cuentaContable') {
-            query += ' AND CuentaContable IS NOT NULL AND CuentaContable > 0';
+            whereClause += ' AND CuentaContable IS NOT NULL AND CuentaContable > 0';
         } else if (filtro === 'sinCuentaContable') {
-            query += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
+            whereClause += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
         } else if (filtro === 'reconciliados') {
-            query += ' AND Reconciliado = 1';
+            whereClause += ' AND Reconciliado = 1';
         }
 
         if ((filtro === 'ingresosSinCuenta' || filtro === 'ingresosConCuenta') && segmento !== 'todos') {
             if (segmento === 'cobranza') {
-                query += ` AND NombreSegmento = 'Cobranza'`;
+                whereClause += ` AND NombreSegmento = 'Cobranza'`;
             } else if (segmento === 'funeraria') {
-                query += ` AND NombreSegmento = 'Funeraria Anahuac'`;
+                whereClause += ` AND NombreSegmento = 'Funeraria Anahuac'`;
             } else if (segmento === 'ventas') {
-                query += ` AND NombreSegmento = 'Ventas'`;
+                whereClause += ` AND NombreSegmento = 'Ventas'`;
             }
         }
 
         if (fechaDesde) {
             if (orden === 'ASC') {
-                query += ` AND DATE(Fecha) >= '${fechaDesde}'`;
+                whereClause += ` AND DATE(Fecha) >= '${fechaDesde}'`;
             } else {
-                query += ` AND DATE(Fecha) <= '${fechaDesde}'`;
+                whereClause += ` AND DATE(Fecha) <= '${fechaDesde}'`;
             }
         }
 
-        let countQuery = `SELECT COUNT(*) as total FROM vistaingresos WHERE 1=1`;
-        if (filtro === 'ingresos') countQuery += ' AND TipoIngreso = 0';
-        else if (filtro === 'egresos') countQuery += ' AND TipoIngreso = 1';
-        else if (filtro === 'ingresosSinCuenta') countQuery += ' AND TipoIngreso = 0 AND CuentaID IS NULL';
-        else if (filtro === 'ingresosConCuenta') countQuery += ' AND TipoIngreso = 0 AND CuentaID IS NOT NULL';
-        else if (filtro === 'cuentaContable') countQuery += ' AND CuentaContable IS NOT NULL AND CuentaContable > 0';
-        else if (filtro === 'sinCuentaContable') countQuery += ' AND (CuentaContable IS NULL OR CuentaContable <= 0)';
-        else if (filtro === 'reconciliados') countQuery += ' AND Reconciliado = 1';
-
-        if (fechaDesde) {
-            if (orden === 'ASC') {
-                countQuery += ` AND DATE(Fecha) >= '${fechaDesde}'`;
-            } else {
-                countQuery += ` AND DATE(Fecha) <= '${fechaDesde}'`;
-            }
-        }
-
+        // Primero hacemos el count con el mismo WHERE
+        let countQuery = `SELECT COUNT(*) as total FROM vistaingresos ${whereClause}`;
         let countResult : any = (await con.query(countQuery))[0];
         const totalRecords = countResult[0].total;
-
         totalPages = Math.ceil(totalRecords / resultadosPorPagina);
 
-        query += ` ORDER BY DATE(Fecha) ${orden}, IngresoID ${orden} LIMIT ${resultadosPorPagina} OFFSET ${offset}`;
-
+        // Luego hacemos la consulta de datos con el mismo WHERE
+        let query = `SELECT * FROM vistaingresos ${whereClause} ORDER BY DATE(Fecha) ${orden}, IngresoID ${orden} LIMIT ${resultadosPorPagina} OFFSET ${offset}`;
         const ingresos = (await con.query(query))[0] as any[];
         result = ingresos;
+
     } catch (error) {
-        console.log('Error en Ingresos');
+        console.log('Error en Ingresos', error);
         result = null;
     } finally {
         await con?.end();
@@ -195,7 +179,6 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
         });
     }
 };
-
 
 
 export const ObtenerIngresosNoReconciliados = async (req: any, res: Response) => {
