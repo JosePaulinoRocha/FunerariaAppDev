@@ -538,10 +538,8 @@ export const PostIngresos = async (req: Request, res: Response) => {
     }
 };
 
-
-
 export const PostIngresosComprobante = async (req: Request, res: Response) => {
-    console.log('Archivos recibidos:', req.file);
+    console.log('Archivo recibido:', req.file);
     const ingresoID = parseInt(req.params.id);
     const filePath = req.file?.path;
 
@@ -549,38 +547,20 @@ export const PostIngresosComprobante = async (req: Request, res: Response) => {
         return res.status(400).json({ message: 'No se recibió ningún archivo.' });
     }
 
-    const compressedFilePath = `${filePath}.gz`;
+    try {
+        const connection = await connect();
+        await connection.query(
+            'UPDATE ingresos SET Comprobante = ? WHERE IngresoID = ?',
+            [filePath, ingresoID]
+        );
+        connection.end();
 
-    // Comprimir el archivo
-    const gzip = zlib.createGzip();
-    const source = fs.createReadStream(filePath);
-    const destination = fs.createWriteStream(compressedFilePath);
-
-    source.pipe(gzip).pipe(destination).on('finish', async () => {
-        // Eliminar el archivo original después de comprimirlo
-        fs.unlinkSync(filePath);
-
-        // Guardar la ruta del archivo comprimido en la base de datos
-        try {
-            const connection = await connect(); // Usa connect si no estás usando un pool
-            await connection.query(
-                'UPDATE ingresos SET Comprobante = ? WHERE IngresoID = ?',
-                [compressedFilePath, ingresoID]
-            );
-            connection.end(); // Cierra la conexión
-
-            // Responder al cliente con la ruta del archivo comprimido
-            res.json({ message: 'Archivo comprimido y guardado exitosamente.', path: compressedFilePath });
-        } catch (error) {
-            console.error('Error al actualizar la base de datos:', error);
-            res.status(500).json({ message: 'Error al actualizar la base de datos.' });
-        }
-    }).on('error', (err) => {
-        console.error('Error al comprimir el archivo:', err);
-        res.status(500).json({ message: 'Error al comprimir el archivo.' });
-    });
+        res.json({ message: 'Archivo guardado exitosamente.', path: filePath });
+    } catch (error) {
+        console.error('Error al actualizar la base de datos:', error);
+        res.status(500).json({ message: 'Error al actualizar la base de datos.' });
+    }
 };
-
 
 
 export const UpdateIngresos = async (req: Request, res: Response) => {
