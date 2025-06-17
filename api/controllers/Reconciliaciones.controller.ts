@@ -141,11 +141,11 @@ export const ActualizarIngresos = async (req: Request, res: Response) => {
     try {
         con = await connect();
         for (const update of reconciliacionUpdates) {
-            const { IngresoID, ReconciliacionID, Saldo } = update;
+            const { IngresoID, ReconciliacionID, Saldo, FechaConciliacion  } = update;
             // Agregar el campo FechaConciliacion con NOW()
             await con.query(
-                'UPDATE ingresos SET ReconciliacionID = ?, Reconciliado = 1, Saldo = ?, FechaConciliacion = NOW() WHERE IngresoID = ?',
-                [ReconciliacionID, Saldo, IngresoID]
+                'UPDATE ingresos SET ReconciliacionID = ?, Reconciliado = 1, Saldo = ?, FechaConciliacion = ? WHERE IngresoID = ?',
+                [ReconciliacionID, Saldo, FechaConciliacion, IngresoID]
             );
         }
         res.json({ message: 'Ingresos actualizados exitosamente' });

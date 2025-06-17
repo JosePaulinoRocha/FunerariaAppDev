@@ -198,6 +198,8 @@ export class ReconciliacionesComponent implements OnInit {
         CuentaID: cuentaID
     };
 
+    console.log('informacion de reconciliacion: ', reconciliationData)
+
     this._reconciliacionServ.createReconciliacion(reconciliationData).subscribe(
         (newReconciliationID: number) => {
             // Actualizar los registros de ingresos con el ID de la nueva reconciliación
@@ -206,7 +208,8 @@ export class ReconciliacionesComponent implements OnInit {
                 .map(income => ({
                     IngresoID: income.IngresoID,
                     ReconciliacionID: newReconciliationID,
-                    Saldo: this.balanceFinal // O el saldo final calculado para cada ingreso
+                    Saldo: this.balanceFinal,
+                    FechaConciliacion: this.fechaFinal
                 }));
 
             this._reconciliacionServ.updateIngresos(reconciliacionUpdates).subscribe(

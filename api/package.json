@@ -6,7 +6,7 @@
     "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack --watch --progress",
-    "build": "rm -rf dist && webpack"
+    "build": "rimraf dist && webpack"
   },
   "keywords": [],
   "author": "",
