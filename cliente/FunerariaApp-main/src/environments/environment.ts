@@ -8,7 +8,7 @@ export const environment = {
   // endpoint: 'https://apifuneraria.com/',|
   // endpoint: 'https://systemabmxli.com/api_funeraria_app/',
   // endpoint: 'http://localhost:3080/',
-  endpoint: 'https://systemabmxlifuneraria.com/', 
+  endpoint: 'https://systemabmxlifuneraria.com/',
 
 };
 

@@ -113,6 +113,40 @@
             ></ion-input>
           </ion-item>
 
+          <!-- Segmento -->
+          <ion-item>
+            <ion-label position="stacked">Segmento</ion-label>
+            <ion-radio-group style="display: flex; flex-direction: row;" [(ngModel)]="isNewSegmento" name="isNewSegmento">
+              <ion-item style="font-size: 12px;">
+                <ion-label>Usar existente</ion-label>
+                <ion-radio slot="start" [value]="false" (ionSelect)="onSegmentoSelectorClick()"></ion-radio>
+              </ion-item>
+              <ion-item style="font-size: 12px;">
+                <ion-label>Crear nuevo</ion-label>
+                <ion-radio slot="start" [value]="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+
+            <div *ngIf="!isNewSegmento">
+              <ion-item button (click)="onSegmentoSelectorClick()">
+                <ion-label style="width: 30rem; color: var(--ion-text-color); font-size: 12px;">
+                  {{ ingreso.NombreSegmento || 'Seleccione un segmento' }}
+                </ion-label>
+              </ion-item>
+            </div>
+
+            <div *ngIf="isNewSegmento">
+              <ion-input
+                style="width: 32rem; --background: #D4D4D4; --border-radius: 8px; --padding-start: 10px;"
+                [(ngModel)]="newSegmento"
+                name="newSegmento"
+                placeholder="Nuevo segmento"
+                required>
+              </ion-input>
+            </div>
+          </ion-item>
+
+
           <!-- Categoría -->
           <ion-item>
             <ion-label position="stacked">Categoría</ion-label>
@@ -189,7 +223,7 @@
     </ion-grid>
 
     <ion-footer>
-      <ion-button [disabled]=" ingreso.Monto < 0 || ingreso.Monto > initialMonto || ingreso.MontoParcial > initialMonto || ingreso.MontoParcial < 0 || (ingreso.CategoriaID == 0 && newCategoria == '') || (ingreso.SubcategoriaID == null && newSubcategoria == '') || ingreso.TipoCuentaID == 0 || ingreso.TipoCuentaID == null || (ingreso.CuentaID == 0 && newNombreCuenta == '') || (ingreso.CuentaID == null && newNombreCuenta == '') || ingreso.Fecha == '' " style="margin-bottom: 1rem;" expand="full" type="submit">Asignar Cuenta</ion-button>
+      <ion-button [disabled]=" ingreso.Monto < 0 || ingreso.Monto > initialMonto || ingreso.MontoParcial > initialMonto || ingreso.MontoParcial < 0 || (ingreso.SegmentoID == null && newSegmento == '') || (ingreso.CategoriaID == 0 && newCategoria == '') || (ingreso.SubcategoriaID == null && newSubcategoria == '') || ingreso.TipoCuentaID == 0 || ingreso.TipoCuentaID == null || (ingreso.CuentaID == 0 && newNombreCuenta == '') || (ingreso.CuentaID == null && newNombreCuenta == '') || ingreso.Fecha == '' " style="margin-bottom: 1rem;" expand="full" type="submit">Asignar Cuenta</ion-button>
     </ion-footer>
   </form>
 </ion-content>

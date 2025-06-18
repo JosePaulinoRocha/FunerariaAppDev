@@ -6,6 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { IngresosServices } from 'src/app/Servicios/Ingresos.service';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { SegmentoModalComponent } from '../modal-cuenta/modal-segmentos/segmento-modal.component';
 import { CategoriasModalComponent } from '../modal-cuenta/modal-categorias/categoria-modal.component';
 import { SubcategoriasModalComponent } from '../modal-cuenta/modal-subcategorias/subcategoria-modal.component';
 import { CuentaModalComponent } from '../modal-cuenta/modal-cuentas/cuenta-modal.component';
@@ -47,6 +48,11 @@ interface Cuenta {
   TipoCuentaID: number;
   NombreCuenta: string;
   RFC: string;
+}
+
+interface Segmento {
+  SegmentoID: number;
+  Nombre: string;
 }
 
 interface Categoria {
@@ -110,12 +116,15 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
   @Input() incomeIDs: number[] = [];
   @Input() bulkAssignment: boolean = false;
 
+  segmento: Segmento[] = [];
   categoria: Categoria[] = [];
   subcategoria: Subcategoria[] = [];
 
+  isNewSegmento = false;
   isNewCategoria = false;
   isNewSubcategoria = false;
 
+  newSegmento = '';
   newCategoria = '';
   newSubcategoria = '';
 
@@ -147,8 +156,8 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
   constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private alertController: AlertController) {}
 
   ngOnInit() {
-    // console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
-    // console.log('Ingreso datos:', this.ingreso);
+    console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
+    console.log('Ingreso datos:', this.ingreso);
 
     this.initialMonto = this.ingreso.Monto;
 
@@ -165,6 +174,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     }
   
     this.loadCuentas();
+    this.loadSegmentos();
     this.loadCategorias();
     this.loadSubcategorias();
     // this.onTipoCuentaChange();
@@ -241,6 +251,29 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
     }, (error) => {
       this.presentAlert('Error fetching categories');
     });
+  }
+
+  loadSegmentos() {
+    this._ingresoServ.getSegmentos().subscribe((data: Segmento[]) => {
+      this.segmento = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
+    }, (error) => {
+      this.presentAlert('Error fetching subcategories');
+    });
+  }
+
+  async onSegmentoSelectorClick() {
+    const modal = await this.modalController.create({
+      component: SegmentoModalComponent,
+    });
+
+    modal.onDidDismiss().then((data) => {
+      if (data.data) {
+        this.ingreso.SegmentoID = data.data.SegmentoID;
+        this.ingreso.NombreSegmento = data.data.NombreSegmento;
+      }
+    });
+
+    await modal.present();
   }
 
   loadCategorias() {
@@ -379,6 +412,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
         RFC: this.ingreso.TipoCuentaID === 2 ? (this.newRFC || this.ingreso.RFC || '') : '',
         CategoriaID: this.isNewCategoria ? this.newCategoria : this.ingreso.CategoriaID,
         SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
+        SegmentoID: this.isNewSegmento ? this.newSegmento : this.ingreso.SegmentoID,
         Fecha: this.ingreso.Fecha
       };
     
@@ -386,7 +420,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
       // console.log("Income IDs en el modal: ", this.incomeIDs);
       
       this._ingresoServ.actualizarCuentasIngresoMasivas({
-        ids: this.incomeIDs,  // Aquí usamos `this.incomeIDs`
+        ids: this.incomeIDs,  
          cuenta: cuentaData
        }).subscribe(
          () => {
@@ -414,7 +448,7 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
         CategoriaID: this.isNewCategoria ? this.newCategoria : this.ingreso.CategoriaID,
         SubcategoriaID: this.isNewSubcategoria ? this.newSubcategoria : this.ingreso.SubcategoriaID,
         Fecha: this.ingreso.Fecha,
-        SegmentoID: this.ingreso.SegmentoID,
+        SegmentoID: this.isNewSegmento ? this.newSegmento : this.ingreso.SegmentoID,
         Descripcion: this.ingreso.Descripcion,
         TipoIngreso: this.ingreso.TipoIngreso.data,
 
