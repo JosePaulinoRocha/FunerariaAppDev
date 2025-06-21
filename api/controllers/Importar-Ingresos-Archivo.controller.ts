@@ -271,6 +271,48 @@ export const ImportarEgresosArchivoImportacion = async (req: Request, res: Respo
 };
 
 
+export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) => {
+  const con = await connect();
+  await con.beginTransaction();
+
+  try {
+    const egresosData = req.body;
+    console.log("Datos recibidos para importación (sistema viejo):", egresosData);
+
+    for (const egreso of egresosData) {
+      const SegmentoID = egreso.Segmento ? await getOrCreateId(con, 'segmentos', egreso.Segmento) : null;
+      const CategoriaID = egreso.Categoria ? await getOrCreateId(con, 'categorias', egreso.Categoria) : null;
+      const SubcategoriaID = egreso.Subcategoria ? await getOrCreateId(con, 'subcategorias', egreso.Subcategoria) : null;
+      const TipoCuentaID = egreso.Cuenta.toLowerCase().includes('caja') ? 1 : 2;
+      const CuentaID = egreso.Cuenta ? await getOrCreateCuentaEgreso(con, egreso.Cuenta, TipoCuentaID) : null;
+
+      // Concatenamos el concepto como observación
+      const observaciones = `Concepto original: ${egreso.Concepto || 'N/A'}`;
+
+      await con.query(`
+        INSERT INTO ingresos 
+        (SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, ProveedorID, CuentaID, 
+         Monto, TipoIngreso, Descripcion, Fecha, Saldo, Piezas, ObservacionesDifConciliacion, FechaConciliacion, Reconciliado)
+        VALUES (?, ?, ?, NULL, NULL, ?, ?, 1, ?, ?, ?, 0, ?, ?, 1)
+      `, [
+        SegmentoID, CategoriaID, SubcategoriaID, CuentaID, egreso.Monto, egreso.Descripcion, 
+        egreso.Fecha, egreso.Saldo, observaciones, egreso.FechaConciliacion
+      ]);
+
+      console.log("Egreso (sistema viejo) insertado correctamente");
+    }
+
+    await con.commit();
+    res.status(200).json({ message: 'Egresos del sistema viejo importados exitosamente' });
+  } catch (error) {
+    await con.rollback();
+    const err = error as Error;
+    res.status(500).json({ error: 'Error al procesar la importación (sistema viejo)', detalle: err.message });
+  } finally {
+    con.end();
+  }
+};
+
 
 const getOrCreateProveedorId = async (con: any, proveedor: string) => {
     try {

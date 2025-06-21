@@ -40,7 +40,18 @@
     Importar Ingresos
   </ion-button>
 
-  
+  <!-- Botón y input para egresos del sistema viejo -->
+  <input
+    type="file"
+    accept=".xlsx, .xls, .csv"
+    (change)="onFileChangeEgresosViejo($event)"
+    style="display: none"
+    id="fileInputEgresosViejo"
+  />
+  <ion-button style="margin-left: 2rem;" color="tertiary" (click)="triggerFileInputEgresosViejo()">
+    Importar Egresos Sistema Viejo
+  </ion-button>
+
 
   <div class="search-container">
     <ion-item>

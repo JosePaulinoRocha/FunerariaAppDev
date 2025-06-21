@@ -275,7 +275,11 @@
             {{ income.MontoParcialBandera === 0 ? 'N/A' : income.MontoParcial }}
           </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">
-            {{ income.Reconciliado === 0 ? income.Saldo : income.SaldoReconciliacion }}
+            {{
+              income.Reconciliado === 0 || !income.SaldoReconciliacion
+                ? income.Saldo
+                : income.SaldoReconciliacion
+            }}
           </td>
           <td *ngIf="!mostrarIngresos">
             <ion-icon
