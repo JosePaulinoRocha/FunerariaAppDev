@@ -300,13 +300,22 @@ export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) =
       const observaciones = `Concepto original: ${egreso.Concepto || 'N/A'}`;
       console.log("Observaciones:", observaciones);
 
-      // Normalizar el saldo
+      // Normalizamos saldo
       const saldo = (
         egreso.Saldo === 'NULL' || 
         egreso.Saldo === '' || 
         egreso.Saldo === undefined
       ) ? null : egreso.Saldo;
+
+      // Normalizamos FechaConciliacion
+      const fechaConciliacion = (
+        egreso.FechaConciliacion === 'NULL' || 
+        egreso.FechaConciliacion === '' || 
+        egreso.FechaConciliacion === undefined
+      ) ? null : egreso.FechaConciliacion;
+
       console.log("Saldo normalizado:", saldo);
+      console.log("FechaConciliacion normalizada:", fechaConciliacion);
 
       try {
         const insertResult = await con.query(`
@@ -316,12 +325,12 @@ export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) =
           VALUES (?, ?, ?, NULL, NULL, ?, ?, 1, ?, ?, ?, 0, ?, ?, 1)
         `, [
           SegmentoID, CategoriaID, SubcategoriaID, CuentaID, egreso.Monto, egreso.Descripcion, 
-          egreso.Fecha, saldo, observaciones, egreso.FechaConciliacion
+          egreso.Fecha, saldo, observaciones, fechaConciliacion
         ]);
         console.log(`Egreso ${index + 1} insertado correctamente:`, insertResult);
       } catch (insertError) {
         console.error(`Error insertando egreso ${index + 1}:`, insertError);
-        throw insertError; // Forzar rollback
+        throw insertError;
       }
     }
 
