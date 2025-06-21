@@ -270,7 +270,6 @@ export const ImportarEgresosArchivoImportacion = async (req: Request, res: Respo
     }
 };
 
-
 export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) => {
   const con = await connect();
 
@@ -301,32 +300,45 @@ export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) =
       const observaciones = `Concepto original: ${egreso.Concepto || 'N/A'}`;
       console.log("Observaciones:", observaciones);
 
-      // Validación de monto
+      // Validación Monto
       const montoValido = parseFloat(egreso.Monto);
       if (isNaN(montoValido)) {
         throw new Error(`Monto inválido en egreso ${index + 1}: "${egreso.Monto}"`);
       }
 
-      // Validación de fecha de conciliación
-      const fechaConciliacion = egreso.FechaConciliacion?.trim() || null;
+      // Validación Saldo
+      let saldoValido = 0;
+      if (egreso.Saldo && egreso.Saldo !== 'NULL') {
+        saldoValido = parseFloat(egreso.Saldo);
+        if (isNaN(saldoValido)) {
+          throw new Error(`Saldo inválido en egreso ${index + 1}: "${egreso.Saldo}"`);
+        }
+      }
 
-      await con.query(`
+      // Validación FechaConciliacion
+      const fechaConciliacionValida =
+        egreso.FechaConciliacion && egreso.FechaConciliacion.trim() !== '' ? egreso.FechaConciliacion : null;
+
+      await con.query(
+        `
         INSERT INTO ingresos 
         (SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, ProveedorID, CuentaID, 
          Monto, TipoIngreso, Descripcion, Fecha, Saldo, Piezas, ObservacionesDifConciliacion, FechaConciliacion, Reconciliado)
         VALUES (?, ?, ?, NULL, NULL, ?, ?, 1, ?, ?, ?, 0, ?, ?, 1)
-      `, [
-        SegmentoID,
-        CategoriaID,
-        SubcategoriaID,
-        CuentaID,
-        montoValido,
-        egreso.Descripcion,
-        egreso.Fecha,
-        egreso.Saldo ?? 0,
-        observaciones,
-        fechaConciliacion && fechaConciliacion !== '' ? fechaConciliacion : null
-      ]);
+        `,
+        [
+          SegmentoID,
+          CategoriaID,
+          SubcategoriaID,
+          CuentaID,
+          montoValido,
+          egreso.Descripcion,
+          egreso.Fecha,
+          saldoValido,
+          observaciones,
+          fechaConciliacionValida
+        ]
+      );
 
       console.log(`Egreso ${index + 1} insertado correctamente`);
     }
