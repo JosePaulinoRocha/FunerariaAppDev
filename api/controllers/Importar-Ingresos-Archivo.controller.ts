@@ -277,35 +277,51 @@ export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) =
 
   try {
     const egresosData = req.body;
-    console.log("Datos recibidos para importación (sistema viejo):", egresosData);
+    console.log("Datos recibidos para importación (sistema viejo):", egresosData.length, "registros");
 
-    for (const egreso of egresosData) {
+    for (const [index, egreso] of egresosData.entries()) {
+      console.log(`Procesando egreso ${index + 1}/${egresosData.length}:`, egreso);
+
       const SegmentoID = egreso.Segmento ? await getOrCreateId(con, 'segmentos', egreso.Segmento) : null;
+      console.log(`SegmentoID para "${egreso.Segmento}":`, SegmentoID);
+
       const CategoriaID = egreso.Categoria ? await getOrCreateId(con, 'categorias', egreso.Categoria) : null;
+      console.log(`CategoriaID para "${egreso.Categoria}":`, CategoriaID);
+
       const SubcategoriaID = egreso.Subcategoria ? await getOrCreateId(con, 'subcategorias', egreso.Subcategoria) : null;
-      const TipoCuentaID = egreso.Cuenta.toLowerCase().includes('caja') ? 1 : 2;
+      console.log(`SubcategoriaID para "${egreso.Subcategoria}":`, SubcategoriaID);
+
+      const TipoCuentaID = egreso.Cuenta?.toLowerCase().includes('caja') ? 1 : 2;
+      console.log(`TipoCuentaID para "${egreso.Cuenta}":`, TipoCuentaID);
+
       const CuentaID = egreso.Cuenta ? await getOrCreateCuentaEgreso(con, egreso.Cuenta, TipoCuentaID) : null;
+      console.log(`CuentaID para "${egreso.Cuenta}":`, CuentaID);
 
-      // Concatenamos el concepto como observación
       const observaciones = `Concepto original: ${egreso.Concepto || 'N/A'}`;
+      console.log("Observaciones:", observaciones);
 
-      await con.query(`
-        INSERT INTO ingresos 
-        (SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, ProveedorID, CuentaID, 
-         Monto, TipoIngreso, Descripcion, Fecha, Saldo, Piezas, ObservacionesDifConciliacion, FechaConciliacion, Reconciliado)
-        VALUES (?, ?, ?, NULL, NULL, ?, ?, 1, ?, ?, ?, 0, ?, ?, 1)
-      `, [
-        SegmentoID, CategoriaID, SubcategoriaID, CuentaID, egreso.Monto, egreso.Descripcion, 
-        egreso.Fecha, egreso.Saldo, observaciones, egreso.FechaConciliacion
-      ]);
-
-      console.log("Egreso (sistema viejo) insertado correctamente");
+      try {
+        const insertResult = await con.query(`
+          INSERT INTO ingresos 
+          (SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, ProveedorID, CuentaID, 
+           Monto, TipoIngreso, Descripcion, Fecha, Saldo, Piezas, ObservacionesDifConciliacion, FechaConciliacion, Reconciliado)
+          VALUES (?, ?, ?, NULL, NULL, ?, ?, 1, ?, ?, ?, 0, ?, ?, 1)
+        `, [
+          SegmentoID, CategoriaID, SubcategoriaID, CuentaID, egreso.Monto, egreso.Descripcion, 
+          egreso.Fecha, egreso.Saldo, observaciones, egreso.FechaConciliacion
+        ]);
+        console.log(`Egreso ${index + 1} insertado correctamente:`, insertResult);
+      } catch (insertError) {
+        console.error(`Error insertando egreso ${index + 1}:`, insertError);
+        throw insertError; // Para que el rollback y catch externo lo maneje
+      }
     }
 
     await con.commit();
     res.status(200).json({ message: 'Egresos del sistema viejo importados exitosamente' });
   } catch (error) {
     await con.rollback();
+    console.error('Error al procesar la importación (sistema viejo):', error);
     const err = error as Error;
     res.status(500).json({ error: 'Error al procesar la importación (sistema viejo)', detalle: err.message });
   } finally {
