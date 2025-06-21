@@ -270,6 +270,16 @@ export const ImportarEgresosArchivoImportacion = async (req: Request, res: Respo
     }
 };
 
+function sumarUnDia(fechaStr: string | null | undefined): string | null {
+  if (!fechaStr || fechaStr.trim() === '') return null;
+  const fecha = new Date(fechaStr);
+  fecha.setTime(fecha.getTime() + 86400000); // sumar 1 día (milisegundos)
+  const yyyy = fecha.getFullYear();
+  const mm = (fecha.getMonth() + 1).toString().padStart(2, '0');
+  const dd = fecha.getDate().toString().padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) => {
   const con = await connect();
 
@@ -282,6 +292,7 @@ export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) =
     for (const [index, egreso] of egresosData.entries()) {
       console.log(`Procesando egreso ${index + 1}/${egresosData.length}:`, egreso);
 
+      // Obtener IDs o crearlos si no existen
       const SegmentoID = egreso.Segmento ? await getOrCreateId(con, 'segmentos', egreso.Segmento) : null;
       console.log(`SegmentoID para "${egreso.Segmento}":`, SegmentoID);
 
@@ -297,16 +308,13 @@ export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) =
       const CuentaID = egreso.Cuenta ? await getOrCreateCuentaEgreso(con, egreso.Cuenta, TipoCuentaID) : null;
       console.log(`CuentaID para "${egreso.Cuenta}":`, CuentaID);
 
-      const observaciones = `Concepto original: ${egreso.Concepto || 'N/A'}`;
-      console.log("Observaciones:", observaciones);
-
-      // Validación Monto
+      // Validar monto
       const montoValido = parseFloat(egreso.Monto);
       if (isNaN(montoValido)) {
         throw new Error(`Monto inválido en egreso ${index + 1}: "${egreso.Monto}"`);
       }
 
-      // Validación Saldo
+      // Validar saldo
       let saldoValido = 0;
       if (egreso.Saldo && egreso.Saldo !== 'NULL') {
         saldoValido = parseFloat(egreso.Saldo);
@@ -315,9 +323,11 @@ export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) =
         }
       }
 
-      // Validación FechaConciliacion
-      const fechaConciliacionValida =
-        egreso.FechaConciliacion && egreso.FechaConciliacion.trim() !== '' ? egreso.FechaConciliacion : null;
+      // Sumar un día a las fechas
+      const fechaInsert = sumarUnDia(egreso.Fecha);
+      const fechaConciliacionInsert = sumarUnDia(egreso.FechaConciliacion);
+
+      const observaciones = `Concepto original: ${egreso.Concepto || 'N/A'}`;
 
       await con.query(
         `
@@ -332,11 +342,11 @@ export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) =
           SubcategoriaID,
           CuentaID,
           montoValido,
-          egreso.Descripcion,
-          egreso.Fecha,
+          egreso.Descripcion || '',
+          fechaInsert,
           saldoValido,
           observaciones,
-          fechaConciliacionValida
+          fechaConciliacionInsert
         ]
       );
 
