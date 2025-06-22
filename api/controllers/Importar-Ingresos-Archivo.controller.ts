@@ -370,6 +370,86 @@ export const ImportarEgresosSistemaViejo = async (req: Request, res: Response) =
 };
 
 
+export const ImportarIngresosSistemaViejo = async (req: Request, res: Response) => {
+  const con = await connect();
+
+  function sumarUnDia(fechaStr: string | null | undefined): string | null {
+    if (!fechaStr || fechaStr.trim() === '') return null;
+    const fecha = new Date(fechaStr);
+    fecha.setTime(fecha.getTime() + 86400000);
+    const yyyy = fecha.getFullYear();
+    const mm = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const dd = fecha.getDate().toString().padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  try {
+    const ingresosData = req.body;
+    console.log("Datos recibidos para importación (ingresos viejo):", ingresosData.length, "registros");
+
+    await con.beginTransaction();
+
+    for (const [index, ingreso] of ingresosData.entries()) {
+      console.log(`Procesando ingreso ${index + 1}/${ingresosData.length}:`, ingreso);
+
+      const SegmentoID = ingreso.Segmento ? await getOrCreateId(con, 'segmentos', ingreso.Segmento) : null;
+      const CategoriaID = ingreso.Categoria ? await getOrCreateId(con, 'categorias', ingreso.Categoria) : null;
+      const TipoCuentaID = ingreso.Cuenta?.toLowerCase().includes('caja') ? 1 : 2;
+      const CuentaID = ingreso.Cuenta ? await getOrCreateCuentaEgreso(con, ingreso.Cuenta, TipoCuentaID) : null;
+
+      const montoValido = parseFloat(ingreso.Monto);
+      if (isNaN(montoValido)) {
+        throw new Error(`Monto inválido en ingreso ${index + 1}: "${ingreso.Monto}"`);
+      }
+
+      let saldoValido = 0;
+      if (ingreso.Saldo && ingreso.Saldo !== 'NULL') {
+        saldoValido = parseFloat(ingreso.Saldo);
+        if (isNaN(saldoValido)) {
+          throw new Error(`Saldo inválido en ingreso ${index + 1}: "${ingreso.Saldo}"`);
+        }
+      }
+
+      const fechaInsert = sumarUnDia(ingreso.Fecha);
+      const fechaConciliacionInsert = sumarUnDia(ingreso.FechaConciliacion);
+
+      await con.query(
+        `
+        INSERT INTO ingresos 
+        (SegmentoID, CategoriaID, SubcategoriaID, ConceptoID, ProveedorID, CuentaID, 
+         Monto, TipoIngreso, Descripcion, Fecha, Saldo, Piezas, ObservacionesDifConciliacion, FechaConciliacion, Reconciliado)
+        VALUES (?, ?, NULL, NULL, NULL, ?, ?, 0, ?, ?, ?, 0, NULL, ?, 1)
+        `,
+        [
+          SegmentoID,
+          CategoriaID,
+          CuentaID,
+          montoValido,
+          ingreso.Descripcion || '',
+          fechaInsert,
+          saldoValido,
+          fechaConciliacionInsert
+        ]
+      );
+
+      console.log(`Ingreso ${index + 1} insertado correctamente`);
+    }
+
+    await con.commit();
+    res.status(200).json({ message: 'Ingresos del sistema viejo importados exitosamente' });
+
+  } catch (error) {
+    console.error('Error al procesar la importación (ingresos viejo):', error);
+    await con.rollback();
+    res.status(500).json({
+      error: 'Error al procesar la importación (ingresos viejo)',
+      detalle: (error as Error).message
+    });
+  } finally {
+    con.end();
+  }
+};
+
 
 const getOrCreateProveedorId = async (con: any, proveedor: string) => {
     try {

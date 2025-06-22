@@ -153,6 +153,11 @@ export class IngresosComponent implements OnInit {
     fileInput.click();
   }
 
+  triggerFileInputIngresosViejo() {
+    const fileInput = document.getElementById('fileInputIngresosViejo') as HTMLInputElement;
+    fileInput.click();
+  }
+
 
   onFileChangeIngresos(event: any) {
       const file = event.target.files[0];
@@ -397,6 +402,74 @@ export class IngresosComponent implements OnInit {
         },
         (error: any) => {
           console.error('Error al importar el batch de registros (sistema viejo)', error);
+          this.isLoading = false;
+        }
+      );
+    };
+
+    this.isLoading = true;
+    sendNextBatch();
+  }
+
+
+    onFileChangeIngresosViejo(event: any) {
+    const file = event.target.files[0];
+
+    if (file) {
+      const fileReader = new FileReader();
+
+      fileReader.onload = (e: any) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        this.processExcelDataIngresosViejo(jsonData);
+      };
+
+      fileReader.readAsArrayBuffer(file);
+    }
+    event.target.value = '';
+  }
+
+  processExcelDataIngresosViejo(data: any[]) {
+    const rows = data.slice(1); // Ignoramos encabezados
+
+    const processedData = rows.map((row) => ({
+      Fecha: this.excelDateToJSDate(row[1]) || '',
+      Segmento: row[2] || '',
+      Categoria: row[3] || '',
+      Descripcion: row[4] || '',
+      Monto: row[5] || 0,
+      Cuenta: row[6] || '',
+      FechaConciliacion: this.excelDateToJSDate(row[8]) || '',
+      Saldo: row[9] || 0
+    }));
+
+    console.log("Datos procesados (ingresos viejo):", processedData);
+    this.sendIngresosViejoInBatches(processedData);
+  }
+
+  sendIngresosViejoInBatches(registros: any[]) {
+    const totalRegistros = registros.length;
+    let offset = 0;
+
+    const sendNextBatch = () => {
+      const batch = registros.slice(offset, offset + this.BATCH_SIZE);
+      if (batch.length === 0) {
+        console.log('Todos los registros de ingresos viejo han sido importados.');
+        this.isLoading = false;
+        this.loadIngresos();
+        return;
+      }
+
+      this.ingresosArchivoServices.importarIngresosSistemaViejo(batch).subscribe(
+        () => {
+          console.log(`Batch de ${batch.length} registros importados correctamente`);
+          offset += this.BATCH_SIZE;
+          sendNextBatch();
+        },
+        (error: any) => {
+          console.error('Error al importar el batch de registros (ingresos viejo)', error);
           this.isLoading = false;
         }
       );
