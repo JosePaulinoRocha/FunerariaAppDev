@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 import { connect } from "../BD/Accesos_BD";
 import { RowDataPacket, ResultSetHeader  } from 'mysql2/promise';
 
-export async function ImportarIngresos(req: Request, res: Response): Promise<void> {
-    const registros = req.body;  // Lista de registros a importar
 
+export async function ImportarIngresos(req: Request, res: Response): Promise<void> {
+    const registros = req.body;
     let con: any;
     const idCache: { [key: string]: number } = {};
 
@@ -12,42 +12,35 @@ export async function ImportarIngresos(req: Request, res: Response): Promise<voi
         con = await connect();
         await con.beginTransaction();
 
-        // Función para buscar o crear un registro en cualquier tabla
         const getOrCreateId = async (table: string, column: string, value: string): Promise<number> => {
             const cacheKey = `${table}-${value}`;
-            
-            // Verificar si el ID ya está en el cache
-            if (idCache[cacheKey]) {
-                return idCache[cacheKey];
-            }
+            if (idCache[cacheKey]) return idCache[cacheKey];
 
-            // Verificar si el valor es numérico
-            if (!isNaN(Number(value))) {
-                return Number(value);
-            }
+            if (!isNaN(Number(value))) return Number(value);
 
-            // Buscar el registro en la tabla
-            const [rows]: RowDataPacket[] = await con.query(`SELECT ${table.slice(0, -1)}ID FROM ${table} WHERE ${column} = ?`, [value]);
+            const [rows]: RowDataPacket[] = await con.query(
+                `SELECT ${table.slice(0, -1)}ID FROM ${table} WHERE ${column} = ?`,
+                [value]
+            );
+
             if (rows.length > 0) {
                 idCache[cacheKey] = rows[0][`${table.slice(0, -1)}ID`];
                 return idCache[cacheKey];
             } else {
-                // Crear un nuevo registro si no existe
-                const [insertResult]: ResultSetHeader[] = await con.query(`INSERT INTO ${table} (${column}) VALUES (?)`, [value]);
+                const [insertResult]: ResultSetHeader[] = await con.query(
+                    `INSERT INTO ${table} (${column}) VALUES (?)`,
+                    [value]
+                );
                 idCache[cacheKey] = insertResult.insertId;
+                console.log(`Nuevo ${table}: ${value} (ID: ${insertResult.insertId})`);
                 return idCache[cacheKey];
             }
         };
 
-        // Procesar cada registro
         for (const registro of registros) {
             const { tipoIngreso, collection, service_ref, agent, date_affect, date_ref, total_amount } = registro;
 
-            let SegmentoID: number;
-            let CategoriaID: number;
-            let Descripcion: string = '';
-            let Fecha: string = '';
-
+            let SegmentoID: number, CategoriaID: number, Descripcion: string, Fecha: string;
             if (tipoIngreso === 'afectaciones') {
                 Descripcion = collection;
                 Fecha = date_affect;
@@ -64,44 +57,50 @@ export async function ImportarIngresos(req: Request, res: Response): Promise<voi
                 SegmentoID = await getOrCreateId('segmentos', 'Nombre', 'Ventas');
                 CategoriaID = await getOrCreateId('categorias', 'Nombre', 'Inversiones Iniciales');
             } else {
-                throw new Error("Tipo de ingreso no válido");
+                throw new Error(`Tipo de ingreso no válido: ${tipoIngreso}`);
             }
 
-            // Verificar si ya existe un registro con los mismos datos
-            const checkDuplicateQuery = `
-                SELECT COUNT(*) AS count FROM ingresos 
-                WHERE Fecha = ? AND SegmentoID = ? AND CategoriaID = ? AND Descripcion = ? AND Monto = ?
-            `;
-            const [duplicateResult]: RowDataPacket[] = await con.query(checkDuplicateQuery, [Fecha, SegmentoID, CategoriaID, Descripcion, total_amount]);
+            let insertedInExternos = false;
+            try {
+                await con.query(
+                    `INSERT INTO ingresos_externos (SegmentoID, CategoriaID, Descripcion, Fecha, Monto)
+                     VALUES (?, ?, ?, ?, ?)`,
+                    [SegmentoID, CategoriaID, Descripcion.trim(), Fecha, total_amount]
+                );
+                insertedInExternos = true;
+                console.log(`Registrado en ingresos_externos: ${Descripcion} ${Fecha} ${total_amount}`);
+            } catch (err) {
+                console.log(`Duplicado en ingresos_externos detectado: ${Descripcion} ${Fecha} ${total_amount}`);
+            }
 
-            if (duplicateResult[0].count === 0) {
-                // Si no existe duplicado, insertar el nuevo registro
-                const insertIngresoQuery = `
-                    INSERT INTO ingresos (Fecha, SegmentoID, CategoriaID, Descripcion, Monto)
-                    VALUES (?, ?, ?, ?, ?)
-                `;
-                await con.query(insertIngresoQuery, [Fecha, SegmentoID, CategoriaID, Descripcion, total_amount]);
+            if (insertedInExternos) {
+                await con.query(
+                    `INSERT INTO ingresos (Fecha, SegmentoID, CategoriaID, Descripcion, Monto)
+                     VALUES (?, ?, ?, ?, ?)`,
+                    [Fecha, SegmentoID, CategoriaID, Descripcion.trim(), total_amount]
+                );
                 console.log(`Ingreso insertado: ${Descripcion} en la fecha ${Fecha}`);
-            } else {
-                console.log(`Registro duplicado encontrado: ${Descripcion} en la fecha ${Fecha}, no se insertará.`);
             }
         }
 
+        // Limpieza de registros viejos en auxiliar
+        await con.query(
+            `DELETE FROM ingresos_externos WHERE Fecha < CURDATE() - INTERVAL 1 MONTH`
+        );
+
         await con.commit();
-        res.status(201).json({ message: 'Ingresos importados exitosamente, sin duplicados' });
+        res.status(201).json({ message: 'Ingresos importados exitosamente, sin duplicados (comparando solo con auxiliar)' });
     } catch (error) {
         if (con) await con.rollback();
         console.error('Error en ImportarIngresos:', error);
-        if (error instanceof Error) {
-            res.status(500).json({ message: 'Error al importar ingresos', error: error.message });
-        } else {
-            res.status(500).json({ message: 'Error al importar ingresos', error: 'Error desconocido' });
-        }
+        res.status(500).json({
+            message: 'Error al importar ingresos',
+            error: error instanceof Error ? error.message : 'Error desconocido'
+        });
     } finally {
         if (con) await con.end();
     }
 }
-
 
 
 export const ObtenerHistorialIngresos = async (req: Request, res: Response) => {
