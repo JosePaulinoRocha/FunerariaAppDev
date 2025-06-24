@@ -83,6 +83,16 @@
         </ion-button>
       </div>
 
+
+      <div class="button-select-group">
+        <span>Rango:</span>
+        <select class="custom-select" [(ngModel)]="periodoFiltro" (change)="onPeriodoFiltroChange()">
+          <option *ngFor="let periodo of periodosDisponibles" [value]="periodo.valor">
+            {{ periodo.label }}
+          </option>
+        </select>
+      </div>
+
     </div>
 
 
@@ -131,7 +141,7 @@
       <thead class="header-row">
         <tr class="color_header_tabla">
           <th>
-            <!-- <input type="checkbox" (change)="toggleSelectAll($event)" /> -->
+            <input type="checkbox" [checked]="masterCheckbox" (change)="toggleSelectAll($event)" />
           </th>
           <th>ID</th>
           <th *ngIf="isAdmin">Cuenta</th>

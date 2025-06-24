@@ -120,10 +120,66 @@ export class IngresosEgresosComponent implements OnInit {
 
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  periodoFiltro = '3m';
+  periodosDisponibles = [
+    { label: '3 meses', valor: '3m' },
+    { label: '6 meses', valor: '6m' },
+    { label: '1 año', valor: '1y' },
+    { label: '2 años', valor: '2y' },
+    { label: '3 años', valor: '3y' },
+    { label: '5 años', valor: '5y' },
+    { label: 'Todos', valor: 'all' }
+  ];
+
+  fechaDesdeFiltro = '';
+
+  masterCheckbox: boolean = false;
+
+  onPeriodoFiltroChange() {
+    const today = new Date();
+    let fechaDesde = '';
+
+    switch (this.periodoFiltro) {
+      case '3m':
+        today.setMonth(today.getMonth() - 3);
+        break;
+      case '6m':
+        today.setMonth(today.getMonth() - 6);
+        break;
+      case '1y':
+        today.setFullYear(today.getFullYear() - 1);
+        break;
+      case '2y':
+        today.setFullYear(today.getFullYear() - 2);
+        break;
+      case '3y':
+        today.setFullYear(today.getFullYear() - 3);
+        break;
+      case '5y':
+        today.setFullYear(today.getFullYear() - 5);
+        break;
+      case 'all':
+        this.fechaDesdeFiltro = ''; 
+        this.currentPage = 1;
+        this.loadIngresos();
+        return;
+    }
+
+    fechaDesde = today.toISOString().split('T')[0];
+    this.fechaDesdeFiltro = fechaDesde;
+    this.currentPage = 1;
+    this.loadIngresos();
+  }
+
   onSegmentoChange(event: Event) {
     const selectElement = event.target as HTMLSelectElement;
     this.segmentoSeleccionado = selectElement.value;
     this.currentPage = 1;
+
+    this.masterCheckbox = false;  // Desmarca el maestro
+    this.paginatedIncomes.forEach(income => income['selected'] = false);
+    this.selectedIncomes = [];
+
     this.loadIngresos();
   }
 
@@ -153,6 +209,7 @@ export class IngresosEgresosComponent implements OnInit {
 
   toggleSelectAll(event: any) {
     const isChecked = event.target.checked;
+    this.masterCheckbox = isChecked;  // ← Marca el estado del maestro
     this.selectedIncomes = [];
 
     this.paginatedIncomes.forEach(income => {
@@ -172,6 +229,7 @@ export class IngresosEgresosComponent implements OnInit {
         this.selectedIncomes.splice(index, 1);
       }
     }
+    this.masterCheckbox = this.paginatedIncomes.every(i => i['selected']);
   }
 
   getStartDate(field: string): string {
@@ -203,6 +261,7 @@ export class IngresosEgresosComponent implements OnInit {
   searchFields = [
     { value: 'IngresoID', label: 'ID' },
     { value: 'Fecha', label: 'Fecha' },
+    { value: 'FechaConciliacion', label: 'Fecha Conciliacion' },
     { value: 'NombreSegmento', label: 'Segmento' },
     { value: 'NombreCategoria', label: 'Categoria' },
     { value: 'NombreSubcategoria', label: 'Subcategoria' },
@@ -221,7 +280,6 @@ export class IngresosEgresosComponent implements OnInit {
     { value: 'FechaAutorizacion', label: 'Fecha Autorizacion' },
     { value: 'NombreUsuarioAutoriza', label: 'Usuario Autoriza' },
     { value: 'NombreUsuarioRecibe', label: 'Usuario Recibe' },
-    { value: 'FechaConciliacion', label: 'Fecha Conciliacion' },
     { value: 'ObservacionesDifConciliacion', label: 'Observaciones' },
   ];
   selectedFields: string[] = [];
@@ -317,12 +375,44 @@ export class IngresosEgresosComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.setDefaultPeriodoFiltro();
     this.loadIngresos();
     this.checkAdminStatus();
     this.updateFontSize();
 
   }
 
+  setDefaultPeriodoFiltro() {
+    const today = new Date();
+    let fechaDesde = '';
+
+    switch (this.periodoFiltro) {
+      case '3m':
+        today.setMonth(today.getMonth() - 3);
+        break;
+      case '6m':
+        today.setMonth(today.getMonth() - 6);
+        break;
+      case '1y':
+        today.setFullYear(today.getFullYear() - 1);
+        break;
+      case '2y':
+        today.setFullYear(today.getFullYear() - 2);
+        break;
+      case '3y':
+        today.setFullYear(today.getFullYear() - 3);
+        break;
+      case '5y':
+        today.setFullYear(today.getFullYear() - 5);
+        break;
+      case 'all':
+        this.fechaDesdeFiltro = ''; 
+        return;
+    }
+
+    fechaDesde = today.toISOString().split('T')[0];
+    this.fechaDesdeFiltro = fechaDesde;
+  }
 
   async abrirModalDescripcion(income: any) {
     // console.log('Abriendo modal para IngresoID:', income?.IngresoID);
@@ -649,7 +739,18 @@ export class IngresosEgresosComponent implements OnInit {
     this.isAdmin = user.isAdmin === 1;
   }
 
+  getDefaultFechaDesde(): string {
+    const today = new Date();
+    today.setMonth(today.getMonth() - 3);
+    return today.toISOString().split('T')[0];
+  }
+
   loadIngresos() {
+
+    this.masterCheckbox = false;  // Desmarca el maestro
+    this.paginatedIncomes.forEach(income => income['selected'] = false);
+    this.selectedIncomes = [];
+
     this.isLoading = true;
 
     this._ingresoServ.getIngresosPorFiltro(
@@ -657,6 +758,7 @@ export class IngresosEgresosComponent implements OnInit {
       this.currentPage,
       this.itemsPerPage,
       this.selectedDate,
+      (this.fechaDesdeFiltro !== '' ? this.fechaDesdeFiltro : undefined),
       this.sortOrder,
       this.segmentoSeleccionado
     ).subscribe((data: any) => {
@@ -729,6 +831,9 @@ export class IngresosEgresosComponent implements OnInit {
       this.currentPage--;
       // console.log('Página anterior:', this.currentPage);
       this.loadDataBasedOnContext();
+      this.masterCheckbox = false;  // Desmarca el maestro
+      this.paginatedIncomes.forEach(income => income['selected'] = false);
+      this.selectedIncomes = [];
     }
   }
 
@@ -737,6 +842,9 @@ export class IngresosEgresosComponent implements OnInit {
       this.currentPage++;
       // console.log('Página siguiente:', this.currentPage);
       this.loadDataBasedOnContext();
+      this.masterCheckbox = false;  // Desmarca el maestro
+      this.paginatedIncomes.forEach(income => income['selected'] = false);
+      this.selectedIncomes = [];
     }
   }
 
@@ -752,33 +860,59 @@ export class IngresosEgresosComponent implements OnInit {
     this.filtroSeleccionado = filtro;
     this.currentPage = 1;
     this.segmentoSeleccionado = 'todos'; 
+    
+    this.masterCheckbox = false;  // Desmarca el maestro
+    this.paginatedIncomes.forEach(income => income['selected'] = false);
+    this.selectedIncomes = [];
+
     this.loadIngresos(); 
   }
 
   applySearch() {
+
+    this.masterCheckbox = false;  // Desmarca el maestro
+    this.paginatedIncomes.forEach(income => income['selected'] = false);
+    this.selectedIncomes = [];
+
     this.isLoading = true;
     this.isSearchActive = true;
-  
+
     const filtros: { [key: string]: string | number } = { filtro: this.filtroSeleccionado };
 
     filtros['segmento'] = this.segmentoSeleccionado || 'todos';
-  
+
+    let tieneFiltroFecha = false;
+
     for (let field of this.selectedFields) {
       if (this.isDateField(field)) {
         const startDate = this.dateSearchValues[field]?.startDate;
         const endDate = this.dateSearchValues[field]?.endDate;
-  
-        if (startDate) filtros[`${field}Desde`] = startDate;
+
+        if (startDate) {
+          filtros[`${field}Desde`] = startDate;
+          tieneFiltroFecha = true;
+        }
         if (endDate) {
           const adjustedEndDate = new Date(endDate);
           adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
           filtros[`${field}Hasta`] = adjustedEndDate.toISOString().split('T')[0];
+          tieneFiltroFecha = true;
         }
       } else if (this.searchValues[field]) {
         filtros[field] = this.searchValues[field];
       }
     }
-  
+
+    // 👉 Si no hay filtros de fecha, aplica el rango de 3 meses por defecto
+    if (!tieneFiltroFecha) {
+      const today = new Date();
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(today.getMonth() - 3);
+
+      filtros['FechaDesde'] = threeMonthsAgo.toISOString().split('T')[0];
+      filtros['FechaHasta'] = today.toISOString().split('T')[0];
+    }
+
     this._ingresoServ.getIngresosParametros(filtros).subscribe(
       (data: Income[]) => {
         this.incomes = data
@@ -793,7 +927,7 @@ export class IngresosEgresosComponent implements OnInit {
               ? new Date(income.FechaConciliacion).toISOString().split('T')[0]
               : '',
           }));
-  
+
         this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
         this.currentPage = Math.min(this.currentPage, this.totalPages);
         this.updatePaginatedIncomes();
@@ -805,7 +939,6 @@ export class IngresosEgresosComponent implements OnInit {
       }
     );
   }
-  
 
   
   resetSearch() {

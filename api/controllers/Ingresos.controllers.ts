@@ -70,19 +70,31 @@ export const ObtenerIngresosParametros = async (req: Request, res: Response) => 
     for (const [key, value] of Object.entries(params)) {
       if (value) {
         switch (key) {
-          case 'FechaDesde':
+        case 'FechaDesde':
             query += ` AND Fecha >= ${con.escape(value)}`;
             break;
-          case 'FechaHasta':
+        case 'FechaHasta':
             query += ` AND Fecha < ${con.escape(value)}`;
             break;
-          case 'MontoDesde':
+        case 'FechaAutorizacionDesde':
+            query += ` AND FechaAutorizacion >= ${con.escape(value)}`;
+            break;
+        case 'FechaAutorizacionHasta':
+            query += ` AND FechaAutorizacion < ${con.escape(value)}`;
+            break;
+        case 'FechaConciliacionDesde':
+            query += ` AND FechaConciliacion >= ${con.escape(value)}`;
+            break;
+        case 'FechaConciliacionHasta':
+            query += ` AND FechaConciliacion < ${con.escape(value)}`;
+            break;
+        case 'MontoDesde':
             query += ` AND Monto >= ${con.escape(value)}`;
             break;
-          case 'MontoHasta':
+        case 'MontoHasta':
             query += ` AND Monto <= ${con.escape(value)}`;
             break;
-          default:
+        default:
             query += ` AND ${key} LIKE ${con.escape(`%${value}%`)}`;
             break;
         }
@@ -107,10 +119,12 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     let con;
     let result;
     let totalPages;
+    
     const filtro = req.params.filtro; 
     const pagina = parseInt(req.query.pagina as string) || 1;
     const resultadosPorPagina = parseInt(req.query.resultadosPorPagina as string) || 10; 
-    const fechaDesde = req.query.fechaDesde as string;
+    const fechaBase = req.query.fechaBase as string;   // selectedDate (solo para ordenar)
+    const fechaMin = req.query.fechaMin as string;     // fechaDesdeFiltro (limita rango)
     const orden = (req.query.orden as string || 'DESC').toUpperCase(); 
     const segmento = (req.query.segmento as string || 'todos').toLowerCase();
 
@@ -121,6 +135,7 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
         
         let whereClause = 'WHERE 1=1';
 
+        // Filtros por tipo
         if (filtro === 'ingresos') {
             whereClause += ' AND TipoIngreso = 0';
         } else if (filtro === 'egresos') {
@@ -137,6 +152,7 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
             whereClause += ' AND Reconciliado = 1';
         }
 
+        // Filtro por segmento
         if ((filtro === 'ingresosSinCuenta' || filtro === 'ingresosConCuenta') && segmento !== 'todos') {
             if (segmento === 'cobranza') {
                 whereClause += ` AND NombreSegmento = 'Cobranza'`;
@@ -147,35 +163,40 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
             }
         }
 
-        if (fechaDesde) {
-            if (orden === 'ASC') {
-                whereClause += ` AND DATE(Fecha) >= '${fechaDesde}'`;
-            } else {
-                whereClause += ` AND DATE(Fecha) <= '${fechaDesde}'`;
-            }
+        // Limitar por rango de fechas
+        if (fechaMin) {
+            whereClause += ` AND DATE(Fecha) >= '${fechaMin}'`;
         }
 
-        // Primero hacemos el count con el mismo WHERE
-        let countQuery = `SELECT COUNT(*) as total FROM vistaingresos ${whereClause}`;
-        let countResult : any = (await con.query(countQuery))[0];
+        // COUNT
+        const countQuery = `SELECT COUNT(*) as total FROM vistaingresos ${whereClause}`;
+        const countResult: any = (await con.query(countQuery))[0];
         const totalRecords = countResult[0].total;
         totalPages = Math.ceil(totalRecords / resultadosPorPagina);
 
-        // Luego hacemos la consulta de datos con el mismo WHERE
-        let query = `SELECT * FROM vistaingresos ${whereClause} ORDER BY DATE(Fecha) ${orden}, IngresoID ${orden} LIMIT ${resultadosPorPagina} OFFSET ${offset}`;
+        // Consulta de datos
+        let query = `
+            SELECT * FROM vistaingresos 
+            ${whereClause} 
+            ORDER BY 
+                CASE WHEN DATE(Fecha) = '${fechaBase}' THEN 0 ELSE 1 END,
+                DATE(Fecha) ${orden},
+                IngresoID ${orden}
+            LIMIT ${resultadosPorPagina} OFFSET ${offset}
+        `;
         const ingresos = (await con.query(query))[0] as any[];
         result = ingresos;
 
     } catch (error) {
-        console.log('Error en Ingresos', error);
+        console.error('Error en Ingresos', error);
         result = null;
     } finally {
         await con?.end();
 
         return res.json({
             ingresos: result,
-            totalPages: totalPages, 
-            currentPage: pagina,  
+            totalPages: totalPages,
+            currentPage: pagina
         });
     }
 };

@@ -92,9 +92,27 @@ export class IngresosServices {
     return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosParametros/`, { params });
   }
 
-  getIngresosPorFiltro(filtro: string, pagina: number, resultadosPorPagina: number, fechaDesde: string, orden: string, segmento: string): Observable<Ingreso[]> {
-    const url = `${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPorFiltro}${filtro}?pagina=${pagina}&resultadosPorPagina=${resultadosPorPagina}&fechaDesde=${fechaDesde}&orden=${orden}&segmento=${segmento}`;
-    return this.http.get<Ingreso[]>(url);
+  getIngresosPorFiltro(
+    filtro: string, 
+    pagina: number, 
+    resultadosPorPagina: number, 
+    fechaBase: string,        // selectedDate
+    fechaMin: string | undefined,  // ahora lo permitimos como undefined
+    orden: string, 
+    segmento: string
+  ): Observable<Ingreso[]> {
+    const params: any = {
+      pagina,
+      resultadosPorPagina,
+      fechaBase,
+      orden,
+      segmento
+    };
+    if (fechaMin) {
+      params.fechaMin = fechaMin;
+    }
+    const url = `${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlIngresoPorFiltro}${filtro}`;
+    return this.http.get<Ingreso[]>(url, { params });
   }
 
   getIngresosNoReconciliados(page: number, limit: number): Observable<any> {
