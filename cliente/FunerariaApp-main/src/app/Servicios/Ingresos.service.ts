@@ -92,21 +92,29 @@ export class IngresosServices {
     return this.http.get<Ingreso[]>(`${this.myAppUrl}${this.MyApiUrl}GetIngresosParametros/`, { params });
   }
 
+  deleteComprobante(ingresoID: number): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}/DeleteComprobante/${ingresoID}`;
+    return this.http.put(url, {});
+  }
+
+
   getIngresosPorFiltro(
-    filtro: string, 
-    pagina: number, 
-    resultadosPorPagina: number, 
-    fechaBase: string,        // selectedDate
-    fechaMin: string | undefined,  // ahora lo permitimos como undefined
-    orden: string, 
-    segmento: string
+    filtro: string,
+    pagina: number,
+    resultadosPorPagina: number,
+    fechaBase: string,
+    fechaMin: string | undefined,
+    orden: string,
+    segmento: string,
+    comprobante: string
   ): Observable<Ingreso[]> {
     const params: any = {
       pagina,
       resultadosPorPagina,
       fechaBase,
       orden,
-      segmento
+      segmento,
+      comprobante
     };
     if (fechaMin) {
       params.fechaMin = fechaMin;

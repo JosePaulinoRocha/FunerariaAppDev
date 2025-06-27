@@ -156,8 +156,8 @@ export class IngresosEgresosCuentaModalComponent implements OnInit {
   constructor(private modalController: ModalController, private _ingresoServ: IngresosServices, private alertController: AlertController) {}
 
   ngOnInit() {
-    console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
-    console.log('Ingreso datos:', this.ingreso);
+    // console.log('IngresoID recibido en el modal:', this.ingreso.IngresoID);
+    // console.log('Ingreso datos:', this.ingreso);
 
     this.initialMonto = this.ingreso.Monto;
 

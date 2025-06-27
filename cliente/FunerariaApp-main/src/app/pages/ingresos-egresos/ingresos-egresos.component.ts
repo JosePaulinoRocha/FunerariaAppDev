@@ -116,6 +116,8 @@ export class IngresosEgresosComponent implements OnInit {
   filtroSeleccionado: 'all' | 'ingresos' | 'ingresosSinCuenta' | 'ingresosConCuenta' | 'egresos' | 'cuentaContable' | 'sinCuentaContable' | 'reconciliados' = 'ingresosSinCuenta';
   segmentoSeleccionado: string = 'todos';
 
+  comprobanteSeleccionado: string = 'todos';
+
   sortField: string = '';
 
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -176,12 +178,25 @@ export class IngresosEgresosComponent implements OnInit {
     this.segmentoSeleccionado = selectElement.value;
     this.currentPage = 1;
 
-    this.masterCheckbox = false;  // Desmarca el maestro
+    this.masterCheckbox = false;
     this.paginatedIncomes.forEach(income => income['selected'] = false);
     this.selectedIncomes = [];
 
     this.loadIngresos();
   }
+
+  onComprobanteChange(event: Event) {
+    const selectElement = event.target as HTMLSelectElement;
+    this.comprobanteSeleccionado = selectElement.value;
+    this.currentPage = 1;
+
+    this.masterCheckbox = false;
+    this.paginatedIncomes.forEach(income => income['selected'] = false);
+    this.selectedIncomes = [];
+
+    this.loadIngresos();
+  }
+
 
   sortTable(field: string) {
     if (this.sortField === field) {
@@ -760,7 +775,8 @@ export class IngresosEgresosComponent implements OnInit {
       this.selectedDate,
       (this.fechaDesdeFiltro !== '' ? this.fechaDesdeFiltro : undefined),
       this.sortOrder,
-      this.segmentoSeleccionado
+      this.segmentoSeleccionado,
+      this.comprobanteSeleccionado
     ).subscribe((data: any) => {
       this.sortAndFormatData(data.ingresos);
       this.updatePagination(data.ingresos.length);
@@ -794,8 +810,8 @@ export class IngresosEgresosComponent implements OnInit {
         FechaAutorizacion: new Date(income.FechaAutorizacion).toISOString().split('T')[0],
         FechaConciliacion: new Date(income.FechaConciliacion).toISOString().split('T')[0]
       }));
-      // console.log("sort ",data)
-    this.mostrarIngresos = this.filtroSeleccionado === 'ingresos' || this.filtroSeleccionado === 'cuentaContable';
+      // console.log("sort ",data) 
+    this.mostrarIngresos = this.filtroSeleccionado === 'ingresos' || this.filtroSeleccionado === 'cuentaContable' || this.filtroSeleccionado === 'ingresosSinCuenta' || this.filtroSeleccionado === 'ingresosConCuenta';
   }
 
   updatePagination(totalRecords: number) {
@@ -1043,7 +1059,20 @@ export class IngresosEgresosComponent implements OnInit {
       
     }
   }
+
+  confirmDeleteComprobante(ingresoID: number) {
+    if (confirm('¿Estás seguro de que deseas eliminar el comprobante de este egreso?')) {
+      this._ingresoServ.deleteComprobante(ingresoID).subscribe({
+        next: () => {
+          alert('Comprobante eliminado correctamente.');
+          this.loadIngresos(); // refresca la tabla
+        },
+        error: (err) => {
+          console.error('Error al eliminar comprobante', err);
+          alert('Ocurrió un error al eliminar el comprobante.');
+        }
+      });
+    }
+  }
   
-
-
 }

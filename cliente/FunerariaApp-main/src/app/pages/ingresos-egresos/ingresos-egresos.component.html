@@ -128,7 +128,19 @@
         </select>
       </div>
 
-      <button (click)="setFilter('egresos')" [disabled]="filtroSeleccionado === 'egresos'">Egresos</button>
+      <div class="button-select-group">
+        <button style="margin-right: 0;" (click)="setFilter('egresos')" [disabled]="filtroSeleccionado === 'egresos'">Egresos</button>
+        <select
+          class="subfilter-select"
+          [(ngModel)]="comprobanteSeleccionado"
+          (change)="onComprobanteChange($event)"
+          [disabled]="filtroSeleccionado !== 'egresos'">
+          <option value="todos">Todos</option>
+          <option value="con">Comprobante</option>
+          <option value="sin">Vacios</option>
+        </select>
+      </div>
+
       <button (click)="setFilter('cuentaContable')" [disabled]="filtroSeleccionado === 'cuentaContable'">Cuenta contable</button>
       <button (click)="setFilter('sinCuentaContable')" [disabled]="filtroSeleccionado === 'sinCuentaContable'">Sin cuenta contable</button>
       <button (click)="setFilter('reconciliados')" [disabled]="filtroSeleccionado === 'reconciliados'">Reconciliados</button>
@@ -204,10 +216,11 @@
           <th>Monto Parcial</th>
           <th>Saldo</th>
           <th *ngIf="!mostrarIngresos">Comprobante</th>
+          <th *ngIf="!mostrarIngresos"></th>
           <th *ngIf="!mostrarIngresos">Estatus</th>
           <th>Fecha Autorizacion</th>
-          <th>Usuario Autoriza</th>
-          <th>Usuario Recibe</th>
+          <!-- <th>Usuario Autoriza</th>
+          <th>Usuario Recibe</th> -->
           <th>Fecha Conciliacion</th>
           <th>Reconciliado</th>
           <th>Ingreso / Egreso</th>
@@ -301,12 +314,21 @@
               style="cursor: pointer;">
             </ion-icon>
           </td>
+          <td *ngIf="!mostrarIngresos">
+            <ion-icon
+              name="trash-outline"
+              [color]="income.Comprobante ? 'danger' : 'medium'"
+              [style.font-size]="'20px'"
+              [style.cursor]="income.Comprobante ? 'pointer' : 'default'"
+              (click)="income.Comprobante ? confirmDeleteComprobante(income.IngresoID) : null">
+            </ion-icon>
+          </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null" *ngIf="!mostrarIngresos">{{ income.NombreEstatus }}</td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">
             {{ income.FechaAutorizacion !== '1970-01-01' ? income.FechaAutorizacion : '' }}
           </td>
-          <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.NombreUsuarioAutoriza }}</td>
-          <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.NombreUsuarioRecibe }}</td>
+          <!-- <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.NombreUsuarioAutoriza }}</td> -->
+          <!-- <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.NombreUsuarioRecibe }}</td> -->
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null" 
               [ngClass]="{ 'text-red': income.Reconciliado === 0, 'text-green': income.Reconciliado === 1 }">
             {{ income.FechaConciliacion !== '1970-01-01' ? income.FechaConciliacion : '' }}

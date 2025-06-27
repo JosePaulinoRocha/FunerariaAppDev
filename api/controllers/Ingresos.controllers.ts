@@ -114,25 +114,56 @@ export const ObtenerIngresosParametros = async (req: Request, res: Response) => 
   }
 };
 
+
+export const DeleteComprobante = async (req: Request, res: Response) => {
+    let con;
+    const ingresoID = parseInt(req.params.IngresoID);
+
+    if (isNaN(ingresoID)) {
+        return res.status(400).json({ message: 'IngresoID inválido' });
+    }
+
+    try {
+        con = await connect();
+        const [result]: any = await con.query(
+            `UPDATE ingresos SET Comprobante = NULL WHERE IngresoID = ?`,
+            [ingresoID]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Ingreso no encontrado' });
+        }
+
+        return res.json({ message: 'Comprobante eliminado correctamente' });
+
+    } catch (error) {
+        console.error('Error eliminando comprobante', error);
+        return res.status(500).json({ message: 'Error eliminando comprobante' });
+    } finally {
+        await con?.end();
+    }
+};
+
   
 export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     let con;
     let result;
     let totalPages;
-    
+
     const filtro = req.params.filtro; 
     const pagina = parseInt(req.query.pagina as string) || 1;
     const resultadosPorPagina = parseInt(req.query.resultadosPorPagina as string) || 10; 
-    const fechaBase = req.query.fechaBase as string;   // selectedDate (solo para ordenar)
-    const fechaMin = req.query.fechaMin as string;     // fechaDesdeFiltro (limita rango)
+    const fechaBase = req.query.fechaBase as string;
+    const fechaMin = req.query.fechaMin as string;
     const orden = (req.query.orden as string || 'DESC').toUpperCase(); 
     const segmento = (req.query.segmento as string || 'todos').toLowerCase();
+    const comprobante = (req.query.comprobante as string || 'todos').toLowerCase();
 
     const offset = (pagina - 1) * resultadosPorPagina;
 
     try {
         con = await connect();
-        
+
         let whereClause = 'WHERE 1=1';
 
         // Filtros por tipo
@@ -152,7 +183,7 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
             whereClause += ' AND Reconciliado = 1';
         }
 
-        // Filtro por segmento
+        // Filtro por segmento (ingresos)
         if ((filtro === 'ingresosSinCuenta' || filtro === 'ingresosConCuenta') && segmento !== 'todos') {
             if (segmento === 'cobranza') {
                 whereClause += ` AND NombreSegmento = 'Cobranza'`;
@@ -160,6 +191,15 @@ export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
                 whereClause += ` AND NombreSegmento = 'Funeraria Anahuac'`;
             } else if (segmento === 'ventas') {
                 whereClause += ` AND NombreSegmento = 'Ventas'`;
+            }
+        }
+
+        // Filtro por comprobante (solo egresos)
+        if (filtro === 'egresos') {
+            if (comprobante === 'con') {
+                whereClause += ` AND Comprobante IS NOT NULL AND Comprobante <> ''`;
+            } else if (comprobante === 'sin') {
+                whereClause += ` AND (Comprobante IS NULL OR Comprobante = '')`;
             }
         }
 
