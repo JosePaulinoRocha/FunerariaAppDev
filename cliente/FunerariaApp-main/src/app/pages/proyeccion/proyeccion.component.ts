@@ -956,21 +956,29 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // 🔧 Ajustar altura dinámica basada en número de categorías
+    const rows = egresosData.labels.length;
+    const rowHeight = 32; // Puedes ajustar si hace falta más o menos espacio
+    canvas.height = rows * rowHeight;
+
     const data: ChartConfiguration['data'] = {
-      labels: egresosData.labels, // Usamos las categorías desde los datos
+      labels: egresosData.labels,
       datasets: [
         {
           label: 'Egresos ($)',
-          data: egresosData.data, // Usamos los montos desde los datos
+          data: egresosData.data,
           backgroundColor: '#42A5F5',
           borderRadius: 5,
+          barThickness: 18,           // Opcional: barras más delgadas
+          categoryPercentage: 0.7,    // Opcional: espacio relativo de la categoría
+          barPercentage: 0.9,         // Opcional: espacio relativo de la barra
         },
       ],
     };
 
     const options: ChartOptions = {
       responsive: true,
-      indexAxis: 'y', // Gráfico horizontal
+      indexAxis: 'y',
       plugins: {
         legend: {
           display: true,
@@ -986,17 +994,23 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
             autoSkip: false,
             maxRotation: 0,
             minRotation: 0,
+            padding: 4, // Espacio adicional para mejorar lectura
           },
+        },
+      },
+      layout: {
+        padding: {
+          right: 8, // Opcional: espacio visual en el borde derecho
         },
       },
     };
 
-    // Destruir el gráfico existente si ya fue creado previamente
+    // 🔁 Si ya existe una gráfica, la destruimos primero
     if (this.charts['barChartBreakdown']) {
       this.charts['barChartBreakdown'].destroy();
     }
 
-    // Crear el gráfico
+    // 🧱 Crear la nueva gráfica
     this.charts['barChartBreakdown'] = new Chart(canvas, {
       type: 'bar',
       data,
@@ -1342,7 +1356,6 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
   }
 
 
-  // Función para inicializar la gráfica de ingresos por categoría
   private initializeIngresosChart(ingresosData: { labels: string[]; data: number[] }) {
     const canvas = document.getElementById('barChartIngresosSemanales') as HTMLCanvasElement;
 
@@ -1351,21 +1364,29 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // 🔧 Ajustar altura dinámica en base a la cantidad de categorías
+    const rows = ingresosData.labels.length;
+    const rowHeight = 32; // Puedes modificar si las etiquetas son más largas
+    canvas.height = rows * rowHeight;
+
     const data: ChartConfiguration['data'] = {
-      labels: ingresosData.labels, // Usamos las categorías desde los datos
+      labels: ingresosData.labels,
       datasets: [
         {
           label: 'Ingresos ($)',
-          data: ingresosData.data, // Usamos los montos desde los datos
-          backgroundColor: '#66BB6A', // Color de los ingresos (puedes cambiarlo)
+          data: ingresosData.data,
+          backgroundColor: '#66BB6A',
           borderRadius: 5,
+          barThickness: 18,
+          categoryPercentage: 0.7,
+          barPercentage: 0.9,
         },
       ],
     };
 
     const options: ChartOptions = {
       responsive: true,
-      indexAxis: 'y', // Gráfico horizontal
+      indexAxis: 'y',
       plugins: {
         legend: {
           display: true,
@@ -1381,22 +1402,29 @@ export class ProyeccionComponent implements OnInit, OnDestroy {
             autoSkip: false,
             maxRotation: 0,
             minRotation: 0,
+            padding: 4,
           },
+        },
+      },
+      layout: {
+        padding: {
+          right: 8,
         },
       },
     };
 
-    // Destruir el gráfico existente si ya fue creado previamente
+    // 🔁 Destruir gráfico anterior si ya existe
     if (this.charts['barChartIngresosSemanales']) {
       this.charts['barChartIngresosSemanales'].destroy();
     }
 
-    // Crear el gráfico
+    // 🧱 Crear el nuevo gráfico
     this.charts['barChartIngresosSemanales'] = new Chart(canvas, {
       type: 'bar',
       data,
       options,
     });
   }
+
 
 }

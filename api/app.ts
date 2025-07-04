@@ -55,8 +55,8 @@ export class App {
             credentials: true // Si necesitas enviar cookies
         }));
         this.app.use(this.allowCrossDomain);
-        this.app.use(express.json({ limit: '1mb' }));
-        this.app.use(express.urlencoded({ extended: true }));
+        this.app.use(express.json({ limit: '50mb' }));
+        this.app.use(express.urlencoded({ extended: true, limit: '50mb' }));
         // this.app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
         this.app.use('/uploads', express.static(path.join(__dirname, '../../uploads/')));
     }

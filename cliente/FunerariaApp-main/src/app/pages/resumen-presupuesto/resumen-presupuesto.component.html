@@ -11,23 +11,23 @@
       <ion-card-content>
         <ion-item>
           <ion-label>Presupuesto Otorgado:</ion-label>
-          <ion-text color="secondary">$ {{ egresoOtorgado }}</ion-text>
+          <ion-text color="secondary">$ {{ egresoOtorgado.toFixed(2) }}</ion-text>
         </ion-item>
         <ion-item>
           <ion-label>Presupuesto Empleado:</ion-label>
-          <ion-text color="success">$ {{ egresoActual }}</ion-text>
+          <ion-text color="success">$ {{ egresoActual.toFixed(2) }}</ion-text>
         </ion-item>
         <ion-item>
           <ion-label>Desfase General:</ion-label>
-          <ion-text color="danger">$ {{ egresoOtorgado - egresoActual }}</ion-text>
+          <ion-text color="danger">$ {{ (egresoOtorgado - egresoActual).toFixed(2) }}</ion-text>
         </ion-item>
         <ion-item>
           <ion-label>Ingreso Acumulado:</ion-label>
-          <ion-text color="success">$ {{ ingresoActual }}</ion-text>
+          <ion-text color="success">$ {{ ingresoActual.toFixed(2) }}</ion-text>
         </ion-item>
         <ion-item>
           <ion-label>Utilidad Neta:</ion-label>
-          <ion-text color="warning">$ {{ ingresoActual - egresoActual }}</ion-text>
+          <ion-text color="warning">$ {{ (ingresoActual - egresoActual).toFixed(2) }}</ion-text>
         </ion-item>
       </ion-card-content>
     </ion-card>

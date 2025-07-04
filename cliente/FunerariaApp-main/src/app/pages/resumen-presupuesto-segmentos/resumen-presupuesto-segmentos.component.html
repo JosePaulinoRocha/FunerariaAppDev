@@ -19,23 +19,36 @@
           </ion-col>
         </ion-row>
 
-        <!-- Fila 2: Presupuesto, Actual y Desfase -->
+        <!-- Fila 2: Presupuesto -->
         <ion-row class="segmento-detalles">
-          <ion-col size="4">
+          <ion-col size="12">
             <ion-label class="concepto">Presupuesto</ion-label>
-            <ion-text color="success" class="valor">$ {{ segmento.presupuesto | number:'1.2-2' }}</ion-text>
+            <ion-text color="success" class="valor">
+              $ {{ segmento.presupuesto | number:'1.2-2' }}
+            </ion-text>
           </ion-col>
-          <ion-col size="4">
+        </ion-row>
+
+        <!-- Fila 3: Actual -->
+        <ion-row class="segmento-detalles">
+          <ion-col size="12">
             <ion-label class="concepto">Actual</ion-label>
-            <ion-text color="primary" class="valor">$ {{ segmento.actual | number:'1.2-2' }}</ion-text>
+            <ion-text color="primary" class="valor">
+              $ {{ segmento.actual | number:'1.2-2' }}
+            </ion-text>
           </ion-col>
-          <ion-col size="4">
+        </ion-row>
+
+        <!-- Fila 4: Desfase -->
+        <ion-row class="segmento-detalles">
+          <ion-col size="12">
             <ion-label class="concepto">Desfase</ion-label>
             <ion-text [color]="segmento.desfase >= 0 ? 'success' : 'danger'" class="valor">
               $ {{ segmento.desfase | number:'1.2-2' }}
             </ion-text>
           </ion-col>
         </ion-row>
+
 
       </ion-grid>
     </ion-card>

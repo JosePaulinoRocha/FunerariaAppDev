@@ -133,3 +133,10 @@
   font-weight: bold;
   border: 1px solid #cce5ff;
 }
+
+
+/* Añade esto o sobrescribe el existente */
+.chart-container.auto-height {
+  height: auto;          /* Deja que el canvas marque su propio alto */
+  max-height: 80vh;      /* Para evitar un “scroll” gigante si son demasiadas */
+}

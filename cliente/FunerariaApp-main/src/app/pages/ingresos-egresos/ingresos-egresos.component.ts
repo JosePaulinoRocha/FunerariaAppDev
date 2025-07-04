@@ -1015,7 +1015,7 @@ export class IngresosEgresosComponent implements OnInit {
 
       modal.onDidDismiss().then((data) => {
         if (data.data?.success) {
-          this.loadIngresos();
+          this.loadDataBasedOnContext()
         }
       });
 
@@ -1065,7 +1065,7 @@ export class IngresosEgresosComponent implements OnInit {
       this._ingresoServ.deleteComprobante(ingresoID).subscribe({
         next: () => {
           alert('Comprobante eliminado correctamente.');
-          this.loadIngresos(); // refresca la tabla
+          this.loadDataBasedOnContext()
         },
         error: (err) => {
           console.error('Error al eliminar comprobante', err);
