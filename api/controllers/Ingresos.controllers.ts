@@ -35,6 +35,8 @@ export const ObtenerIngresosParametros = async (req: Request, res: Response) => 
     const segmento = (params.segmento as string || 'todos').toLowerCase();
     delete params.filtro;
     delete params.segmento;
+    const comprobante = (params.comprobante as string || 'todos').toLowerCase();
+    delete params.comprobante;
 
     let query = 'SELECT * FROM vistaingresos WHERE 1=1';
 
@@ -64,6 +66,15 @@ export const ObtenerIngresosParametros = async (req: Request, res: Response) => 
       } else if (segmento === 'ventas') {
         query += ` AND NombreSegmento = 'Ventas'`;
       }
+    }
+
+    
+    if (filtro === 'egresos') {
+        if (comprobante === 'con') {
+            query += ` AND Comprobante IS NOT NULL AND Comprobante <> ''`;
+        } else if (comprobante === 'sin') {
+            query += ` AND (Comprobante IS NULL OR Comprobante = '')`;
+        }
     }
 
     // Aplica los parámetros de búsqueda adicionales

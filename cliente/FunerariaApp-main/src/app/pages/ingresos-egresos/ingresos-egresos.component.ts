@@ -896,6 +896,7 @@ export class IngresosEgresosComponent implements OnInit {
     const filtros: { [key: string]: string | number } = { filtro: this.filtroSeleccionado };
 
     filtros['segmento'] = this.segmentoSeleccionado || 'todos';
+    filtros['comprobante'] = this.comprobanteSeleccionado || 'todos';
 
     let tieneFiltroFecha = false;
 

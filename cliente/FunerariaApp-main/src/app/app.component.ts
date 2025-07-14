@@ -203,7 +203,7 @@ export class AppComponent {
 
     // No redefinimos fechaCierreSinHora, usamos el argumento directamente
     const fechaInicio = new Date(fechaCierreSinHora);
-    fechaInicio.setDate(fechaInicio.getDate() - 1); // Restar un día
+    fechaInicio.setDate(fechaInicio.getDate() - 4); // Restar un día
     const fechaInicioStr = fechaInicio.toISOString().split('T')[0]; // Convertir a string
     // console.log("esta es la nueva fecha de inicio: ", fechaInicioStr);
 
