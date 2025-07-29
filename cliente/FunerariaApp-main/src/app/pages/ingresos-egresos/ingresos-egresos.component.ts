@@ -12,11 +12,9 @@ import { IngresosArchivoModalComponent } from './modal-ingresos-archivo/ingresos
 import { LoadingController } from '@ionic/angular';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { DescripcionesModalComponent } from './modal-descripcion/modal-descripcion.component'; // ajusta la ruta si es diferente
+import { DescripcionesModalComponent } from './modal-descripcion/modal-descripcion.component';
 import { ObservacionesModalComponent } from './modal-observaciones/modal-observaciones.component';
 import { ReconciliacionesServices } from 'src/app/Servicios/Reconciliaciones.service';
-
-
 
 
 interface Income {

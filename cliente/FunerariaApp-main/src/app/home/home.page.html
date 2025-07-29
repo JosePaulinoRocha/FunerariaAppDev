@@ -33,23 +33,13 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- <ion-card (click)="navigateTo('ingresos-api')">
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('compilaciones')">
       <ion-card-content>
-        <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
-        <ion-card-title>Importar Ingresos</ion-card-title>
-      </ion-card-content>  
-      <ion-card-content>
-        <p>Modulo diseñado para la importacion de ingresos externos.</p>
-      </ion-card-content>
-    </ion-card> -->
-
-    <ion-card *ngIf="isAdmin" (click)="navigateTo('usuarios')">
-      <ion-card-content>
-        <ion-icon color="primary" name="people-outline" slot="start"></ion-icon>
-        <ion-card-title>Usuarios</ion-card-title>
+        <ion-icon color="primary" name="bar-Chart" slot="start"></ion-icon>
+        <ion-card-title>Compilaciones</ion-card-title>
       </ion-card-content>
       <ion-card-content>
-        <p>Esta sección permite dar de alta y gestionar usuarios.</p>
+        <p>Compilado de datos de capturas por dia o rango de fecha.</p>
       </ion-card-content>
     </ion-card>
 
@@ -150,6 +140,16 @@
       </ion-card-content>  
       <ion-card-content>
         <p>Resumenes y datos sobre el presupuesto.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="isAdmin" (click)="navigateTo('usuarios')">
+      <ion-card-content>
+        <ion-icon color="primary" name="people-outline" slot="start"></ion-icon>
+        <ion-card-title>Usuarios</ion-card-title>
+      </ion-card-content>
+      <ion-card-content>
+        <p>Esta sección permite dar de alta y gestionar usuarios.</p>
       </ion-card-content>
     </ion-card>
 

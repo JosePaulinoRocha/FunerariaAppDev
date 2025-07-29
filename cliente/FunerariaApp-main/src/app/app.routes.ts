@@ -112,4 +112,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/resumen-presupuesto-categorias/resumen-presupuesto-categorias.component').then((m) => m.ResumenPresupuestoCategoriasComponent),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'compilaciones',
+    loadComponent: () => import('./pages/compilaciones/compilaciones.component').then((m) => m.CompilacionesComponent),
+    canActivate: [AuthGuard],
+  },
 ];

@@ -1,0 +1,277 @@
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 1rem;
+
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    padding: 1rem;
+  }
+  
+  .header-row {
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .header-row th {
+    font-weight: bold;
+    text-align: center;
+    padding: 8px;
+    border: 1px solid #ddd;
+    white-space: nowrap;
+  }
+  
+  .data-row {
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .data-row td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ddd;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .page-info {
+    display: inline-block;
+    margin-left: auto;
+    margin-right: 16px;
+    font-weight: bold;
+  }
+  
+  .margin_footer {
+    margin-left: 1rem;
+    width: 98%;
+  }
+
+  .green-text {
+    color: green;
+  }
+
+.search-container {
+  margin: 16px;
+}
+
+.search-container ion-item {
+    margin-bottom: 8px;
+}
+
+.color_header_tabla {
+  background-color: #0054E9;
+  color: #FFFFFF;
+ }
+
+ .text-red {
+  color: red;
+}
+
+.text-green {
+  color: green;
+}
+
+.no-account {
+  background-color: #fff59d; /* Amarillo suave */
+}
+
+.yellow-background {
+  background-color: #fff59d;
+}
+
+.aquamarine-background {
+  background-color: darkseagreen;
+}
+
+.button-group button[disabled] {
+  background-color: #007bff;
+  color: white;
+}
+
+.button-group button {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-right: 5px;
+}
+
+
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  text-align: center;
+  padding: 10px;
+  z-index: 1000; /* Asegúrate de que esté por encima de otros elementos */
+}
+
+.loading-bar ion-spinner, .loading-bar ion-progress-bar {
+  margin: 5px auto;
+}
+
+
+.green-text {
+  color: green;
+}
+
+.red-text {
+  color: red;
+}
+
+
+.table th,
+.table td {
+  white-space: nowrap;  
+  overflow: hidden;       
+  text-overflow: ellipsis;  
+}
+
+.small-button {
+  font-size: 10px;
+  padding: 0px 10px; 
+}
+
+
+.custom-select {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-left: 5px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.custom-select:disabled {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+
+.button-select-group {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+}
+
+.subfilter-select {
+  border: 1px solid #aaa;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  padding: 10px;
+  font-size: 14px;
+  height: 40px;
+  background-color: #fd7e14; /* naranja activo (Bootstrap orange) */
+  color: white;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.subfilter-select:disabled {
+  background-color: #ffd8b0; /* naranja apagado */
+  color: #666;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+
+.button-select-group button {
+  border-radius: 4px 0 0 4px;
+  border-right: none;
+  height: 40px;
+}
+
+.ingreso-row {
+  background-color: #e6f7ec; /* verde claro */
+}
+
+.egreso-row {
+  background-color: #fbeaea; /* rojo claro */
+}
+
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+
+.chart-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin: 20px 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #eef2f5, #d9e2ec);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container.auto-height {
+  height: auto;
+  max-height: 80vh;
+}
+
+
+.totals-summary {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+
+  ion-card {
+    flex: 1;
+    max-width: 300px;
+    text-align: center;
+
+    ion-card-header {
+      padding: 1rem;
+    }
+
+    ion-card-content {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+.ingreso-header {
+  background-color: var(--ion-color-success);
+  color: white;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.egreso-header {
+  background-color: var(--ion-color-danger);
+  color: white;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+

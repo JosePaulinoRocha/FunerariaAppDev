@@ -18,7 +18,7 @@ import Transferencias from "./routes/Transferencias.routes"
 import Reportes from "./routes/Reportes.routes"
 import ResumenPresupuesto from "./routes/Resumen-Presupuesto.routes"
 import Proyeccion from "./routes/Proyeccion.routes"
-
+import Compilaciones from "./routes/Compilaciones.routes"
 
 
 const dir = '../../cliente/DirectoriCliente/';
@@ -79,6 +79,7 @@ export class App {
         this.app.use('/api/reportes', Reportes);
         this.app.use('/api/resumen-presupuesto', ResumenPresupuesto);
         this.app.use('/api/proyeccion', Proyeccion);
+        this.app.use('/api/compilaciones', Compilaciones);
 
 
         this.app.get('*',function (req,res){
