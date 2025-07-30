@@ -38,7 +38,7 @@ export class CompilacionesComponent implements OnInit {
 
   currentPage: number = 1;
   itemsPerPage: number = 10;
-  itemsPerPageOptions: number[] = [10, 20, 50, 100];
+  itemsPerPageOptions: number[] = [10, 20, 50, 100, 200, 500];
 
   filtroSeleccionado: 'todos' | 'ingresos' | 'egresos' = 'todos';
   reconciliadoSeleccionado: 'todos' | 'reconciliado' | 'noReconciliado' = 'todos';
@@ -192,8 +192,8 @@ export class CompilacionesComponent implements OnInit {
 
     const rows = chartData.labels.length;
     const rowHeight = 80;
-    const minHeight = 150;  // mínimo alto del canvas (pocas barras)
-    const maxHeight = 600;  // opcional: límite superior
+    const minHeight = 100;  // mínimo alto del canvas (pocas barras)
+    const maxHeight = 600; 
     const calculatedHeight = rows * rowHeight;
     canvas.height = Math.min(Math.max(calculatedHeight, minHeight), maxHeight);
 
