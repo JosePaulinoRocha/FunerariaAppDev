@@ -33,13 +33,23 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('compilaciones')">
+    <ion-card (click)="navigateTo('compilaciones')">
       <ion-card-content>
         <ion-icon color="primary" name="bar-Chart" slot="start"></ion-icon>
         <ion-card-title>Compilaciones</ion-card-title>
       </ion-card-content>
       <ion-card-content>
         <p>Compilado de datos de capturas por dia o rango de fecha.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('reportes-conciliados')">
+      <ion-card-content>
+        <ion-icon color="primary" name="bar-Chart" slot="start"></ion-icon>
+        <ion-card-title>Reportes conciliados</ion-card-title>
+      </ion-card-content>  
+      <ion-card-content>
+        <p>Reportes de capturas conciliadas</p>
       </ion-card-content>
     </ion-card>
 

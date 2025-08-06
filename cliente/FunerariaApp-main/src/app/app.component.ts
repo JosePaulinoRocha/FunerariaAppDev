@@ -1,7 +1,7 @@
 import { Component, OnDestroy  } from '@angular/core';
 import { IonicModule, MenuController, AlertController } from "@ionic/angular";
 import { RouterModule, Router } from '@angular/router';
-import { folder, folderOutline , barChart ,calendar, layers, pricetag, pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, chatboxEllipses, business, home, analytics, images, personCircle, person, mail, call, shieldCheckmark, addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, time, alertCircle, warning, trash, create, cashOutline, peopleOutline, trashSharp, searchSharp, personCircleSharp, checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline, keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card, createOutline, walletOutline, chevronForward, cardOutline, saveOutline, calendarOutline, barChartOutline, eyeOff, cloudDownloadOutline, cloudUploadOutline, trashOutline } from "ionicons/icons";
+import { folder, folderOutline , barChart ,calendar, layers, pricetag, pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, chatboxEllipses, business, home, analytics, images, personCircle, person, mail, call, shieldCheckmark, addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, time, alertCircle, warning, trash, create, cashOutline, peopleOutline, trashSharp, searchSharp, personCircleSharp, checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline, keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card, createOutline, walletOutline, chevronForward, cardOutline, saveOutline, calendarOutline, barChartOutline, eyeOff, cloudDownloadOutline, cloudUploadOutline, trashOutline, documentOutline, downloadOutline } from "ionicons/icons";
 import { addIcons } from 'ionicons';
 import { AuthService } from 'src/app/Servicios/AuthService';
 import { CommonModule } from '@angular/common';
@@ -45,7 +45,7 @@ interface Historial_Ingresos {
   NumeroRegistrosImportados : string;
 }
 
-interface Ingreso_Importado {
+export interface Ingreso_Importado {
   collection?: string;
   service_ref?: string;
   agent?: string;
@@ -53,7 +53,14 @@ interface Ingreso_Importado {
   date_ref?: string;
   transactions: number;
   total_amount: number;
+
+  // Nuevos campos opcionales
+  amount?: number;
+  reference?: string;
+  method_payment?: string;
+  paid_type?: string;
 }
+
 
 @Component({
   selector: 'app-root',
@@ -113,7 +120,7 @@ export class AppComponent {
       chatboxEllipses, cashOutline, peopleOutline, folderOutline, folder, trashSharp, searchSharp, personCircleSharp,
       checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline,
       keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card, createOutline, walletOutline, 
-      chevronForward, cardOutline, saveOutline, trashOutline
+      chevronForward, cardOutline, saveOutline, trashOutline, documentOutline, downloadOutline
     });
 
     this.authService.isLoggedIn$.subscribe(isLoggedIn => {
@@ -364,7 +371,11 @@ importarIngresos() {
             date_affect: ingreso.date_affect,
             date_ref: ingreso.date_ref,
             transactions: ingreso.transactions,
-            total_amount: ingreso.total_amount
+            total_amount: ingreso.total_amount,
+            amount: ingreso.amount,               // nuevo campo
+            reference: ingreso.reference,         // nuevo campo
+            method_payment: ingreso.method_payment, // nuevo campo
+            paid_type: ingreso.paid_type          // nuevo campo
         })),
         ...this.pagos_iniciales.map(ingreso => ({
             tipoIngreso: 'pagos-iniciales',

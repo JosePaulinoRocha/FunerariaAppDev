@@ -31,10 +31,29 @@ export class CompilacionesServices {
     return this.http.get(url, { params });
   }
 
-    getUltimaFechaConDatos(): Observable<any> {
+  getUltimaFechaConDatos(): Observable<any> {
       const url = `${this.myAppUrl}${this.MyApiUrl}GetUltimaFechaConDatos`;
     return this.http.get(url);
-}
+  }
+
+  getUltimaFechaConciliacion(): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}GetUltimaFechaConciliacion`;
+    return this.http.get(url);
+  }
+
+  getResumenIngresosReconciliados(fecha: string, fechaFin?: string | null): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}GetResumenIngresosReconciliados`;
+    const params: any = { fecha };
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get(url, { params });
+  }
+
+  getResumenEgresosReconciliados(fecha: string, fechaFin?: string | null): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}GetResumenEgresosReconciliados`;
+    const params: any = { fecha };
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get(url, { params });
+  }
 
 
   

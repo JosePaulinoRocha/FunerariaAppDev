@@ -12,47 +12,51 @@
   <div style="justify-content: center;" class="filters-row">
 
     <div class="button-group">
-      
-      <div class="button-select-group">
-        <button style="margin-right: 0;" (click)="setFiltro('todos')" [disabled]="filtroSeleccionado === 'todos'">Todos</button>
-        <select
-          class="subfilter-select"
-          [(ngModel)]="reconciliadoSeleccionado"
-          (change)="onReconciliadoChange($event)"
-          [disabled]="filtroSeleccionado !== 'todos'">
-          <option value="todos">Todos</option>
-          <option value="reconciliado">Reconciliados</option>
-          <option value="noReconciliado">No reconciliados</option>
-        </select>
+      <!-- 🔹 FILA 1: primer y segundo filtro -->
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+        <div class="button-select-group">
+          <button style="margin-right: 0;" (click)="setFiltro('todos')" [disabled]="filtroSeleccionado === 'todos'">Todos</button>
+          <select
+            class="subfilter-select"
+            [(ngModel)]="reconciliadoSeleccionado"
+            (change)="onReconciliadoChange($event)"
+            [disabled]="filtroSeleccionado !== 'todos'">
+            <option value="todos">Todos</option>
+            <option value="reconciliado">Rec.</option>
+            <option value="noReconciliado">No rec.</option>
+          </select>
+        </div>
+
+        <div class="button-select-group">
+          <button style="margin-right: 0;" (click)="setFiltro('ingresos')" [disabled]="filtroSeleccionado === 'ingresos'">Ingresos</button>
+          <select
+            class="subfilter-select"
+            [(ngModel)]="reconciliadoSeleccionado"
+            (change)="onReconciliadoChange($event)"
+            [disabled]="filtroSeleccionado !== 'ingresos'">
+            <option value="todos">Todos</option>
+            <option value="reconciliado">Rec.</option>
+            <option value="noReconciliado">No rec.</option>
+          </select>
+        </div>
       </div>
 
-      <div class="button-select-group">
-        <button style="margin-right: 0;" (click)="setFiltro('ingresos')" [disabled]="filtroSeleccionado === 'ingresos'">Ingresos</button>
-        <select
-          class="subfilter-select"
-          [(ngModel)]="reconciliadoSeleccionado"
-          (change)="onReconciliadoChange($event)"
-          [disabled]="filtroSeleccionado !== 'ingresos'">
-          <option value="todos">Todos</option>
-          <option value="reconciliado">Reconciliados</option>
-          <option value="noReconciliado">No reconciliados</option>
-        </select>
-      </div>
+      <!-- 🔹 FILA 2: tercer filtro + botones -->
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-bottom: 0.5rem; justify-content: center;">
+        <div class="button-select-group">
+          <button style="margin-right: 0;" (click)="setFiltro('egresos')" [disabled]="filtroSeleccionado === 'egresos'">Egresos</button>
+          <select
+            class="subfilter-select"
+            [(ngModel)]="reconciliadoSeleccionado"
+            (change)="onReconciliadoChange($event)"
+            [disabled]="filtroSeleccionado !== 'egresos'">
+            <option value="todos">Todos</option>
+            <option value="reconciliado">Rec.</option>
+            <option value="noReconciliado">No rec.</option>
+          </select>
+        </div>
 
-      <div class="button-select-group">
-        <button style="margin-right: 0;" (click)="setFiltro('egresos')" [disabled]="filtroSeleccionado === 'egresos'">Egresos</button>
-        <select
-          class="subfilter-select"
-          [(ngModel)]="reconciliadoSeleccionado"
-          (change)="onReconciliadoChange($event)"
-          [disabled]="filtroSeleccionado !== 'egresos'">
-          <option value="todos">Todos</option>
-          <option value="reconciliado">Reconciliados</option>
-          <option value="noReconciliado">No reconciliados</option>
-        </select>
-
-        <!-- Botones exportar -->
-        <div style="margin-left: 0.5rem;" class="export-buttons">
+        <div class="export-buttons" style="display: flex; gap: 0.5rem;">
           <ion-button color="primary" (click)="exportarPDF()">
             <ion-icon name="document-outline" slot="start"></ion-icon>
             PDF
@@ -64,16 +68,16 @@
         </div>
       </div>
 
-      <!-- Grupo exportar + fechas -->
-      <div style="margin-top: 0.5rem;" class="export-date-row">
-
-        <!-- Selector modo fecha -->
+      <!-- 🔹 FILA 3: selector día/rango -->
+      <div class="export-date-row" style="margin-bottom: 0.5rem; margin-top: 0.6rem;">
         <select [(ngModel)]="dateMode" (change)="onDateChange()" class="custom-select">
           <option value="single">Día</option>
           <option value="range">Rango de fechas</option>
         </select>
+      </div>
 
-        <!-- Input fecha o rango -->
+      <!-- 🔹 FILA 4: fechas en la misma fila -->
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; margin-top: 0.5rem;">
         <ng-container *ngIf="dateMode === 'single'">
           <input type="date" [(ngModel)]="selectedDateStart" (change)="onDateChange()" class="custom-select" />
         </ng-container>
@@ -85,6 +89,7 @@
         </ng-container>
       </div>
 
+      <!-- 🔹 Segmento y totales -->
       <div style="margin: 1rem 0;">
         <ion-segment [(ngModel)]="modoVista" (ionChange)="onModoVistaChange()">
           <ion-segment-button value="tabla">
@@ -98,18 +103,18 @@
         <div class="totals-summary">
           <ion-card>
             <ion-card-header class="card-header ingreso-header">
-              <ion-card-title>Total Ingresos</ion-card-title>
+              <ion-card-title>Ingresos</ion-card-title>
             </ion-card-header>
-            <ion-card-content>
+            <ion-card-content style="margin-top: 0.5em;">
               {{ totalIngresos | currency:'MXN':'symbol' }}
             </ion-card-content>
           </ion-card>
 
           <ion-card>
             <ion-card-header class="card-header egreso-header">
-              <ion-card-title>Total Egresos</ion-card-title>
+              <ion-card-title>Egresos</ion-card-title>
             </ion-card-header>
-            <ion-card-content>
+            <ion-card-content style="margin-top: 0.5em;">
               {{ totalEgresos | currency:'MXN':'symbol' }}
             </ion-card-content>
           </ion-card>
@@ -134,6 +139,7 @@
     </div>
   </div>
 
+  <!-- 🔹 TABLA -->
   <div *ngIf="modoVista === 'tabla'" class="table-container">
     <table class="table">
       <thead class="header-row">
@@ -181,7 +187,7 @@
       </ion-buttons>
 
       <div class="page-info">
-        Página {{ currentPage }} de {{ totalPages }} (Faltan {{ totalPages - currentPage }} páginas)
+        {{ currentPage }} de {{ totalPages }}
       </div>
 
       <ion-select

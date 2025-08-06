@@ -1,0 +1,168 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Compilaciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <!-- 🔹 FILTROS EN UNA SOLA FILA -->
+  <div style="justify-content: center;" class="filters-row">
+    <div class="button-group">
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; justify-content: center;">
+
+        <div class="button-select-group">
+          <button style="margin-right: 0;" (click)="setFiltro('ingresos')" [disabled]="filtroSeleccionado === 'ingresos'">Ingresos</button>
+        </div>
+
+        <div class="button-select-group">
+          <button style="margin-right: 0;" (click)="setFiltro('egresos')" [disabled]="filtroSeleccionado === 'egresos'">Egresos</button>
+        </div>
+
+        <div class="export-buttons" style="display: flex; gap: 0.5rem;">
+          <ion-button color="primary" (click)="exportarPDF()">
+            <ion-icon name="document-outline" slot="start"></ion-icon>
+            PDF
+          </ion-button>
+          <ion-button color="success" (click)="exportarExcel()">
+            <ion-icon name="download-outline" slot="start"></ion-icon>
+            Excel
+          </ion-button>
+        </div>
+
+        <div>
+          <select [(ngModel)]="dateMode" (change)="onDateChange()" class="custom-select">
+            <option value="single">Día</option>
+            <option value="range">Rango de fechas</option>
+          </select>
+        </div>
+
+        <ng-container *ngIf="dateMode === 'single'">
+          <input type="date" [(ngModel)]="selectedDateStart" (change)="onDateChange()" class="custom-select" />
+        </ng-container>
+
+        <ng-container *ngIf="dateMode === 'range'">
+          <input type="date" [(ngModel)]="selectedDateStart" (change)="onDateChange()" class="custom-select" />
+          <span style="margin: 0 0.5rem;">a</span>
+          <input type="date" [(ngModel)]="selectedDateEnd" (change)="onDateChange()" class="custom-select" />
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔹 SEGMENTO Y TOTALES ABAJO -->
+  <div style="margin: 1rem 0;">
+    <ion-segment [(ngModel)]="modoVista" (ionChange)="onModoVistaChange()">
+      <ion-segment-button value="tabla">
+        Tabla
+      </ion-segment-button>
+      <ion-segment-button value="grafica">
+        Gráfica
+      </ion-segment-button>
+    </ion-segment>
+
+    <div class="totals-summary">
+      <ion-card>
+        <ion-card-header class="card-header ingreso-header">
+          <ion-card-title>Ingresos</ion-card-title>
+        </ion-card-header>
+        <ion-card-content style="margin-top: 0.5em;">
+          {{ totalIngresos | currency:'MXN':'symbol' }}
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header class="card-header egreso-header">
+          <ion-card-title>Egresos</ion-card-title>
+        </ion-card-header>
+        <ion-card-content style="margin-top: 0.5em;">
+          {{ totalEgresos | currency:'MXN':'symbol' }}
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <div *ngIf="modoVista === 'grafica'" style="padding: 1rem 0;">
+      <h2 style="margin-top: 2rem;" class="chart-title">Ingresos por Categoría</h2>
+
+      <div class="chart-container auto-height">
+        <canvas id="barChartIngresos" style="width: 100%; height: auto;"></canvas>
+      </div>
+
+      <h2 style="margin-top: 2rem;" class="chart-title">Egresos por Categoría</h2>
+
+      <div class="chart-container auto-height">
+        <canvas id="barChartEgresos" style="width: 100%; height: auto;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔹 TABLA -->
+  <div *ngIf="modoVista === 'tabla'" class="table-container">
+    <table class="table">
+      <thead class="header-row">
+        <tr class="color_header_tabla">
+          <th>Tipo</th>
+          <th>Categoría</th>
+          <th>Monto total</th>
+          <th>Total registros</th>
+          <th>Última fecha</th>
+          <th>Reconciliados</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr 
+          *ngFor="let item of paginatedData" 
+          class="data-row"
+          [ngClass]="{
+            'ingreso-row': isIngreso(item.TipoIngreso),
+            'egreso-row': isEgreso(item.TipoIngreso)
+          }">
+          <td>{{ getTipoIngresoDescripcion(item.TipoIngreso) }}</td>
+          <td>{{ item.NombreCategoria }}</td>
+          <td>{{ item.TotalMonto | currency:'MXN':'symbol' }}</td>
+          <td>{{ item.TotalRegistros }}</td>
+          <td>{{ item.UltimaFecha | date:'dd/MM/yyyy' }}</td>
+          <td [ngClass]="{ 'text-green': item.TodosReconciliados === 1, 'text-red': item.TodosReconciliados === 0 }">
+            {{ item.TodosReconciliados === 1 ? 'Sí' : 'No' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 🔹 LOADER -->
+  <div *ngIf="isLoading" class="loading-bar" style="margin-top: 2rem;">
+    <ion-progress-bar type="indeterminate"></ion-progress-bar>
+    <p>Cargando registros, por favor espere...</p>
+  </div>
+
+  <!-- 🔹 PAGINACIÓN -->
+  <ion-footer *ngIf="modoVista === 'tabla'" style="margin-bottom: 4rem; margin-top: 0.5rem;" class="margin_footer">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="previousPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+        <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages">Siguiente</ion-button>
+      </ion-buttons>
+
+      <div class="page-info">
+        {{ currentPage }} de {{ totalPages }}
+      </div>
+
+      <ion-select
+        interface="popover"
+        slot="end"
+        style="margin-right: 1rem;"
+        placeholder="Registros por página"
+        [(ngModel)]="itemsPerPage"
+        (ionChange)="onItemsPerPageChange()"
+      >
+        <ion-select-option *ngFor="let option of itemsPerPageOptions" [value]="option">{{ option }}</ion-select-option>
+      </ion-select>
+    </ion-toolbar>
+  </ion-footer>
+
+</ion-content>

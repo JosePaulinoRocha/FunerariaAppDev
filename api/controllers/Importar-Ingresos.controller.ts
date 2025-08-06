@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { connect } from "../BD/Accesos_BD";
-import { RowDataPacket, ResultSetHeader  } from 'mysql2/promise';
-
+import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 
 export async function ImportarIngresos(req: Request, res: Response): Promise<void> {
     const registros = req.body;
@@ -38,22 +37,35 @@ export async function ImportarIngresos(req: Request, res: Response): Promise<voi
         };
 
         for (const registro of registros) {
-            const { tipoIngreso, collection, service_ref, agent, date_affect, date_ref, total_amount } = registro;
+            const { tipoIngreso, collection, service_ref, agent, date_affect, date_ref, total_amount, reference, method_payment, paid_type, amount } = registro;
 
-            let SegmentoID: number, CategoriaID: number, Descripcion: string, Fecha: string;
+            let SegmentoID: number, CategoriaID: number;
+            let Descripcion: string;
+            let Fecha: string;
+            let Monto: number;
+            let Observaciones: string = '';
+
             if (tipoIngreso === 'afectaciones') {
                 Descripcion = collection;
                 Fecha = date_affect;
+                Monto = total_amount;
                 SegmentoID = await getOrCreateId('segmentos', 'Nombre', 'Cobranza');
                 CategoriaID = await getOrCreateId('categorias', 'Nombre', 'Cuentas Establecidas');
+
             } else if (tipoIngreso === 'funeraria') {
-                Descripcion = service_ref || 'Sin referencia de servicio';
+                Descripcion = service_ref || (reference ? `${reference} (Sin referencia de servicio)` : 'Sin referencia');
                 Fecha = date_ref;
+                Monto = amount;
+
                 SegmentoID = await getOrCreateId('segmentos', 'Nombre', 'Funeraria Anahuac');
                 CategoriaID = await getOrCreateId('categorias', 'Nombre', 'Ingreso Funeraria');
+
+                // Armar observaciones para conciliación
+                Observaciones = `Referencia: ${reference || 'N/A'} | Método: ${method_payment || 'N/A'} | TipoPago: ${paid_type || 'N/A'}`;
             } else if (tipoIngreso === 'pagos-iniciales') {
                 Descripcion = agent;
                 Fecha = date_ref;
+                Monto = total_amount;
                 SegmentoID = await getOrCreateId('segmentos', 'Nombre', 'Ventas');
                 CategoriaID = await getOrCreateId('categorias', 'Nombre', 'Inversiones Iniciales');
             } else {
@@ -65,19 +77,19 @@ export async function ImportarIngresos(req: Request, res: Response): Promise<voi
                 await con.query(
                     `INSERT INTO ingresos_externos (SegmentoID, CategoriaID, Descripcion, Fecha, Monto)
                      VALUES (?, ?, ?, ?, ?)`,
-                    [SegmentoID, CategoriaID, Descripcion.trim(), Fecha, total_amount]
+                    [SegmentoID, CategoriaID, Descripcion.trim(), Fecha, Monto]
                 );
                 insertedInExternos = true;
-                console.log(`Registrado en ingresos_externos: ${Descripcion} ${Fecha} ${total_amount}`);
+                console.log(`Registrado en ingresos_externos: ${Descripcion} ${Fecha} ${Monto}`);
             } catch (err) {
-                console.log(`Duplicado en ingresos_externos detectado: ${Descripcion} ${Fecha} ${total_amount}`);
+                console.log(`Duplicado en ingresos_externos detectado: ${Descripcion} ${Fecha} ${Monto}`);
             }
 
             if (insertedInExternos) {
                 await con.query(
-                    `INSERT INTO ingresos (Fecha, SegmentoID, CategoriaID, Descripcion, Monto)
-                     VALUES (?, ?, ?, ?, ?)`,
-                    [Fecha, SegmentoID, CategoriaID, Descripcion.trim(), total_amount]
+                    `INSERT INTO ingresos (Fecha, SegmentoID, CategoriaID, Descripcion, Monto, ObservacionesDifConciliacion)
+                     VALUES (?, ?, ?, ?, ?, ?)`,
+                    [Fecha, SegmentoID, CategoriaID, Descripcion.trim(), Monto, Observaciones]
                 );
                 console.log(`Ingreso insertado: ${Descripcion} en la fecha ${Fecha}`);
             }
@@ -101,7 +113,6 @@ export async function ImportarIngresos(req: Request, res: Response): Promise<voi
         if (con) await con.end();
     }
 }
-
 
 export const ObtenerHistorialIngresos = async (req: Request, res: Response) => {
     let con;

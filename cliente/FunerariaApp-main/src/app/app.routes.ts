@@ -117,4 +117,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/compilaciones/compilaciones.component').then((m) => m.CompilacionesComponent),
     canActivate: [AuthGuard],
   },
+    {
+    path: 'reportes-conciliados',
+    loadComponent: () => import('./pages/reportes-conciliados/reportes-conciliados.component').then((m) => m.ReportesConciliadosComponent),
+    canActivate: [AuthGuard],
+  },
 ];

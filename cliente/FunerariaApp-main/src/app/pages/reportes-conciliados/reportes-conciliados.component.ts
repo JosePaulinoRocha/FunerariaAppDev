@@ -11,7 +11,6 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { saveAs } from 'file-saver';
 
-
 interface Compilacion {
   CategoriaID: number;
   NombreCategoria: string;
@@ -23,15 +22,18 @@ interface Compilacion {
 }
 
 @Component({
-  selector: 'app-compilaciones',
-  templateUrl: './compilaciones.component.html',
-  styleUrls: ['./compilaciones.component.scss'],
+  selector: 'app-reportes-conciliados',
+  templateUrl: './reportes-conciliados.component.html',
+  styleUrls: ['./reportes-conciliados.component.scss'],
   standalone: true,
   imports: [IonicModule, CommonModule, HttpClientModule, FormsModule],
 })
-export class CompilacionesComponent implements OnInit {
+export class ReportesConciliadosComponent implements OnInit {
+
   isLoading: boolean = false;
-  compilacion: Compilacion[] = [];
+
+  ingresos: Compilacion[] = [];
+  egresos: Compilacion[] = [];
 
   selectedTipo: string = '';
   sortOrder: 'ASC' | 'DESC' = 'DESC';
@@ -40,7 +42,7 @@ export class CompilacionesComponent implements OnInit {
   itemsPerPage: number = 10;
   itemsPerPageOptions: number[] = [10, 20, 50, 100, 200, 500];
 
-  filtroSeleccionado: 'todos' | 'ingresos' | 'egresos' = 'todos';
+  filtroSeleccionado: 'todos' | 'ingresos' | 'egresos' = 'ingresos';
   reconciliadoSeleccionado: 'todos' | 'reconciliado' | 'noReconciliado' = 'todos';
 
   dateMode: 'single' | 'range' = 'single';
@@ -51,17 +53,44 @@ export class CompilacionesComponent implements OnInit {
 
   charts: { [key: string]: any } = {};
 
+  constructor(private _compilacionServ: CompilacionesServices) {}
 
-  setFiltro(tipo: 'todos' | 'ingresos' | 'egresos') {
+  ngOnInit() {
+    this._compilacionServ.getUltimaFechaConciliacion().subscribe(
+      (resp: any) => {
+        const fechaValida = resp?.UltimaFecha
+          ? new Date(resp.UltimaFecha).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0];
+
+        this.selectedDateStart = fechaValida;
+        this.selectedDateEnd = fechaValida;
+        this.loadDatos();
+      },
+      (error) => {
+        console.error('❌ No se pudo obtener la última FechaConciliacion:', error);
+        const hoy = new Date().toISOString().split('T')[0];
+        this.selectedDateStart = hoy;
+        this.selectedDateEnd = hoy;
+        this.loadDatos();
+      }
+    );
+  }
+
+  setFiltro(tipo: 'ingresos' | 'egresos' | 'todos') {
     this.filtroSeleccionado = tipo;
-    this.reconciliadoSeleccionado = 'todos';
-    this.loadCompilaciones(); // Actualiza la tabla
+    this.currentPage = 1;
+    // No recargar datos aquí porque ya están cargados
+  }
+
+  loadDatos() {
+    this.loadIngresos();
+    this.loadEgresos();
   }
 
   onReconciliadoChange(event: Event) {
     const select = event.target as HTMLSelectElement;
     this.reconciliadoSeleccionado = select.value as any;
-    this.loadCompilaciones(); // Actualiza la tabla
+    this.currentPage = 1;
   }
 
   isIngreso(tipo: any): boolean {
@@ -76,108 +105,112 @@ export class CompilacionesComponent implements OnInit {
     return false;
   }
 
-  constructor(private _compilacionServ: CompilacionesServices) {}
+  loadIngresos() {
+    this.isLoading = true;
+    const fechaInicio = this.selectedDateStart;
+    const fechaFin = this.dateMode === 'range' ? this.selectedDateEnd : null;
 
-  ngOnInit() {
-    this._compilacionServ.getUltimaFechaConDatos().subscribe(
-      (resp: any) => {
-        // console.log('📅 Fecha más reciente con datos desde el backend:', resp?.UltimaFecha);
+    console.log('[INGRESOS] Enviando fechas:', { fechaInicio, fechaFin });
 
-        const fechaValida = resp?.UltimaFecha
-          ? new Date(resp.UltimaFecha).toISOString().split('T')[0]
-          : new Date().toISOString().split('T')[0];
-
-        this.selectedDateStart = fechaValida;
-        this.selectedDateEnd = fechaValida;
-        this.loadCompilaciones();
+    this._compilacionServ.getResumenIngresosReconciliados(fechaInicio, fechaFin).subscribe(
+      data => {
+        console.log('[INGRESOS] Datos recibidos:', data);
+        this.ingresos = data;
+        this.isLoading = false;
       },
-      (error) => {
-        console.error('❌ No se pudo obtener la fecha más reciente:', error);
-        const hoy = new Date().toISOString().split('T')[0];
-        this.selectedDateStart = hoy;  
-        this.selectedDateEnd = hoy;
-        this.loadCompilaciones();
+      error => {
+        this.isLoading = false;
+        console.error('❌ [INGRESOS] Error al obtener ingresos:', error);
+        alert('Error al obtener ingresos');
       }
     );
   }
 
-  loadCompilaciones() {
+  loadEgresos() {
     this.isLoading = true;
+    const fechaInicio = this.selectedDateStart;
+    const fechaFin = this.dateMode === 'range' ? this.selectedDateEnd : null;
 
-    const tipoFiltro = this.filtroSeleccionado;
-    const reconciliadoFiltro = this.reconciliadoSeleccionado;
+    console.log('[EGRESOS] Enviando fechas:', { fechaInicio, fechaFin });
 
-    // Para enviar fechas
-    let fechaParam: string;
-    let fechaFinParam: string | null = null;
-
-    if (this.dateMode === 'single') {
-      fechaParam = this.selectedDateStart;
-    } else {
-      fechaParam = this.selectedDateStart;
-      fechaFinParam = this.selectedDateEnd;
-    }
-
-    this._compilacionServ.getResumenIngresosEgresos(fechaParam, tipoFiltro, reconciliadoFiltro, fechaFinParam).subscribe(
-      (data: any) => {
-        this.compilacion = data;
+    this._compilacionServ.getResumenEgresosReconciliados(fechaInicio, fechaFin).subscribe(
+      data => {
+        console.log('[EGRESOS] Datos recibidos:', data);
+        this.egresos = data;
         this.isLoading = false;
-        console.log('📊 Datos recibidos en loadCompilaciones:', this.compilacion);
-
-        if (this.modoVista === 'grafica') {
-          const egresos = this.egresosParaGrafica;
-          const ingresos = this.ingresosParaGrafica;
-
-          setTimeout(() => {
-            this.renderChart(
-              'barChartEgresos',
-              'Egresos ($)',
-              { labels: egresos.map(e => e.name), data: egresos.map(e => e.value) },
-              '#EF5350'
-            );
-
-            this.renderChart(
-              'barChartIngresos',
-              'Ingresos ($)',
-              { labels: ingresos.map(i => i.name), data: ingresos.map(i => i.value) },
-              '#66BB6A'
-            );
-          }, 50);
-        }
-
       },
-      (error) => {
+      error => {
         this.isLoading = false;
-        alert('Error al obtener el resumen. Intenta de nuevo más tarde.');
+        console.error('❌ [EGRESOS] Error al obtener egresos:', error);
+        alert('Error al obtener egresos');
       }
     );
   }
 
   onModoVistaChange() {
     if (this.modoVista === 'grafica') {
-      this.loadCompilaciones();
+      this.loadDatos();
     }
   }
 
-  get ingresosParaGrafica() {
-    return this.compilacion
-      .filter(item => this.isIngreso(item.TipoIngreso))
-      .map(item => ({
-        name: this.getNombreCategoriaValido(item),
-        value: Number(item.TotalMonto)
-      }));
+  get ingresosFiltrados(): Compilacion[] {
+    return this.ingresos.filter(item => this.filtrarPorReconciliado(item));
   }
 
-  get egresosParaGrafica() {
-    return this.compilacion
-      .filter(item => this.isEgreso(item.TipoIngreso))
-      .map(item => ({
-        name: this.getNombreCategoriaValido(item),
-        value: Number(item.TotalMonto)
-      }));
+  get egresosFiltrados(): Compilacion[] {
+    return this.egresos.filter(item => this.filtrarPorReconciliado(item));
   }
 
-  private getNombreCategoriaValido(item: Compilacion): string {
+  filtrarPorReconciliado(item: Compilacion): boolean {
+    if (this.reconciliadoSeleccionado === 'todos') return true;
+    if (this.reconciliadoSeleccionado === 'reconciliado') return item.TodosReconciliados === 1;
+    if (this.reconciliadoSeleccionado === 'noReconciliado') return item.TodosReconciliados === 0;
+    return true;
+  }
+
+  get datosFiltrados(): Compilacion[] {
+    let datos: Compilacion[] = [];
+    if (this.filtroSeleccionado === 'ingresos') {
+      datos = this.ingresosFiltrados;
+    } else if (this.filtroSeleccionado === 'egresos') {
+      datos = this.egresosFiltrados;
+    } else {
+      datos = [...this.ingresosFiltrados, ...this.egresosFiltrados];
+    }
+
+    if (this.selectedTipo !== '') {
+      datos = datos.filter(item => {
+        const tipo = typeof item.TipoIngreso === 'number' ? item.TipoIngreso : item.TipoIngreso?.data?.[0];
+        return tipo === +this.selectedTipo;
+      });
+    }
+
+    return datos;
+  }
+
+  get paginatedData(): Compilacion[] {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    return this.datosFiltrados.slice(start, start + this.itemsPerPage);
+  }
+
+  get totalPages(): number {
+    return Math.max(Math.ceil(this.datosFiltrados.length / this.itemsPerPage), 1);
+  }
+
+  previousPage() {
+    if (this.currentPage > 1) this.currentPage--;
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  onItemsPerPageChange() {
+    if(this.itemsPerPage < 10) this.itemsPerPage = 10;
+    this.currentPage = 1;
+  }
+
+  getNombreCategoriaValido(item: Compilacion): string {
     if (item.NombreCategoria === 'NULL') return 'NULL';
     if (!item.CategoriaID || !item.NombreCategoria || item.NombreCategoria.trim() === '') {
       return '(Sin categoría)';
@@ -185,16 +218,26 @@ export class CompilacionesComponent implements OnInit {
     return item.NombreCategoria;
   }
 
+  get ingresosParaGrafica() {
+    return this.ingresosFiltrados.map(item => ({
+      name: this.getNombreCategoriaValido(item),
+      value: Number(item.TotalMonto)
+    }));
+  }
+
+  get egresosParaGrafica() {
+    return this.egresosFiltrados.map(item => ({
+      name: this.getNombreCategoriaValido(item),
+      value: Number(item.TotalMonto)
+    }));
+  }
+
   get totalIngresos(): number {
-    return this.compilacion
-      .filter(item => this.isIngreso(item.TipoIngreso))
-      .reduce((sum, item) => sum + Number(item.TotalMonto), 0);
+    return this.ingresosFiltrados.reduce((sum, item) => sum + Number(item.TotalMonto), 0);
   }
 
   get totalEgresos(): number {
-    return this.compilacion
-      .filter(item => this.isEgreso(item.TipoIngreso))
-      .reduce((sum, item) => sum + Number(item.TotalMonto), 0);
+    return this.egresosFiltrados.reduce((sum, item) => sum + Number(item.TotalMonto), 0);
   }
 
   private renderChart(
@@ -273,7 +316,7 @@ export class CompilacionesComponent implements OnInit {
 
   onDateChange() {
     this.currentPage = 1;
-    this.loadCompilaciones();
+    this.loadDatos();
   }
 
   getTipoIngresoDescripcion(tipo: any): string {
@@ -281,63 +324,17 @@ export class CompilacionesComponent implements OnInit {
     return valor === 0 ? 'Ingreso' : 'Egreso';
   }
 
-  get paginatedData(): Compilacion[] {
-    const filtrado = this.compilacion.filter(item => {
-      if (this.selectedTipo === '') return true;
-      const valor = typeof item.TipoIngreso === 'number' ? item.TipoIngreso : item.TipoIngreso?.data?.[0];
-      return valor === +this.selectedTipo;
-    });
-
-    // Paginación
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    return filtrado.slice(start, start + this.itemsPerPage);
-  }
-
-  get totalPages(): number {
-    const filtrado = this.compilacion.filter(item => {
-      if (this.selectedTipo === '') return true;
-      const valor = typeof item.TipoIngreso === 'number' ? item.TipoIngreso : item.TipoIngreso?.data?.[0];
-      return valor === +this.selectedTipo;
-    });
-    return Math.max(Math.ceil(filtrado.length / this.itemsPerPage), 1);
-  }
-
-  previousPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
-  }
-
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-    }
-  }
-
-  onItemsPerPageChange() {
-    // Al cambiar registros por página, vuelve a la página 1
-    if(this.itemsPerPage < 10){
-      this.itemsPerPage = 10; // mínimo 10
-    }
-    this.currentPage = 1;
-  }
-
   formatDate(isoDate: string): string {
     if (!isoDate) return '';
     const date = new Date(isoDate);
-    // Opcional: formatear a 'dd/MM/yyyy'
     const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Mes empieza en 0
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   }
 
   exportarExcel() {
-    // Usar todo el conjunto, no solo página
-    const ingresos = this.compilacion.filter(item => this.isIngreso(item.TipoIngreso));
-    const egresos = this.compilacion.filter(item => this.isEgreso(item.TipoIngreso));
-
-    const ingresosData = ingresos.map(item => ({
+    const ingresosData = this.ingresosFiltrados.map(item => ({
       Tipo: 'Ingreso',
       Categoría: item.NombreCategoria,
       'Monto total': Number(item.TotalMonto),
@@ -346,7 +343,7 @@ export class CompilacionesComponent implements OnInit {
       Reconciliados: item.TodosReconciliados === 1 ? 'Sí' : 'No'
     }));
 
-    const egresosData = egresos.map(item => ({
+    const egresosData = this.egresosFiltrados.map(item => ({
       Tipo: 'Egreso',
       Categoría: item.NombreCategoria,
       'Monto total': Number(item.TotalMonto),
@@ -359,7 +356,7 @@ export class CompilacionesComponent implements OnInit {
       Tipo: 'Total Ingresos',
       Categoría: '',
       'Monto total': this.totalIngresos,
-      'Total registros': ingresos.reduce((sum, i) => sum + i.TotalRegistros, 0),
+      'Total registros': this.ingresosFiltrados.reduce((sum, i) => sum + i.TotalRegistros, 0),
       'Última fecha': '',
       Reconciliados: ''
     });
@@ -368,7 +365,7 @@ export class CompilacionesComponent implements OnInit {
       Tipo: 'Total Egresos',
       Categoría: '',
       'Monto total': this.totalEgresos,
-      'Total registros': egresos.reduce((sum, e) => sum + e.TotalRegistros, 0),
+      'Total registros': this.egresosFiltrados.reduce((sum, e) => sum + e.TotalRegistros, 0),
       'Última fecha': '',
       Reconciliados: ''
     });
@@ -393,10 +390,7 @@ export class CompilacionesComponent implements OnInit {
     doc.setFontSize(16);
     doc.text(title, 14, 15);
 
-    const ingresos = this.compilacion.filter(item => this.isIngreso(item.TipoIngreso));
-    const egresos = this.compilacion.filter(item => this.isEgreso(item.TipoIngreso));
-
-    const ingresosRows = ingresos.map(item => [
+    const ingresosRows = this.ingresosFiltrados.map(item => [
       'Ingreso',
       item.NombreCategoria,
       Number(item.TotalMonto).toLocaleString('es-MX', {
@@ -416,12 +410,12 @@ export class CompilacionesComponent implements OnInit {
         currency: 'MXN',
         minimumFractionDigits: 2
       }),
-      ingresos.reduce((sum, i) => sum + i.TotalRegistros, 0),
+      this.ingresosFiltrados.reduce((sum, i) => sum + i.TotalRegistros, 0),
       '',
       ''
     ]);
 
-    const egresosRows = egresos.map(item => [
+    const egresosRows = this.egresosFiltrados.map(item => [
       'Egreso',
       item.NombreCategoria,
       Number(item.TotalMonto).toLocaleString('es-MX', {
@@ -441,7 +435,7 @@ export class CompilacionesComponent implements OnInit {
         currency: 'MXN',
         minimumFractionDigits: 2
       }),
-      egresos.reduce((sum, e) => sum + e.TotalRegistros, 0),
+      this.egresosFiltrados.reduce((sum, e) => sum + e.TotalRegistros, 0),
       '',
       ''
     ]);
