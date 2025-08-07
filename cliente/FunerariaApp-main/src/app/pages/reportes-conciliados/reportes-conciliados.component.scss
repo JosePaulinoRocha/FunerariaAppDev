@@ -230,8 +230,9 @@
 .chart-container {
   position: relative;
   width: 100%;
+  max-width: 700px; /* o el tamaño que prefieras */
   height: 250px;
-  margin-bottom: 20px;
+  margin: 0 auto 20px auto; /* centrar horizontalmente + separación abajo */
   border-radius: 10px;
   overflow: hidden;
   background: linear-gradient(145deg, #eef2f5, #d9e2ec);
@@ -348,3 +349,43 @@
   }
 }
 
+.seleccionados-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.selector-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease;
+}
+
+.selector-pill:hover {
+  transform: scale(1.05);
+}
+
+/* Estilos por tipo */
+.selector-pill.segmento {
+  background-color: #4a90e2; /* azul vivo */
+}
+
+.selector-pill.categoria {
+  background-color: #28a745; /* verde */
+}
+
+.selector-pill.subcategoria {
+  background-color: #ff9800; /* naranja */
+}

@@ -41,20 +41,37 @@ export class CompilacionesServices {
     return this.http.get(url);
   }
 
-  getResumenIngresosReconciliados(fecha: string, fechaFin?: string | null): Observable<any> {
+  getResumenIngresosReconciliados(
+    fecha: string,
+    fechaFin?: string | null,
+    segmentoId?: number,
+    categoriaId?: number,
+    subcategoriaId?: number
+  ): Observable<any> {
     const url = `${this.myAppUrl}${this.MyApiUrl}GetResumenIngresosReconciliados`;
     const params: any = { fecha };
     if (fechaFin) params.fechaFin = fechaFin;
+    if (segmentoId !== undefined) params.segmentoId = segmentoId;
+    if (categoriaId !== undefined) params.categoriaId = categoriaId;
+    if (subcategoriaId !== undefined) params.subcategoriaId = subcategoriaId;
     return this.http.get(url, { params });
   }
 
-  getResumenEgresosReconciliados(fecha: string, fechaFin?: string | null): Observable<any> {
+  getResumenEgresosReconciliados(
+    fecha: string,
+    fechaFin?: string | null,
+    segmentoId?: number,
+    categoriaId?: number,
+    subcategoriaId?: number
+  ): Observable<any> {
     const url = `${this.myAppUrl}${this.MyApiUrl}GetResumenEgresosReconciliados`;
     const params: any = { fecha };
     if (fechaFin) params.fechaFin = fechaFin;
+    if (segmentoId !== undefined) params.segmentoId = segmentoId;
+    if (categoriaId !== undefined) params.categoriaId = categoriaId;
+    if (subcategoriaId !== undefined) params.subcategoriaId = subcategoriaId;
     return this.http.get(url, { params });
   }
-
 
   
 }

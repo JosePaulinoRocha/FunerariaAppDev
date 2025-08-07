@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Compilaciones</ion-title>
+    <ion-title>Reportes conciliados</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -85,14 +85,31 @@
       </ion-card>
     </div>
 
+    <div class="seleccionados-container">
+      <div *ngIf="segmentoSeleccionado" class="selector-pill segmento" (click)="volverAFiltro('segmento')" style="cursor: pointer;">
+        <ion-icon name="albums-outline"></ion-icon>
+        {{ segmentoSeleccionado.nombre }}
+      </div>
+
+      <div *ngIf="categoriaSeleccionada" class="selector-pill categoria" (click)="volverAFiltro('categoria')" style="cursor: pointer;">
+        <ion-icon name="pricetag-outline"></ion-icon>
+        {{ categoriaSeleccionada.nombre }}
+      </div>
+
+      <div *ngIf="subcategoriaSeleccionada" class="selector-pill subcategoria" (click)="volverAFiltro('subcategoria')" style="cursor: pointer;">
+        <ion-icon name="pricetags-outline"></ion-icon>
+        {{ subcategoriaSeleccionada.nombre }}
+      </div>
+    </div>
+
     <div *ngIf="modoVista === 'grafica'" style="padding: 1rem 0;">
-      <h2 style="margin-top: 2rem;" class="chart-title">Ingresos por Categoría</h2>
+      <h2 class="chart-title">{{ getTituloGraficaIngresos() }}</h2>
 
       <div class="chart-container auto-height">
         <canvas id="barChartIngresos" style="width: 100%; height: auto;"></canvas>
       </div>
 
-      <h2 style="margin-top: 2rem;" class="chart-title">Egresos por Categoría</h2>
+      <h2 class="chart-title">{{ getTituloGraficaEgresos() }}</h2>
 
       <div class="chart-container auto-height">
         <canvas id="barChartEgresos" style="width: 100%; height: auto;"></canvas>
@@ -101,33 +118,39 @@
   </div>
 
   <!-- 🔹 TABLA -->
+
   <div *ngIf="modoVista === 'tabla'" class="table-container">
     <table class="table">
       <thead class="header-row">
         <tr class="color_header_tabla">
+          <th>Filtrar</th> <!-- Nueva columna para botón -->
           <th>Tipo</th>
-          <th>Categoría</th>
+          <th>{{ columnaNombre }}</th>
           <th>Monto total</th>
           <th>Total registros</th>
           <th>Última fecha</th>
-          <th>Reconciliados</th>
+          <th>% del total</th>
         </tr>
       </thead>
       <tbody>
-        <tr 
-          *ngFor="let item of paginatedData" 
+        <tr
+          *ngFor="let item of paginatedData"
           class="data-row"
           [ngClass]="{
             'ingreso-row': isIngreso(item.TipoIngreso),
             'egreso-row': isEgreso(item.TipoIngreso)
-          }">
+          }"
+        >
+          <td style="text-align: center;">
+            <span (click)="filtrarPorItem(item)" style="cursor: pointer; font-size: 14px;">🔍</span>
+          </td>
           <td>{{ getTipoIngresoDescripcion(item.TipoIngreso) }}</td>
-          <td>{{ item.NombreCategoria }}</td>
-          <td>{{ item.TotalMonto | currency:'MXN':'symbol' }}</td>
+          <td>{{ getNombreColumna(item) }}</td>
+          <td>{{ item.TotalMonto | currency: 'MXN':'symbol' }}</td>
           <td>{{ item.TotalRegistros }}</td>
-          <td>{{ item.UltimaFecha | date:'dd/MM/yyyy' }}</td>
-          <td [ngClass]="{ 'text-green': item.TodosReconciliados === 1, 'text-red': item.TodosReconciliados === 0 }">
-            {{ item.TodosReconciliados === 1 ? 'Sí' : 'No' }}
+          <td>{{ item.UltimaFecha | date: 'dd/MM/yyyy' }}</td>
+          <td>
+            {{ calcularPorcentaje(+item.TotalMonto, item.TipoIngreso) }}%
           </td>
         </tr>
       </tbody>

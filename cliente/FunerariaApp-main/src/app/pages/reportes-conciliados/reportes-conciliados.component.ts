@@ -12,8 +12,12 @@ import autoTable from 'jspdf-autotable';
 import { saveAs } from 'file-saver';
 
 interface Compilacion {
+  SegmentoID: number;
+  NombreSegmento: string;
   CategoriaID: number;
   NombreCategoria: string;
+  SubcategoriaID: number;
+  NombreSubcategoria: string;
   TipoIngreso: number | { data: number[] };
   TodosReconciliados: number;
   TotalMonto: string;
@@ -51,9 +55,73 @@ export class ReportesConciliadosComponent implements OnInit {
 
   modoVista: 'tabla' | 'grafica' = 'tabla';
 
+  segmentoSeleccionado: { id: number, nombre: string } | null = null;
+  categoriaSeleccionada: { id: number; nombre: string } | null = null;
+  subcategoriaSeleccionada: { id: number; nombre: string } | null = null;
+
+  datosPorCategoria: any[] = [];
+
+  columnaNombre: string = 'Segmento';
+
   charts: { [key: string]: any } = {};
 
   constructor(private _compilacionServ: CompilacionesServices) {}
+
+  getNombreColumna(item: any): string {
+    if (this.columnaNombre === 'Segmento') return item.NombreSegmento;
+    if (this.columnaNombre === 'Categoría') return this.getNombreCategoriaValido(item);
+    if (this.columnaNombre === 'Subcategoría') return item.NombreSubcategoria || '(Sin subcategoría)';
+    if (this.columnaNombre === 'Concepto') return item.Concepto || '(Sin concepto)';
+    return '(Sin nombre)';
+  }
+
+  actualizarColumnaNombre() {
+    if (this.subcategoriaSeleccionada) {
+      this.columnaNombre = 'Concepto'; 
+    } else if (this.categoriaSeleccionada) {
+      this.columnaNombre = 'Subcategoría'; 
+    } else if (this.segmentoSeleccionado) {
+      this.columnaNombre = 'Categoría'; 
+    } else {
+      this.columnaNombre = 'Segmento'; 
+    }
+  }
+
+  filtrarPorItem(item: Compilacion) {
+    if (!this.segmentoSeleccionado || this.segmentoSeleccionado.id !== item.SegmentoID) {
+      this.segmentoSeleccionado = { id: item.SegmentoID, nombre: item.NombreSegmento };
+      this.categoriaSeleccionada = null;
+      this.subcategoriaSeleccionada = null;
+    } else if (!this.categoriaSeleccionada || this.categoriaSeleccionada.id !== item.CategoriaID) {
+      this.categoriaSeleccionada = { id: item.CategoriaID, nombre: item.NombreCategoria };
+      this.subcategoriaSeleccionada = null;
+    } else if (!this.subcategoriaSeleccionada || this.subcategoriaSeleccionada.id !== item.SubcategoriaID) {
+      this.subcategoriaSeleccionada = { id: item.SubcategoriaID, nombre: item.NombreSubcategoria || '(Sin subcategoría)' };
+    }
+
+    this.actualizarColumnaNombre();
+    this.currentPage = 1;
+    this.loadDatos();
+  }
+
+  volverAFiltro(filtro: 'segmento' | 'categoria' | 'subcategoria') {
+    switch(filtro) {
+      case 'segmento':
+        this.segmentoSeleccionado = null; 
+        this.categoriaSeleccionada = null;
+        this.subcategoriaSeleccionada = null;
+        break;
+      case 'categoria':
+        this.categoriaSeleccionada = null; 
+        this.subcategoriaSeleccionada = null;
+        break;
+      case 'subcategoria':
+        this.subcategoriaSeleccionada = null; 
+        break;
+    }
+    this.actualizarColumnaNombre(); 
+    this.loadDatos(); 
+  }
 
   ngOnInit() {
     this._compilacionServ.getUltimaFechaConciliacion().subscribe(
@@ -79,10 +147,19 @@ export class ReportesConciliadosComponent implements OnInit {
   setFiltro(tipo: 'ingresos' | 'egresos' | 'todos') {
     this.filtroSeleccionado = tipo;
     this.currentPage = 1;
-    // No recargar datos aquí porque ya están cargados
   }
 
   loadDatos() {
+    if (this.segmentoSeleccionado && this.categoriaSeleccionada && this.subcategoriaSeleccionada) {
+      this.columnaNombre = 'Concepto';
+    } else if (this.segmentoSeleccionado && this.categoriaSeleccionada) {
+      this.columnaNombre = 'Subcategoría';
+    } else if (this.segmentoSeleccionado) {
+      this.columnaNombre = 'Categoría';
+    } else {
+      this.columnaNombre = 'Segmento';
+    }
+
     this.loadIngresos();
     this.loadEgresos();
   }
@@ -111,19 +188,24 @@ export class ReportesConciliadosComponent implements OnInit {
     const fechaFin = this.dateMode === 'range' ? this.selectedDateEnd : null;
 
     console.log('[INGRESOS] Enviando fechas:', { fechaInicio, fechaFin });
+    console.log('[INGRESOS] SegmentoID:', this.segmentoSeleccionado?.id, 'CategoriaID:', this.categoriaSeleccionada?.id);
 
-    this._compilacionServ.getResumenIngresosReconciliados(fechaInicio, fechaFin).subscribe(
-      data => {
-        console.log('[INGRESOS] Datos recibidos:', data);
-        this.ingresos = data;
-        this.isLoading = false;
-      },
-      error => {
-        this.isLoading = false;
-        console.error('❌ [INGRESOS] Error al obtener ingresos:', error);
-        alert('Error al obtener ingresos');
-      }
-    );
+    this._compilacionServ
+      .getResumenIngresosReconciliados(fechaInicio, fechaFin, this.segmentoSeleccionado?.id, this.categoriaSeleccionada?.id, this.subcategoriaSeleccionada?.id)
+      .subscribe(
+        data => {
+          console.log('[INGRESOS] Datos recibidos:', data);
+          this.ingresos = data;
+          const chartData = this.prepararDatosParaGrafica(this.ingresos);
+          this.renderChart('barChartIngresos', this.getTituloGraficaIngresos(), chartData, '#42A5F5');
+          this.isLoading = false;
+        },
+        error => {
+          this.isLoading = false;
+          console.error('❌ [INGRESOS] Error al obtener ingresos:', error);
+          alert('Error al obtener ingresos');
+        }
+      );
   }
 
   loadEgresos() {
@@ -132,19 +214,47 @@ export class ReportesConciliadosComponent implements OnInit {
     const fechaFin = this.dateMode === 'range' ? this.selectedDateEnd : null;
 
     console.log('[EGRESOS] Enviando fechas:', { fechaInicio, fechaFin });
+    console.log('[EGRESOS] SegmentoID:', this.segmentoSeleccionado?.id, 'CategoriaID:', this.categoriaSeleccionada?.id);
 
-    this._compilacionServ.getResumenEgresosReconciliados(fechaInicio, fechaFin).subscribe(
-      data => {
-        console.log('[EGRESOS] Datos recibidos:', data);
-        this.egresos = data;
-        this.isLoading = false;
-      },
-      error => {
-        this.isLoading = false;
-        console.error('❌ [EGRESOS] Error al obtener egresos:', error);
-        alert('Error al obtener egresos');
-      }
-    );
+    this._compilacionServ
+      .getResumenEgresosReconciliados(fechaInicio, fechaFin, this.segmentoSeleccionado?.id, this.categoriaSeleccionada?.id, this.subcategoriaSeleccionada?.id)
+      .subscribe(
+        data => {
+          console.log('[EGRESOS] Datos recibidos:', data);
+          this.egresos = data;
+          const chartData = this.prepararDatosParaGrafica(this.egresos);
+          this.renderChart('barChartEgresos', this.getTituloGraficaEgresos(), chartData, '#EF5350');
+          this.isLoading = false;
+        },
+        error => {
+          this.isLoading = false;
+          console.error('❌ [EGRESOS] Error al obtener egresos:', error);
+          alert('Error al obtener egresos');
+        }
+      );
+  }
+
+  calcularPorcentaje(monto: number | string, tipoIngreso: any): string {
+    const montoNum = typeof monto === 'string' ? parseFloat(monto) : monto;
+
+    // Normalizar tipoIngreso para sacar un número
+    let tipo: number;
+    if (typeof tipoIngreso === 'number') {
+      tipo = tipoIngreso;
+    } else if (typeof tipoIngreso === 'string') {
+      tipo = parseInt(tipoIngreso, 10);
+    } else if (typeof tipoIngreso === 'object' && tipoIngreso?.data && Array.isArray(tipoIngreso.data)) {
+      // Si viene un objeto con data[], toma el primer valor o default 0
+      tipo = tipoIngreso.data[0] ?? 0;
+    } else {
+      tipo = 0; // fallback
+    }
+
+    const total = tipo === 0 ? this.totalIngresos : this.totalEgresos;
+    if (!total || total === 0) return '0.00';
+
+    const porcentaje = (montoNum / total) * 100;
+    return porcentaje.toFixed(2);
   }
 
   onModoVistaChange() {
@@ -238,6 +348,54 @@ export class ReportesConciliadosComponent implements OnInit {
 
   get totalEgresos(): number {
     return this.egresosFiltrados.reduce((sum, item) => sum + Number(item.TotalMonto), 0);
+  }
+
+  getTituloGraficaIngresos(): string {
+    if (this.subcategoriaSeleccionada) {
+      return 'Ingresos por Concepto';
+    } else if (this.categoriaSeleccionada) {
+      return 'Ingresos por Subcategoría';
+    } else if (this.segmentoSeleccionado) {
+      return 'Ingresos por Categoría';
+    } else {
+      return 'Ingresos por Segmento';
+    }
+  }
+
+  getTituloGraficaEgresos(): string {
+    if (this.subcategoriaSeleccionada) {
+      return 'Egresos por Concepto';
+    } else if (this.categoriaSeleccionada) {
+      return 'Egresos por Subcategoría';
+    } else if (this.segmentoSeleccionado) {
+      return 'Egresos por Categoría';
+    } else {
+      return 'Egresos por Segmento';
+    }
+  }
+
+  private prepararDatosParaGrafica(datos: any[]): { labels: string[], data: number[] } {
+    const labels: string[] = [];
+    const data: number[] = [];
+
+    datos.forEach(item => {
+      let label = '';
+
+      if (this.subcategoriaSeleccionada) {
+        label = item.NombreConcepto ?? 'Sin concepto';
+      } else if (this.categoriaSeleccionada) {
+        label = item.NombreSubcategoria ?? 'Sin subcategoría';
+      } else if (this.segmentoSeleccionado) {
+        label = item.NombreCategoria ?? 'Sin categoría';
+      } else {
+        label = item.NombreSegmento ?? 'Sin segmento';
+      }
+
+      labels.push(label);
+      data.push(parseFloat(item.TotalMonto));
+    });
+
+    return { labels, data };
   }
 
   private renderChart(
@@ -336,43 +494,43 @@ export class ReportesConciliadosComponent implements OnInit {
   exportarExcel() {
     const ingresosData = this.ingresosFiltrados.map(item => ({
       Tipo: 'Ingreso',
-      Categoría: item.NombreCategoria,
+      [this.columnaNombre]: this.getNombreColumna(item),
       'Monto total': Number(item.TotalMonto),
+      'Porcentaje %': this.calcularPorcentaje(Number(item.TotalMonto), item.TipoIngreso),
       'Total registros': item.TotalRegistros,
       'Última fecha': this.formatDate(item.UltimaFecha),
-      Reconciliados: item.TodosReconciliados === 1 ? 'Sí' : 'No'
     }));
 
     const egresosData = this.egresosFiltrados.map(item => ({
       Tipo: 'Egreso',
-      Categoría: item.NombreCategoria,
+      [this.columnaNombre]: this.getNombreColumna(item),
       'Monto total': Number(item.TotalMonto),
+      'Porcentaje %': this.calcularPorcentaje(Number(item.TotalMonto), item.TipoIngreso),
       'Total registros': item.TotalRegistros,
       'Última fecha': this.formatDate(item.UltimaFecha),
-      Reconciliados: item.TodosReconciliados === 1 ? 'Sí' : 'No'
     }));
 
     ingresosData.push({
       Tipo: 'Total Ingresos',
-      Categoría: '',
+      [this.columnaNombre]: '',
       'Monto total': this.totalIngresos,
+      'Porcentaje %': '100.00',
       'Total registros': this.ingresosFiltrados.reduce((sum, i) => sum + i.TotalRegistros, 0),
       'Última fecha': '',
-      Reconciliados: ''
     });
 
     egresosData.push({
       Tipo: 'Total Egresos',
-      Categoría: '',
+      [this.columnaNombre]: '',
       'Monto total': this.totalEgresos,
+      'Porcentaje %': '100.00',
       'Total registros': this.egresosFiltrados.reduce((sum, e) => sum + e.TotalRegistros, 0),
       'Última fecha': '',
-      Reconciliados: ''
     });
 
     const combinedData = [
       ...ingresosData,
-      { Tipo: '', Categoría: '', 'Monto total': '', 'Total registros': '', 'Última fecha': '', Reconciliados: '' },
+      { Tipo: '', [this.columnaNombre]: '', 'Monto total': '', 'Porcentaje %': '', 'Total registros': '', 'Última fecha': '' },
       ...egresosData
     ];
 
@@ -392,67 +550,53 @@ export class ReportesConciliadosComponent implements OnInit {
 
     const ingresosRows = this.ingresosFiltrados.map(item => [
       'Ingreso',
-      item.NombreCategoria,
-      Number(item.TotalMonto).toLocaleString('es-MX', {
-        style: 'currency',
-        currency: 'MXN',
-        minimumFractionDigits: 2
-      }),
+      this.getNombreColumna(item),
+      Number(item.TotalMonto).toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 2 }),
+      this.calcularPorcentaje(Number(item.TotalMonto), item.TipoIngreso) + '%',
       item.TotalRegistros,
       this.formatDate(item.UltimaFecha),
-      item.TodosReconciliados === 1 ? 'Sí' : 'No'
     ]);
     ingresosRows.push([
       'Total Ingresos',
       '',
-      this.totalIngresos.toLocaleString('es-MX', {
-        style: 'currency',
-        currency: 'MXN',
-        minimumFractionDigits: 2
-      }),
+      this.totalIngresos.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 2 }),
+      '100.00%',
       this.ingresosFiltrados.reduce((sum, i) => sum + i.TotalRegistros, 0),
       '',
-      ''
     ]);
 
     const egresosRows = this.egresosFiltrados.map(item => [
       'Egreso',
-      item.NombreCategoria,
-      Number(item.TotalMonto).toLocaleString('es-MX', {
-        style: 'currency',
-        currency: 'MXN',
-        minimumFractionDigits: 2
-      }),
+      this.getNombreColumna(item),
+      Number(item.TotalMonto).toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 2 }),
+      this.calcularPorcentaje(Number(item.TotalMonto), item.TipoIngreso) + '%',
       item.TotalRegistros,
       this.formatDate(item.UltimaFecha),
-      item.TodosReconciliados === 1 ? 'Sí' : 'No'
     ]);
     egresosRows.push([
       'Total Egresos',
       '',
-      this.totalEgresos.toLocaleString('es-MX', {
-        style: 'currency',
-        currency: 'MXN',
-        minimumFractionDigits: 2
-      }),
+      this.totalEgresos.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 2 }),
+      '100.00%',
       this.egresosFiltrados.reduce((sum, e) => sum + e.TotalRegistros, 0),
       '',
-      ''
     ]);
 
+    const head = ['Tipo', this.columnaNombre, 'Monto total', 'Porcentaje %', 'Total registros', 'Última fecha'];
+
     autoTable(doc, {
-      head: [['Tipo', 'Categoría', 'Monto total', 'Total registros', 'Última fecha', 'Reconciliados']],
+      head: [head],
       body: ingresosRows,
       startY: 20,
       styles: { fontSize: 10 },
       headStyles: { fillColor: [41, 128, 185] },
     });
 
-    const finalY = doc.lastAutoTable.finalY || 20;
+    const finalY = doc.lastAutoTable?.finalY || 20;
     const nextTableStartY = finalY + 15;
 
     autoTable(doc, {
-      head: [['Tipo', 'Categoría', 'Monto total', 'Total registros', 'Última fecha', 'Reconciliados']],
+      head: [head],
       body: egresosRows,
       startY: nextTableStartY,
       styles: { fontSize: 10 },

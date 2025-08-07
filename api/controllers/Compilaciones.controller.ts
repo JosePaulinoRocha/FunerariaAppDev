@@ -104,7 +104,7 @@ export const GetUltimaFechaConciliacion = async (req: Request, res: Response) =>
 export const GetResumenIngresosReconciliados = async (req: Request, res: Response) => {
   let con;
   try {
-    const { fecha, fechaFin } = req.query;
+    const { fecha, fechaFin, segmentoId, categoriaId, subcategoriaId } = req.query;
     con = await connect();
 
     const condiciones: string[] = [
@@ -123,23 +123,75 @@ export const GetResumenIngresosReconciliados = async (req: Request, res: Respons
       valores.push(fecha);
     }
 
-    const query = `
-      SELECT 
+    if (segmentoId) {
+      condiciones.push('i.SegmentoID = ?');
+      valores.push(segmentoId);
+    }
+
+    if (categoriaId) {
+      condiciones.push('i.CategoriaID = ?');
+      valores.push(categoriaId);
+    }
+
+    if (subcategoriaId) {
+      condiciones.push('i.SubcategoriaID = ?');
+      valores.push(subcategoriaId);
+    }
+
+    // Campos SELECT y GROUP BY dinámicos
+    let selectFields = `
+      i.SegmentoID,
+      seg.Nombre AS NombreSegmento,
+      CAST(i.TipoIngreso AS UNSIGNED) AS TipoIngreso,
+      SUM(i.Monto) AS TotalMonto,
+      MAX(i.Fecha) AS UltimaFecha,
+      COUNT(*) AS TotalRegistros
+    `;
+    let groupByFields = `i.SegmentoID, seg.Nombre, i.TipoIngreso`;
+
+    if (segmentoId) {
+      selectFields += `,
         i.CategoriaID,
-        cat.Nombre AS NombreCategoria,
-        CAST(i.TipoIngreso AS UNSIGNED) AS TipoIngreso,
-        i.Reconciliado AS TodosReconciliados,
-        SUM(i.Monto) AS TotalMonto,
-        MAX(i.Fecha) AS UltimaFecha,
-        COUNT(*) AS TotalRegistros
+        cat.Nombre AS NombreCategoria
+      `;
+      groupByFields += `, i.CategoriaID, cat.Nombre`;
+    }
+
+    if (categoriaId) {
+      selectFields += `,
+        i.SubcategoriaID,
+        subcat.Nombre AS NombreSubcategoria
+      `;
+      groupByFields += `, i.SubcategoriaID, subcat.Nombre`;
+    }
+
+    if (subcategoriaId) {
+      selectFields += `,
+        i.ConceptoID,
+        conc.Nombre AS NombreConcepto
+      `;
+      groupByFields += `, i.ConceptoID, conc.Nombre`;
+    }
+
+    // Armar JOINs dinámicos
+    const joins = [
+      'LEFT JOIN segmentos seg ON i.SegmentoID = seg.SegmentoID',
+      segmentoId ? 'LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID' : '',
+      categoriaId ? 'LEFT JOIN subcategorias subcat ON i.SubcategoriaID = subcat.SubcategoriaID' : '',
+      subcategoriaId ? 'LEFT JOIN conceptos conc ON i.ConceptoID = conc.ConceptoID' : ''
+    ].filter(Boolean).join(' ');
+
+    const query = `
+      SELECT
+        ${selectFields}
       FROM vistaingresos i
-      LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID
+      ${joins}
       WHERE ${condiciones.join(' AND ')}
-      GROUP BY i.CategoriaID, cat.Nombre, i.TipoIngreso, i.Reconciliado
+      GROUP BY ${groupByFields}
       ORDER BY TotalMonto DESC;
     `;
 
-    const [rows] = await con.query<RowDataPacket[]>(query, valores);
+    const [rows] = await con.query(query, valores);
     res.json(rows);
   } catch (error) {
     console.error('Error al obtener ingresos reconciliados:', error);
@@ -152,7 +204,7 @@ export const GetResumenIngresosReconciliados = async (req: Request, res: Respons
 export const GetResumenEgresosReconciliados = async (req: Request, res: Response) => {
   let con;
   try {
-    const { fecha, fechaFin } = req.query;
+    const { fecha, fechaFin, segmentoId, categoriaId, subcategoriaId } = req.query;
     con = await connect();
 
     const condiciones: string[] = [
@@ -171,23 +223,75 @@ export const GetResumenEgresosReconciliados = async (req: Request, res: Response
       valores.push(fecha);
     }
 
-    const query = `
-      SELECT 
+    if (segmentoId) {
+      condiciones.push('i.SegmentoID = ?');
+      valores.push(segmentoId);
+    }
+
+    if (categoriaId) {
+      condiciones.push('i.CategoriaID = ?');
+      valores.push(categoriaId);
+    }
+
+    if (subcategoriaId) {
+      condiciones.push('i.SubcategoriaID = ?');
+      valores.push(subcategoriaId);
+    }
+
+    // Campos SELECT y GROUP BY dinámicos
+    let selectFields = `
+      i.SegmentoID,
+      seg.Nombre AS NombreSegmento,
+      CAST(i.TipoIngreso AS UNSIGNED) AS TipoIngreso,
+      SUM(i.Monto) AS TotalMonto,
+      MAX(i.Fecha) AS UltimaFecha,
+      COUNT(*) AS TotalRegistros
+    `;
+    let groupByFields = `i.SegmentoID, seg.Nombre, i.TipoIngreso`;
+
+    if (segmentoId) {
+      selectFields += `,
         i.CategoriaID,
-        cat.Nombre AS NombreCategoria,
-        CAST(i.TipoIngreso AS UNSIGNED) AS TipoIngreso,
-        i.Reconciliado AS TodosReconciliados,
-        SUM(i.Monto) AS TotalMonto,
-        MAX(i.Fecha) AS UltimaFecha,
-        COUNT(*) AS TotalRegistros
+        cat.Nombre AS NombreCategoria
+      `;
+      groupByFields += `, i.CategoriaID, cat.Nombre`;
+    }
+
+    if (categoriaId) {
+      selectFields += `,
+        i.SubcategoriaID,
+        subcat.Nombre AS NombreSubcategoria
+      `;
+      groupByFields += `, i.SubcategoriaID, subcat.Nombre`;
+    }
+
+    if (subcategoriaId) {
+      selectFields += `,
+        i.ConceptoID,
+        conc.Nombre AS NombreConcepto
+      `;
+      groupByFields += `, i.ConceptoID, conc.Nombre`;
+    }
+
+    // Armar JOINs dinámicos
+    const joins = [
+      'LEFT JOIN segmentos seg ON i.SegmentoID = seg.SegmentoID',
+      segmentoId ? 'LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID' : '',
+      categoriaId ? 'LEFT JOIN subcategorias subcat ON i.SubcategoriaID = subcat.SubcategoriaID' : '',
+      subcategoriaId ? 'LEFT JOIN conceptos conc ON i.ConceptoID = conc.ConceptoID' : ''
+    ].filter(Boolean).join(' ');
+
+    const query = `
+      SELECT
+        ${selectFields}
       FROM vistaingresos i
-      LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID
+      ${joins}
       WHERE ${condiciones.join(' AND ')}
-      GROUP BY i.CategoriaID, cat.Nombre, i.TipoIngreso, i.Reconciliado
+      GROUP BY ${groupByFields}
       ORDER BY TotalMonto DESC;
     `;
 
-    const [rows] = await con.query<RowDataPacket[]>(query, valores);
+    const [rows] = await con.query(query, valores);
     res.json(rows);
   } catch (error) {
     console.error('Error al obtener egresos reconciliados:', error);
