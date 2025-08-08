@@ -22,6 +22,13 @@
           <button style="margin-right: 0;" (click)="setFiltro('egresos')" [disabled]="filtroSeleccionado === 'egresos'">Egresos</button>
         </div>
 
+        <div>
+          <select [(ngModel)]="modoFiltro" (change)="onModoFiltroChange()" class="custom-select">
+            <option value="segmento">Filtrar por Segmento</option>
+            <option value="categoria">Filtrar por Categoría</option>
+          </select>
+        </div>
+
         <div class="export-buttons" style="display: flex; gap: 0.5rem;">
           <ion-button color="primary" (click)="exportarPDF()">
             <ion-icon name="document-outline" slot="start"></ion-icon>

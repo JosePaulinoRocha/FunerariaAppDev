@@ -59,6 +59,8 @@ export class ReportesConciliadosComponent implements OnInit {
   categoriaSeleccionada: { id: number; nombre: string } | null = null;
   subcategoriaSeleccionada: { id: number; nombre: string } | null = null;
 
+  modoFiltro: 'segmento' | 'categoria' = 'segmento';
+
   datosPorCategoria: any[] = [];
 
   columnaNombre: string = 'Segmento';
@@ -88,19 +90,37 @@ export class ReportesConciliadosComponent implements OnInit {
   }
 
   filtrarPorItem(item: Compilacion) {
-    if (!this.segmentoSeleccionado || this.segmentoSeleccionado.id !== item.SegmentoID) {
-      this.segmentoSeleccionado = { id: item.SegmentoID, nombre: item.NombreSegmento };
-      this.categoriaSeleccionada = null;
-      this.subcategoriaSeleccionada = null;
-    } else if (!this.categoriaSeleccionada || this.categoriaSeleccionada.id !== item.CategoriaID) {
-      this.categoriaSeleccionada = { id: item.CategoriaID, nombre: item.NombreCategoria };
-      this.subcategoriaSeleccionada = null;
-    } else if (!this.subcategoriaSeleccionada || this.subcategoriaSeleccionada.id !== item.SubcategoriaID) {
-      this.subcategoriaSeleccionada = { id: item.SubcategoriaID, nombre: item.NombreSubcategoria || '(Sin subcategoría)' };
+    if (this.modoFiltro === 'segmento') {
+      if (!this.segmentoSeleccionado || this.segmentoSeleccionado.id !== item.SegmentoID) {
+        this.segmentoSeleccionado = { id: item.SegmentoID, nombre: item.NombreSegmento };
+        this.categoriaSeleccionada = null;
+        this.subcategoriaSeleccionada = null;
+      } else if (!this.categoriaSeleccionada || this.categoriaSeleccionada.id !== item.CategoriaID) {
+        this.categoriaSeleccionada = { id: item.CategoriaID, nombre: item.NombreCategoria };
+        this.subcategoriaSeleccionada = null;
+      } else if (!this.subcategoriaSeleccionada || this.subcategoriaSeleccionada.id !== item.SubcategoriaID) {
+        this.subcategoriaSeleccionada = { id: item.SubcategoriaID, nombre: item.NombreSubcategoria || '(Sin subcategoría)' };
+      }
+    } else {
+      // modoFiltro === 'categoria'
+      if (!this.categoriaSeleccionada || this.categoriaSeleccionada.id !== item.CategoriaID) {
+        this.categoriaSeleccionada = { id: item.CategoriaID, nombre: item.NombreCategoria };
+        this.subcategoriaSeleccionada = null;
+      } else if (!this.subcategoriaSeleccionada || this.subcategoriaSeleccionada.id !== item.SubcategoriaID) {
+        this.subcategoriaSeleccionada = { id: item.SubcategoriaID, nombre: item.NombreSubcategoria || '(Sin subcategoría)' };
+      }
     }
 
     this.actualizarColumnaNombre();
     this.currentPage = 1;
+    this.loadDatos();
+  }
+
+  onModoFiltroChange() {
+    this.segmentoSeleccionado = null;
+    this.categoriaSeleccionada = null;
+    this.subcategoriaSeleccionada = null;
+    this.actualizarColumnaNombre();
     this.loadDatos();
   }
 
@@ -150,14 +170,25 @@ export class ReportesConciliadosComponent implements OnInit {
   }
 
   loadDatos() {
-    if (this.segmentoSeleccionado && this.categoriaSeleccionada && this.subcategoriaSeleccionada) {
-      this.columnaNombre = 'Concepto';
-    } else if (this.segmentoSeleccionado && this.categoriaSeleccionada) {
-      this.columnaNombre = 'Subcategoría';
-    } else if (this.segmentoSeleccionado) {
-      this.columnaNombre = 'Categoría';
+    if (this.modoFiltro === 'segmento') {
+      if (this.segmentoSeleccionado && this.categoriaSeleccionada && this.subcategoriaSeleccionada) {
+        this.columnaNombre = 'Concepto';
+      } else if (this.segmentoSeleccionado && this.categoriaSeleccionada) {
+        this.columnaNombre = 'Subcategoría';
+      } else if (this.segmentoSeleccionado) {
+        this.columnaNombre = 'Categoría';
+      } else {
+        this.columnaNombre = 'Segmento';
+      }
     } else {
-      this.columnaNombre = 'Segmento';
+      // modoFiltro === 'categoria'
+      if (this.categoriaSeleccionada && this.subcategoriaSeleccionada) {
+        this.columnaNombre = 'Concepto';
+      } else if (this.categoriaSeleccionada) {
+        this.columnaNombre = 'Subcategoría';
+      } else {
+        this.columnaNombre = 'Categoría';
+      }
     }
 
     this.loadIngresos();
@@ -187,11 +218,16 @@ export class ReportesConciliadosComponent implements OnInit {
     const fechaInicio = this.selectedDateStart;
     const fechaFin = this.dateMode === 'range' ? this.selectedDateEnd : null;
 
+    // Determinar los filtros según el modo seleccionado
+    const segmentoId = this.modoFiltro === 'segmento' ? this.segmentoSeleccionado?.id : undefined;
+    const categoriaId = this.categoriaSeleccionada?.id;
+    const subcategoriaId = this.subcategoriaSeleccionada?.id;
+
     console.log('[INGRESOS] Enviando fechas:', { fechaInicio, fechaFin });
-    console.log('[INGRESOS] SegmentoID:', this.segmentoSeleccionado?.id, 'CategoriaID:', this.categoriaSeleccionada?.id);
+    console.log('[INGRESOS] modoFiltro:', this.modoFiltro, 'SegmentoID:', segmentoId, 'CategoriaID:', categoriaId, 'SubcategoriaID:', subcategoriaId);
 
     this._compilacionServ
-      .getResumenIngresosReconciliados(fechaInicio, fechaFin, this.segmentoSeleccionado?.id, this.categoriaSeleccionada?.id, this.subcategoriaSeleccionada?.id)
+      .getResumenIngresosReconciliados(fechaInicio, fechaFin, segmentoId, categoriaId, subcategoriaId, this.modoFiltro)
       .subscribe(
         data => {
           console.log('[INGRESOS] Datos recibidos:', data);
@@ -213,11 +249,16 @@ export class ReportesConciliadosComponent implements OnInit {
     const fechaInicio = this.selectedDateStart;
     const fechaFin = this.dateMode === 'range' ? this.selectedDateEnd : null;
 
+    // Determinar los filtros según el modo seleccionado
+    const segmentoId = this.modoFiltro === 'segmento' ? this.segmentoSeleccionado?.id : undefined;
+    const categoriaId = this.categoriaSeleccionada?.id;
+    const subcategoriaId = this.subcategoriaSeleccionada?.id;
+
     console.log('[EGRESOS] Enviando fechas:', { fechaInicio, fechaFin });
-    console.log('[EGRESOS] SegmentoID:', this.segmentoSeleccionado?.id, 'CategoriaID:', this.categoriaSeleccionada?.id);
+    console.log('[EGRESOS] modoFiltro:', this.modoFiltro, 'SegmentoID:', segmentoId, 'CategoriaID:', categoriaId, 'SubcategoriaID:', subcategoriaId);
 
     this._compilacionServ
-      .getResumenEgresosReconciliados(fechaInicio, fechaFin, this.segmentoSeleccionado?.id, this.categoriaSeleccionada?.id, this.subcategoriaSeleccionada?.id)
+      .getResumenEgresosReconciliados(fechaInicio, fechaFin, segmentoId, categoriaId, subcategoriaId, this.modoFiltro)
       .subscribe(
         data => {
           console.log('[EGRESOS] Datos recibidos:', data);
