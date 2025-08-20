@@ -164,7 +164,7 @@
           <td>{{ item.NombreCategoria }}</td>
           <td>{{ item.TotalMonto | currency:'MXN':'symbol' }}</td>
           <td>{{ item.TotalRegistros }}</td>
-          <td>{{ item.UltimaFecha | date:'dd/MM/yyyy' }}</td>
+          <td>{{ item.UltimaFecha }}</td>
           <td [ngClass]="{ 'text-green': item.TodosReconciliados === 1, 'text-red': item.TodosReconciliados === 0 }">
             {{ item.TodosReconciliados === 1 ? 'Sí' : 'No' }}
           </td>

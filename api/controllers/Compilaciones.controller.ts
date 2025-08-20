@@ -100,11 +100,10 @@ export const GetUltimaFechaConciliacion = async (req: Request, res: Response) =>
         if (con) await con.end();
     }
 };
-
 export const GetResumenIngresosReconciliados = async (req: Request, res: Response) => {
   let con;
   try {
-    const { fecha, fechaFin, segmentoId, categoriaId, subcategoriaId, modoFiltro } = req.query;
+    const { fecha, fechaFin, segmentoId, categoriaId, subcategoriaId, modoFiltro, filtroSegmento } = req.query;
 
     con = await connect();
 
@@ -124,19 +123,11 @@ export const GetResumenIngresosReconciliados = async (req: Request, res: Respons
       valores.push(fecha);
     }
 
-    if (segmentoId) {
-      condiciones.push('i.SegmentoID = ?');
-      valores.push(segmentoId);
-    }
-    if (categoriaId) {
-      condiciones.push('i.CategoriaID = ?');
-      valores.push(categoriaId);
-    }
-    if (subcategoriaId) {
-      condiciones.push('i.SubcategoriaID = ?');
-      valores.push(subcategoriaId);
-    }
+    if (segmentoId) { condiciones.push('i.SegmentoID = ?'); valores.push(segmentoId); }
+    if (categoriaId) { condiciones.push('i.CategoriaID = ?'); valores.push(categoriaId); }
+    if (subcategoriaId) { condiciones.push('i.SubcategoriaID = ?'); valores.push(subcategoriaId); }
 
+    const joins: string[] = [];
     let selectFields = `
       CAST(i.TipoIngreso AS UNSIGNED) AS TipoIngreso,
       SUM(i.Monto) AS TotalMonto,
@@ -144,53 +135,36 @@ export const GetResumenIngresosReconciliados = async (req: Request, res: Respons
       COUNT(*) AS TotalRegistros
     `;
     let groupByFields = `i.TipoIngreso`;
-    const joins: string[] = [];
 
     if (modoFiltro === 'segmento') {
+      joins.push('LEFT JOIN segmentos seg ON i.SegmentoID = seg.SegmentoID');
       selectFields = `i.SegmentoID, seg.Nombre AS NombreSegmento, ` + selectFields;
       groupByFields = `i.SegmentoID, seg.Nombre, ` + groupByFields;
-      joins.push('LEFT JOIN segmentos seg ON i.SegmentoID = seg.SegmentoID');
 
-      if (segmentoId) {
-        selectFields += `, i.CategoriaID, cat.Nombre AS NombreCategoria`;
-        groupByFields += `, i.CategoriaID, cat.Nombre`;
-        joins.push('LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID');
+      // Filtro case-insensitive por palabra clave
+      if (filtroSegmento) {
+        let keyword = '';
+        const filtro = filtroSegmento.toString().toLowerCase();
+        if (filtro === 'cobranza') keyword = '%cobranza%';
+        if (filtro === 'funeraria') keyword = '%funeraria%';
+        if (filtro === 'ventas') keyword = '%sala%';
+        if (keyword) {
+          condiciones.push('LOWER(seg.Nombre) LIKE ?');
+          valores.push(keyword);
+        }
       }
 
-      if (categoriaId) {
-        selectFields += `, i.SubcategoriaID, subcat.Nombre AS NombreSubcategoria`;
-        groupByFields += `, i.SubcategoriaID, subcat.Nombre`;
-        joins.push('LEFT JOIN subcategorias subcat ON i.SubcategoriaID = subcat.SubcategoriaID');
-      }
-
-      if (subcategoriaId) {
-        selectFields += `, i.ConceptoID, conc.Nombre AS NombreConcepto`;
-        groupByFields += `, i.ConceptoID, conc.Nombre`;
-        joins.push('LEFT JOIN conceptos conc ON i.ConceptoID = conc.ConceptoID');
-      }
+      if (segmentoId) { joins.push('LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID'); selectFields += `, i.CategoriaID, cat.Nombre AS NombreCategoria`; groupByFields += `, i.CategoriaID, cat.Nombre`; }
+      if (categoriaId) { joins.push('LEFT JOIN subcategorias subcat ON i.SubcategoriaID = subcat.SubcategoriaID'); selectFields += `, i.SubcategoriaID, subcat.Nombre AS NombreSubcategoria`; groupByFields += `, i.SubcategoriaID, subcat.Nombre`; }
+      if (subcategoriaId) { joins.push('LEFT JOIN conceptos conc ON i.ConceptoID = conc.ConceptoID'); selectFields += `, i.ConceptoID, conc.Nombre AS NombreConcepto`; groupByFields += `, i.ConceptoID, conc.Nombre`; }
 
     } else if (modoFiltro === 'categoria') {
+      joins.push('LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID');
       selectFields = `i.CategoriaID, cat.Nombre AS NombreCategoria, ` + selectFields;
       groupByFields = `i.CategoriaID, cat.Nombre, ` + groupByFields;
-      joins.push('LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID');
 
-      if (categoriaId) {
-        selectFields += `, i.SubcategoriaID, subcat.Nombre AS NombreSubcategoria`;
-        groupByFields += `, i.SubcategoriaID, subcat.Nombre`;
-        joins.push('LEFT JOIN subcategorias subcat ON i.SubcategoriaID = subcat.SubcategoriaID');
-      }
-
-      if (subcategoriaId) {
-        selectFields += `, i.ConceptoID, conc.Nombre AS NombreConcepto`;
-        groupByFields += `, i.ConceptoID, conc.Nombre`;
-        joins.push('LEFT JOIN conceptos conc ON i.ConceptoID = conc.ConceptoID');
-      }
-
-    } else {
-      // Por defecto asumimos modo segmento
-      selectFields = `i.SegmentoID, seg.Nombre AS NombreSegmento, ` + selectFields;
-      groupByFields = `i.SegmentoID, seg.Nombre, ` + groupByFields;
-      joins.push('LEFT JOIN segmentos seg ON i.SegmentoID = seg.SegmentoID');
+      if (categoriaId) { joins.push('LEFT JOIN subcategorias subcat ON i.SubcategoriaID = subcat.SubcategoriaID'); selectFields += `, i.SubcategoriaID, subcat.Nombre AS NombreSubcategoria`; groupByFields += `, i.SubcategoriaID, subcat.Nombre`; }
+      if (subcategoriaId) { joins.push('LEFT JOIN conceptos conc ON i.ConceptoID = conc.ConceptoID'); selectFields += `, i.ConceptoID, conc.Nombre AS NombreConcepto`; groupByFields += `, i.ConceptoID, conc.Nombre`; }
     }
 
     console.log('[INGRESOS] Query construido:\n', `
@@ -221,11 +195,10 @@ export const GetResumenIngresosReconciliados = async (req: Request, res: Respons
   }
 };
 
-
 export const GetResumenEgresosReconciliados = async (req: Request, res: Response) => {
   let con;
   try {
-    const { fecha, fechaFin, segmentoId, categoriaId, subcategoriaId, modoFiltro } = req.query;
+    const { fecha, fechaFin, segmentoId, categoriaId, subcategoriaId, modoFiltro, filtroSegmento } = req.query;
 
     con = await connect();
 
@@ -237,27 +210,14 @@ export const GetResumenEgresosReconciliados = async (req: Request, res: Response
     ];
     const valores: any[] = [];
 
-    if (fecha && fechaFin) {
-      condiciones.push('DATE(i.FechaConciliacion) BETWEEN ? AND ?');
-      valores.push(fecha, fechaFin);
-    } else if (fecha) {
-      condiciones.push('DATE(i.FechaConciliacion) = ?');
-      valores.push(fecha);
-    }
+    if (fecha && fechaFin) { condiciones.push('DATE(i.FechaConciliacion) BETWEEN ? AND ?'); valores.push(fecha, fechaFin); }
+    else if (fecha) { condiciones.push('DATE(i.FechaConciliacion) = ?'); valores.push(fecha); }
 
-    if (segmentoId) {
-      condiciones.push('i.SegmentoID = ?');
-      valores.push(segmentoId);
-    }
-    if (categoriaId) {
-      condiciones.push('i.CategoriaID = ?');
-      valores.push(categoriaId);
-    }
-    if (subcategoriaId) {
-      condiciones.push('i.SubcategoriaID = ?');
-      valores.push(subcategoriaId);
-    }
+    if (segmentoId) { condiciones.push('i.SegmentoID = ?'); valores.push(segmentoId); }
+    if (categoriaId) { condiciones.push('i.CategoriaID = ?'); valores.push(categoriaId); }
+    if (subcategoriaId) { condiciones.push('i.SubcategoriaID = ?'); valores.push(subcategoriaId); }
 
+    const joins: string[] = [];
     let selectFields = `
       CAST(i.TipoIngreso AS UNSIGNED) AS TipoIngreso,
       SUM(i.Monto) AS TotalMonto,
@@ -265,52 +225,36 @@ export const GetResumenEgresosReconciliados = async (req: Request, res: Response
       COUNT(*) AS TotalRegistros
     `;
     let groupByFields = `i.TipoIngreso`;
-    const joins: string[] = [];
 
     if (modoFiltro === 'segmento') {
+      joins.push('LEFT JOIN segmentos seg ON i.SegmentoID = seg.SegmentoID');
       selectFields = `i.SegmentoID, seg.Nombre AS NombreSegmento, ` + selectFields;
       groupByFields = `i.SegmentoID, seg.Nombre, ` + groupByFields;
-      joins.push('LEFT JOIN segmentos seg ON i.SegmentoID = seg.SegmentoID');
 
-      if (segmentoId) {
-        selectFields += `, i.CategoriaID, cat.Nombre AS NombreCategoria`;
-        groupByFields += `, i.CategoriaID, cat.Nombre`;
-        joins.push('LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID');
+      // Filtro case-insensitive por palabra clave
+      if (filtroSegmento) {
+        let keyword = '';
+        const filtro = filtroSegmento.toString().toLowerCase();
+        if (filtro === 'cobranza') keyword = '%cobranza%';
+        if (filtro === 'funeraria') keyword = '%funeraria%';
+        if (filtro === 'ventas') keyword = '%sala%';
+        if (keyword) {
+          condiciones.push('LOWER(seg.Nombre) LIKE ?');
+          valores.push(keyword);
+        }
       }
 
-      if (categoriaId) {
-        selectFields += `, i.SubcategoriaID, subcat.Nombre AS NombreSubcategoria`;
-        groupByFields += `, i.SubcategoriaID, subcat.Nombre`;
-        joins.push('LEFT JOIN subcategorias subcat ON i.SubcategoriaID = subcat.SubcategoriaID');
-      }
-
-      if (subcategoriaId) {
-        selectFields += `, i.ConceptoID, conc.Nombre AS NombreConcepto`;
-        groupByFields += `, i.ConceptoID, conc.Nombre`;
-        joins.push('LEFT JOIN conceptos conc ON i.ConceptoID = conc.ConceptoID');
-      }
+      if (segmentoId) { joins.push('LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID'); selectFields += `, i.CategoriaID, cat.Nombre AS NombreCategoria`; groupByFields += `, i.CategoriaID, cat.Nombre`; }
+      if (categoriaId) { joins.push('LEFT JOIN subcategorias subcat ON i.SubcategoriaID = subcat.SubcategoriaID'); selectFields += `, i.SubcategoriaID, subcat.Nombre AS NombreSubcategoria`; groupByFields += `, i.SubcategoriaID, subcat.Nombre`; }
+      if (subcategoriaId) { joins.push('LEFT JOIN conceptos conc ON i.ConceptoID = conc.ConceptoID'); selectFields += `, i.ConceptoID, conc.Nombre AS NombreConcepto`; groupByFields += `, i.ConceptoID, conc.Nombre`; }
 
     } else if (modoFiltro === 'categoria') {
+      joins.push('LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID');
       selectFields = `i.CategoriaID, cat.Nombre AS NombreCategoria, ` + selectFields;
       groupByFields = `i.CategoriaID, cat.Nombre, ` + groupByFields;
-      joins.push('LEFT JOIN categorias cat ON i.CategoriaID = cat.CategoriaID');
 
-      if (categoriaId) {
-        selectFields += `, i.SubcategoriaID, subcat.Nombre AS NombreSubcategoria`;
-        groupByFields += `, i.SubcategoriaID, subcat.Nombre`;
-        joins.push('LEFT JOIN subcategorias subcat ON i.SubcategoriaID = subcat.SubcategoriaID');
-      }
-
-      if (subcategoriaId) {
-        selectFields += `, i.ConceptoID, conc.Nombre AS NombreConcepto`;
-        groupByFields += `, i.ConceptoID, conc.Nombre`;
-        joins.push('LEFT JOIN conceptos conc ON i.ConceptoID = conc.ConceptoID');
-      }
-
-    } else {
-      selectFields = `i.SegmentoID, seg.Nombre AS NombreSegmento, ` + selectFields;
-      groupByFields = `i.SegmentoID, seg.Nombre, ` + groupByFields;
-      joins.push('LEFT JOIN segmentos seg ON i.SegmentoID = seg.SegmentoID');
+      if (categoriaId) { joins.push('LEFT JOIN subcategorias subcat ON i.SubcategoriaID = subcat.SubcategoriaID'); selectFields += `, i.SubcategoriaID, subcat.Nombre AS NombreSubcategoria`; groupByFields += `, i.SubcategoriaID, subcat.Nombre`; }
+      if (subcategoriaId) { joins.push('LEFT JOIN conceptos conc ON i.ConceptoID = conc.ConceptoID'); selectFields += `, i.ConceptoID, conc.Nombre AS NombreConcepto`; groupByFields += `, i.ConceptoID, conc.Nombre`; }
     }
 
     console.log('[EGRESOS] Query construido:\n', `
@@ -340,4 +284,3 @@ export const GetResumenEgresosReconciliados = async (req: Request, res: Response
     if (con) await con.end();
   }
 };
-

@@ -120,9 +120,15 @@ export class CompilacionesComponent implements OnInit {
 
     this._compilacionServ.getResumenIngresosEgresos(fechaParam, tipoFiltro, reconciliadoFiltro, fechaFinParam).subscribe(
       (data: any) => {
-        this.compilacion = data;
+        this.compilacion = data.map((item: any) => {
+          if (!item.UltimaFecha) return item;
+          return {
+            ...item,
+            UltimaFecha: item.UltimaFecha.split('T')[0] // Solo fecha YYYY-MM-DD, sin hora ni zona horaria
+          };
+        });
         this.isLoading = false;
-        console.log('📊 Datos recibidos en loadCompilaciones:', this.compilacion);
+        // console.log('📊 Datos recibidos en loadCompilaciones:', this.compilacion);
 
         if (this.modoVista === 'grafica') {
           const egresos = this.egresosParaGrafica;
@@ -325,9 +331,11 @@ export class CompilacionesComponent implements OnInit {
   formatDate(isoDate: string): string {
     if (!isoDate) return '';
     const date = new Date(isoDate);
-    // Opcional: formatear a 'dd/MM/yyyy'
+
+    date.setDate(date.getDate() + 1);
+
     const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Mes empieza en 0
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); 
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   }

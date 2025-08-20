@@ -67,13 +67,15 @@ export class ReportesConciliadosComponent implements OnInit {
 
   charts: { [key: string]: any } = {};
 
+  filtroSegmento: 'Todos' | 'Cobranza' | 'Funeraria' | 'Ventas' = 'Todos';
+
   constructor(private _compilacionServ: CompilacionesServices) {}
 
   getNombreColumna(item: any): string {
     if (this.columnaNombre === 'Segmento') return item.NombreSegmento;
     if (this.columnaNombre === 'Categoría') return this.getNombreCategoriaValido(item);
     if (this.columnaNombre === 'Subcategoría') return item.NombreSubcategoria || '(Sin subcategoría)';
-    if (this.columnaNombre === 'Concepto') return item.Concepto || '(Sin concepto)';
+    if (this.columnaNombre === 'Concepto') return item.NombreConcepto || '(Sin concepto)';
     return '(Sin nombre)';
   }
 
@@ -195,11 +197,12 @@ export class ReportesConciliadosComponent implements OnInit {
     this.loadEgresos();
   }
 
-  onReconciliadoChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    this.reconciliadoSeleccionado = select.value as any;
+  onFiltroSegmentoChange(event: Event) {    const select = event.target as HTMLSelectElement;
+    this.filtroSegmento = select.value as any;
     this.currentPage = 1;
+    this.loadDatos(); // esto recarga ingresos y egresos con el nuevo filtro
   }
+
 
   isIngreso(tipo: any): boolean {
     if (typeof tipo === 'number') return tipo === 0;
@@ -218,20 +221,22 @@ export class ReportesConciliadosComponent implements OnInit {
     const fechaInicio = this.selectedDateStart;
     const fechaFin = this.dateMode === 'range' ? this.selectedDateEnd : null;
 
-    // Determinar los filtros según el modo seleccionado
     const segmentoId = this.modoFiltro === 'segmento' ? this.segmentoSeleccionado?.id : undefined;
     const categoriaId = this.categoriaSeleccionada?.id;
     const subcategoriaId = this.subcategoriaSeleccionada?.id;
 
-    console.log('[INGRESOS] Enviando fechas:', { fechaInicio, fechaFin });
-    console.log('[INGRESOS] modoFiltro:', this.modoFiltro, 'SegmentoID:', segmentoId, 'CategoriaID:', categoriaId, 'SubcategoriaID:', subcategoriaId);
+    const filtroPalabra = this.filtroSegmento !== 'Todos' ? this.filtroSegmento : undefined;
 
     this._compilacionServ
-      .getResumenIngresosReconciliados(fechaInicio, fechaFin, segmentoId, categoriaId, subcategoriaId, this.modoFiltro)
+      .getResumenIngresosReconciliados(fechaInicio, fechaFin, segmentoId, categoriaId, subcategoriaId, this.modoFiltro, filtroPalabra)
       .subscribe(
         data => {
-          console.log('[INGRESOS] Datos recibidos:', data);
-          this.ingresos = data;
+          // console.log('[LOAD INGRESOS] Datos recibidos:', data);
+          this.ingresos = data.map((item: any) => ({
+            ...item,
+            UltimaFecha: item.UltimaFecha ? item.UltimaFecha.split('T')[0] : item.UltimaFecha
+          }));
+
           const chartData = this.prepararDatosParaGrafica(this.ingresos);
           this.renderChart('barChartIngresos', this.getTituloGraficaIngresos(), chartData, '#42A5F5');
           this.isLoading = false;
@@ -249,20 +254,22 @@ export class ReportesConciliadosComponent implements OnInit {
     const fechaInicio = this.selectedDateStart;
     const fechaFin = this.dateMode === 'range' ? this.selectedDateEnd : null;
 
-    // Determinar los filtros según el modo seleccionado
     const segmentoId = this.modoFiltro === 'segmento' ? this.segmentoSeleccionado?.id : undefined;
     const categoriaId = this.categoriaSeleccionada?.id;
     const subcategoriaId = this.subcategoriaSeleccionada?.id;
 
-    console.log('[EGRESOS] Enviando fechas:', { fechaInicio, fechaFin });
-    console.log('[EGRESOS] modoFiltro:', this.modoFiltro, 'SegmentoID:', segmentoId, 'CategoriaID:', categoriaId, 'SubcategoriaID:', subcategoriaId);
+    const filtroPalabra = this.filtroSegmento !== 'Todos' ? this.filtroSegmento : undefined;
 
     this._compilacionServ
-      .getResumenEgresosReconciliados(fechaInicio, fechaFin, segmentoId, categoriaId, subcategoriaId, this.modoFiltro)
+      .getResumenEgresosReconciliados(fechaInicio, fechaFin, segmentoId, categoriaId, subcategoriaId, this.modoFiltro, filtroPalabra)
       .subscribe(
         data => {
-          console.log('[EGRESOS] Datos recibidos:', data);
-          this.egresos = data;
+          // console.log('[LOAD EGRESOS] Datos recibidos:', data);
+          this.egresos = data.map((item: any) => ({
+            ...item,
+            UltimaFecha: item.UltimaFecha ? item.UltimaFecha.split('T')[0] : item.UltimaFecha
+          }));
+
           const chartData = this.prepararDatosParaGrafica(this.egresos);
           this.renderChart('barChartEgresos', this.getTituloGraficaEgresos(), chartData, '#EF5350');
           this.isLoading = false;
@@ -295,6 +302,27 @@ export class ReportesConciliadosComponent implements OnInit {
     if (!total || total === 0) return '0.00';
 
     const porcentaje = (montoNum / total) * 100;
+    return porcentaje.toFixed(2);
+  }
+
+  calcularEgresoIngreso(item: Compilacion): string {
+    if (!item) return '0.00';
+
+    const segmentoID = item.SegmentoID;
+
+    // Total de ingresos del segmento
+    const totalIngresosSegmento = this.ingresos
+      .filter(i => i.SegmentoID === segmentoID)
+      .reduce((acc, curr) => acc + parseFloat(curr.TotalMonto), 0);
+
+    // Total de egresos del segmento
+    const totalEgresosSegmento = this.egresos
+      .filter(e => e.SegmentoID === segmentoID)
+      .reduce((acc, curr) => acc + parseFloat(curr.TotalMonto), 0);
+
+    if (!totalIngresosSegmento || totalIngresosSegmento === 0) return '0.00';
+
+    const porcentaje = (totalEgresosSegmento / totalIngresosSegmento) * 100;
     return porcentaje.toFixed(2);
   }
 
@@ -394,25 +422,45 @@ export class ReportesConciliadosComponent implements OnInit {
   getTituloGraficaIngresos(): string {
     if (this.subcategoriaSeleccionada) {
       return 'Ingresos por Concepto';
-    } else if (this.categoriaSeleccionada) {
-      return 'Ingresos por Subcategoría';
-    } else if (this.segmentoSeleccionado) {
-      return 'Ingresos por Categoría';
-    } else {
-      return 'Ingresos por Segmento';
     }
+
+    if (this.modoFiltro === 'categoria') {
+      if (this.categoriaSeleccionada) {
+        return 'Ingresos por Subcategoría';
+      }
+      return 'Ingresos por Categoría';
+    }
+
+    // modo segmento (comportamiento original)
+    if (this.categoriaSeleccionada) {
+      return 'Ingresos por Subcategoría';
+    }
+    if (this.segmentoSeleccionado) {
+      return 'Ingresos por Categoría';
+    }
+    return 'Ingresos por Segmento';
   }
 
   getTituloGraficaEgresos(): string {
     if (this.subcategoriaSeleccionada) {
       return 'Egresos por Concepto';
-    } else if (this.categoriaSeleccionada) {
-      return 'Egresos por Subcategoría';
-    } else if (this.segmentoSeleccionado) {
-      return 'Egresos por Categoría';
-    } else {
-      return 'Egresos por Segmento';
     }
+
+    if (this.modoFiltro === 'categoria') {
+      if (this.categoriaSeleccionada) {
+        return 'Egresos por Subcategoría';
+      }
+      return 'Egresos por Categoría';
+    }
+
+    // modo segmento (comportamiento original)
+    if (this.categoriaSeleccionada) {
+      return 'Egresos por Subcategoría';
+    }
+    if (this.segmentoSeleccionado) {
+      return 'Egresos por Categoría';
+    }
+    return 'Egresos por Segmento';
   }
 
   private prepararDatosParaGrafica(datos: any[]): { labels: string[], data: number[] } {
@@ -424,12 +472,20 @@ export class ReportesConciliadosComponent implements OnInit {
 
       if (this.subcategoriaSeleccionada) {
         label = item.NombreConcepto ?? 'Sin concepto';
-      } else if (this.categoriaSeleccionada) {
-        label = item.NombreSubcategoria ?? 'Sin subcategoría';
-      } else if (this.segmentoSeleccionado) {
-        label = item.NombreCategoria ?? 'Sin categoría';
-      } else {
-        label = item.NombreSegmento ?? 'Sin segmento';
+      } else if (this.modoFiltro === 'categoria') {
+        if (this.categoriaSeleccionada) {
+          label = item.NombreSubcategoria ?? 'Sin subcategoría';
+        } else {
+          label = item.NombreCategoria ?? 'Sin categoría';
+        }
+      } else { // modo segmento (original)
+        if (this.categoriaSeleccionada) {
+          label = item.NombreSubcategoria ?? 'Sin subcategoría';
+        } else if (this.segmentoSeleccionado) {
+          label = item.NombreCategoria ?? 'Sin categoría';
+        } else {
+          label = item.NombreSegmento ?? 'Sin segmento';
+        }
       }
 
       labels.push(label);
@@ -526,12 +582,15 @@ export class ReportesConciliadosComponent implements OnInit {
   formatDate(isoDate: string): string {
     if (!isoDate) return '';
     const date = new Date(isoDate);
+
+    date.setDate(date.getDate() + 1);
+
     const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); 
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   }
-
+  
   exportarExcel() {
     const ingresosData = this.ingresosFiltrados.map(item => ({
       Tipo: 'Ingreso',
@@ -540,6 +599,7 @@ export class ReportesConciliadosComponent implements OnInit {
       'Porcentaje %': this.calcularPorcentaje(Number(item.TotalMonto), item.TipoIngreso),
       'Total registros': item.TotalRegistros,
       'Última fecha': this.formatDate(item.UltimaFecha),
+      'Egreso / Ingreso %': this.calcularEgresoIngreso(item) // ← nueva columna
     }));
 
     const egresosData = this.egresosFiltrados.map(item => ({
@@ -549,6 +609,7 @@ export class ReportesConciliadosComponent implements OnInit {
       'Porcentaje %': this.calcularPorcentaje(Number(item.TotalMonto), item.TipoIngreso),
       'Total registros': item.TotalRegistros,
       'Última fecha': this.formatDate(item.UltimaFecha),
+      'Egreso / Ingreso %': this.calcularEgresoIngreso(item) // ← nueva columna
     }));
 
     ingresosData.push({
@@ -558,6 +619,7 @@ export class ReportesConciliadosComponent implements OnInit {
       'Porcentaje %': '100.00',
       'Total registros': this.ingresosFiltrados.reduce((sum, i) => sum + i.TotalRegistros, 0),
       'Última fecha': '',
+      'Egreso / Ingreso %': '' // ← dejar vacío
     });
 
     egresosData.push({
@@ -567,11 +629,12 @@ export class ReportesConciliadosComponent implements OnInit {
       'Porcentaje %': '100.00',
       'Total registros': this.egresosFiltrados.reduce((sum, e) => sum + e.TotalRegistros, 0),
       'Última fecha': '',
+      'Egreso / Ingreso %': '' // ← dejar vacío
     });
 
     const combinedData = [
       ...ingresosData,
-      { Tipo: '', [this.columnaNombre]: '', 'Monto total': '', 'Porcentaje %': '', 'Total registros': '', 'Última fecha': '' },
+      { Tipo: '', [this.columnaNombre]: '', 'Monto total': '', 'Porcentaje %': '', 'Total registros': '', 'Última fecha': '', 'Egreso / Ingreso %': '' },
       ...egresosData
     ];
 
@@ -596,7 +659,9 @@ export class ReportesConciliadosComponent implements OnInit {
       this.calcularPorcentaje(Number(item.TotalMonto), item.TipoIngreso) + '%',
       item.TotalRegistros,
       this.formatDate(item.UltimaFecha),
+      this.calcularEgresoIngreso(item) + '%' // ← nueva columna
     ]);
+
     ingresosRows.push([
       'Total Ingresos',
       '',
@@ -604,6 +669,7 @@ export class ReportesConciliadosComponent implements OnInit {
       '100.00%',
       this.ingresosFiltrados.reduce((sum, i) => sum + i.TotalRegistros, 0),
       '',
+      '' // ← dejar vacío
     ]);
 
     const egresosRows = this.egresosFiltrados.map(item => [
@@ -613,7 +679,9 @@ export class ReportesConciliadosComponent implements OnInit {
       this.calcularPorcentaje(Number(item.TotalMonto), item.TipoIngreso) + '%',
       item.TotalRegistros,
       this.formatDate(item.UltimaFecha),
+      this.calcularEgresoIngreso(item) + '%' // ← nueva columna
     ]);
+
     egresosRows.push([
       'Total Egresos',
       '',
@@ -621,9 +689,10 @@ export class ReportesConciliadosComponent implements OnInit {
       '100.00%',
       this.egresosFiltrados.reduce((sum, e) => sum + e.TotalRegistros, 0),
       '',
+      '' // ← dejar vacío
     ]);
 
-    const head = ['Tipo', this.columnaNombre, 'Monto total', 'Porcentaje %', 'Total registros', 'Última fecha'];
+    const head = ['Tipo', this.columnaNombre, 'Monto total', 'Porcentaje %', 'Total registros', 'Última fecha', 'Egreso / Ingreso %'];
 
     autoTable(doc, {
       head: [head],

@@ -22,6 +22,13 @@
           <button style="margin-right: 0;" (click)="setFiltro('egresos')" [disabled]="filtroSeleccionado === 'egresos'">Egresos</button>
         </div>
 
+        <select *ngIf="columnaNombre === 'Segmento'" [(ngModel)]="filtroSegmento" class="custom-select" (change)="onFiltroSegmentoChange($event)">
+          <option value="Todos">Todos</option>
+          <option value="Cobranza">Cobranza</option>
+          <option value="Funeraria">Funeraria</option>
+          <option value="Ventas">Ventas</option>
+        </select>
+
         <div>
           <select [(ngModel)]="modoFiltro" (change)="onModoFiltroChange()" class="custom-select">
             <option value="segmento">Filtrar por Segmento</option>
@@ -137,6 +144,7 @@
           <th>Total registros</th>
           <th>Última fecha</th>
           <th>% del total</th>
+          <th *ngIf="columnaNombre === 'Segmento'">Egreso / Ingreso</th>
         </tr>
       </thead>
       <tbody>
@@ -155,9 +163,12 @@
           <td>{{ getNombreColumna(item) }}</td>
           <td>{{ item.TotalMonto | currency: 'MXN':'symbol' }}</td>
           <td>{{ item.TotalRegistros }}</td>
-          <td>{{ item.UltimaFecha | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ item.UltimaFecha }}</td>
           <td>
             {{ calcularPorcentaje(+item.TotalMonto, item.TipoIngreso) }}%
+          </td>
+          <td *ngIf="columnaNombre === 'Segmento'">
+            {{ calcularEgresoIngreso(item) }}%
           </td>
         </tr>
       </tbody>

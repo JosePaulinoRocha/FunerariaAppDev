@@ -883,8 +883,9 @@ export class IngresosEgresosComponent implements OnInit {
   }
 
   applySearch() {
+    // console.log('🔍 [applySearch] Iniciando búsqueda...');
 
-    this.masterCheckbox = false;  // Desmarca el maestro
+    this.masterCheckbox = false;
     this.paginatedIncomes.forEach(income => income['selected'] = false);
     this.selectedIncomes = [];
 
@@ -892,12 +893,16 @@ export class IngresosEgresosComponent implements OnInit {
     this.isSearchActive = true;
 
     const filtros: { [key: string]: string | number } = { filtro: this.filtroSeleccionado };
-
     filtros['segmento'] = this.segmentoSeleccionado || 'todos';
     filtros['comprobante'] = this.comprobanteSeleccionado || 'todos';
 
+    // console.log('📌 Filtro seleccionado:', this.filtroSeleccionado);
+    // console.log('📌 Segmento:', filtros['segmento']);
+    // console.log('📌 Comprobante:', filtros['comprobante']);
+
     let tieneFiltroFecha = false;
 
+    // Aplicar filtros de campos
     for (let field of this.selectedFields) {
       if (this.isDateField(field)) {
         const startDate = this.dateSearchValues[field]?.startDate;
@@ -906,30 +911,53 @@ export class IngresosEgresosComponent implements OnInit {
         if (startDate) {
           filtros[`${field}Desde`] = startDate;
           tieneFiltroFecha = true;
+          // console.log(`📅 ${field}Desde:`, startDate);
         }
         if (endDate) {
           const adjustedEndDate = new Date(endDate);
           adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
           filtros[`${field}Hasta`] = adjustedEndDate.toISOString().split('T')[0];
           tieneFiltroFecha = true;
+          // console.log(`📅 ${field}Hasta (ajustada):`, filtros[`${field}Hasta`]);
         }
       } else if (this.searchValues[field]) {
         filtros[field] = this.searchValues[field];
+        // console.log(`🔹 Filtro de texto: ${field} =`, this.searchValues[field]);
       }
     }
 
-    // 👉 Si no hay filtros de fecha, aplica el rango de 3 meses por defecto
+    // Aplicar rango de fechas del selector de periodo si no hay filtro explícito
     if (!tieneFiltroFecha) {
       const today = new Date();
-      const threeMonthsAgo = new Date();
-      threeMonthsAgo.setMonth(today.getMonth() - 3);
+      let fechaDesde: Date | null = null;
+      let fechaHasta: Date | null = today;
 
-      filtros['FechaDesde'] = threeMonthsAgo.toISOString().split('T')[0];
-      filtros['FechaHasta'] = today.toISOString().split('T')[0];
+      if (this.periodoFiltro === 'all') {
+        fechaDesde = null;
+        fechaHasta = null;
+      } else if (this.fechaDesdeFiltro) {
+        fechaDesde = new Date(this.fechaDesdeFiltro);
+      } else {
+        // Por defecto 3 meses atrás
+        fechaDesde = new Date();
+        fechaDesde.setMonth(today.getMonth() - 3);
+      }
+
+      if (fechaDesde) filtros['FechaDesde'] = fechaDesde.toISOString().split('T')[0];
+      if (fechaHasta) filtros['FechaHasta'] = fechaHasta.toISOString().split('T')[0];
+
+      // console.log('📅 Rango aplicado según selector o por defecto:');
+      // console.log('   FechaDesde:', filtros['FechaDesde']);
+      // console.log('   FechaHasta:', filtros['FechaHasta']);
     }
+
+    // console.log('🚀 Enviando filtros al backend:', filtros);
 
     this._ingresoServ.getIngresosParametros(filtros).subscribe(
       (data: Income[]) => {
+        // console.log(`✅ Registros recibidos: ${data.length}`);
+        if (data.length > 0) console.log('📄 Primer registro:', data[0]);
+
         this.incomes = data
           .sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime())
           .map(income => ({
@@ -949,12 +977,11 @@ export class IngresosEgresosComponent implements OnInit {
         this.isLoading = false;
       },
       (error) => {
-        console.error('Error fetching filtered incomes:', error);
+        console.error('❌ Error fetching filtered incomes:', error);
         this.isLoading = false;
       }
     );
   }
-
   
   resetSearch() {
     this.currentPage = 1;
