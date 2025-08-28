@@ -72,3 +72,99 @@ ion-item {
   --max-width: none !important;
   --max-height: none !important;
 }
+
+/* Contenedor tabla */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  padding: 1rem;
+}
+
+.table.income-table {
+  width: 100%;
+  border-collapse: collapse;
+  padding: 1rem;
+  font-size: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.table.income-table th,
+.table.income-table td {
+  white-space: nowrap;       
+  overflow: hidden;          
+  text-overflow: ellipsis;   
+  padding: 0px 6px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.header-row.color_header_tabla th {
+  background-color: #0054E9;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #0040c0;
+}
+
+.data-row.ingreso-row {
+  background-color: #e6f7ec; /* verde claro */
+}
+
+.data-row.egreso-row {
+  background-color: #fbeaea; /* rojo claro */
+}
+
+.data-row:hover {
+  background-color: #d0e6f7;
+}
+
+.table td ion-button {
+  font-size: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-red { color: red; }
+.text-green { color: green; }
+.yellow-background { background-color: #fff59d; }
+.aquamarine-background { background-color: darkseagreen; }
+
+/* Scroll horizontal */
+.table-container {
+  overflow-x: auto;
+}
+
+
+.color_header_tabla {
+  background-color: #0054E9;
+  color: white;
+}
+
+.ingreso-row {
+  background-color: #e6f7ec;
+}
+
+.egreso-row {
+  background-color: #fbeaea;
+}
+
+.data-row:hover {
+  background-color: #d0e6f7;
+}
+
+/* Textos verdes/rojos */
+.text-red { color: red; }
+.text-green { color: green; }
+
+/* 🔹 Colores de cards según tipo */
+.ingreso-card {
+  background-color: #e6f7ec !important; /* verde claro */
+}
+
+.egreso-card {
+  background-color: #fbeaea !important; /* rojo claro */
+}

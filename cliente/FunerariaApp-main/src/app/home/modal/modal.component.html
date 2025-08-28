@@ -20,6 +20,11 @@
   
     <p class="error" *ngIf="error">{{ error }}</p>
   
-    <ion-button expand="block" (click)="savePassword()">Guardar</ion-button>
+    <ion-button expand="block" 
+      (click)="savePassword()" 
+      [disabled]="!newPassword || !confirmPassword || newPassword !== confirmPassword">
+      Guardar
+    </ion-button>
+
   </ion-content>
   

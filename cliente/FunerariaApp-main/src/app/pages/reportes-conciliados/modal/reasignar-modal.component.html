@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Reasignar Segmento</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="cerrarModal()">
+        ✖
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-content>
+      <p><strong>Segmento:</strong> {{ nombreSegmento }}</p>
+      <p><strong>Monto máximo:</strong> {{ totalMonto | currency: 'MXN':'symbol' }}</p>
+      <p><strong>Tipo de movimiento:</strong> 
+        <span *ngIf="tipoMovimiento === 0" class="ingreso"> Ingreso</span>
+        <span *ngIf="tipoMovimiento === 1" class="egreso"> Egreso</span>
+      </p>
+
+      <!-- Fechas en texto plano -->
+      <p><strong>Fecha inicio:</strong> {{ fechaInicio }}</p>
+      <p><strong>Fecha fin:</strong> {{ fechaFin }}</p>
+
+      <!-- Input de monto -->
+      <ion-item>
+        <ion-label style="margin-bottom: 1rem;" position="floating">Monto a reasignar</ion-label>
+        <ion-input 
+          type="number" 
+          [(ngModel)]="montoReasignar"
+          [min]="1"
+          [max]="totalMonto"
+          placeholder="Ingresa un monto">
+        </ion-input>
+      </ion-item>
+      <p class="monto-hint">Debe ser mayor a 0 y hasta {{ totalMonto | currency:'MXN':'symbol' }}</p>
+
+      <!-- Selector de variante destino -->
+      <ion-item>
+        <ion-select [(ngModel)]="varianteSeleccionada" interface="popover" placeholder="Reasignar a...">
+          <ion-select-option *ngFor="let v of opcionesVariantes" [value]="v.clave">
+            {{ v.nombre }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-button expand="block" color="success" (click)="confirmarReasignacion()">
+        Confirmar Reasignación
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

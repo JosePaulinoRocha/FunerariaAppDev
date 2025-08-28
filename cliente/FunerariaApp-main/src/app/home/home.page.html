@@ -9,31 +9,33 @@
 
 <ion-content class="ion-padding">
   <div class="welcome-container">
-    <h2>Captura de ingresos y egresos</h2>
+    <h1>Bienvenido a Finanzas</h1>
+    <p>Gestiona tus ingresos y egresos de manera rápida y segura</p>
   </div>
 
   <div class="card-container">
-    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('ingresos')">
+
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('ingresos')" class="home-card">
       <ion-card-content>
-        <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
+        <ion-icon color="primary" name="cash-outline"></ion-icon>
         <ion-card-title>Capturas de ingresos y egresos</ion-card-title>
-      </ion-card-content>  
+      </ion-card-content>
       <ion-card-content>
         <p>Aquí puedes ver y gestionar las capturas de ingresos / egresos.</p>
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('ingresos-egresos')">
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('ingresos-egresos')" class="home-card">
       <ion-card-content>
-        <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
+        <ion-icon color="primary" name="bar-chart-outline"></ion-icon>
         <ion-card-title>Ingresos / Egresos</ion-card-title>
-      </ion-card-content>  
+      </ion-card-content>
       <ion-card-content>
-        <p>Aquí puedes ver la lista de ingresos y egresos en formato de tabla.</p>
+        <p>Consulta la lista de ingresos y egresos en formato de tabla.</p>
       </ion-card-content>
     </ion-card>
 
-    <ion-card (click)="navigateTo('compilaciones')">
+    <ion-card (click)="navigateTo('compilaciones')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="bar-Chart" slot="start"></ion-icon>
         <ion-card-title>Compilaciones</ion-card-title>
@@ -43,7 +45,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('reportes-conciliados')">
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('reportes-conciliados')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="bar-Chart" slot="start"></ion-icon>
         <ion-card-title>Reportes conciliados</ion-card-title>
@@ -53,7 +55,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('reconciliaciones')">
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('reconciliaciones')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>
         <ion-card-title>Reconciliaciones</ion-card-title>
@@ -63,7 +65,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('reconciliaciones-historial')">
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('reconciliaciones-historial')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>
         <ion-card-title>Reconciliaciones historial</ion-card-title>
@@ -73,7 +75,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('combinaciones')">
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('combinaciones')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>
         <ion-card-title>Combinaciones de ingresos/egresos</ion-card-title>
@@ -83,7 +85,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="isAdmin && !isMobileDevice" (click)="navigateTo('proveedores')">
+    <ion-card *ngIf="isAdmin && !isMobileDevice" (click)="navigateTo('proveedores')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="people-outline" slot="start"></ion-icon>
         <ion-card-title>Proveedores</ion-card-title>
@@ -93,7 +95,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card  *ngIf="!isMobileDevice" (click)="navigateTo('transferencias')">
+    <ion-card  *ngIf="!isMobileDevice" (click)="navigateTo('transferencias')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="swap-horizontal-outline" slot="start"></ion-icon>
         <ion-card-title>Transferencias</ion-card-title>
@@ -103,7 +105,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="isAdmin && !isMobileDevice" (click)="navigateTo('presupuesto')">
+    <ion-card *ngIf="isAdmin && !isMobileDevice" (click)="navigateTo('presupuesto')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
         <ion-card-title>Presupuesto Semetral (Datos)</ion-card-title>
@@ -113,7 +115,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="isAdmin && !isMobileDevice" (click)="navigateTo('presupuesto-mensual')">
+    <ion-card *ngIf="isAdmin && !isMobileDevice" (click)="navigateTo('presupuesto-mensual')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
         <ion-card-title>Presupuesto Mensual</ion-card-title>
@@ -123,7 +125,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card  *ngIf="!isMobileDevice" (click)="navigateTo('reportes')">
+    <ion-card  *ngIf="!isMobileDevice" (click)="navigateTo('reportes')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>
         <ion-card-title>Reportes</ion-card-title>
@@ -133,7 +135,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card  *ngIf="isMobileDevice" (click)="navigateTo('proyeccion')">
+    <ion-card  *ngIf="isMobileDevice" (click)="navigateTo('proyeccion')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
         <ion-card-title>Proyeccion</ion-card-title>
@@ -143,7 +145,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card  *ngIf="isMobileDevice" (click)="navigateTo('resumen-presupuesto')">
+    <ion-card  *ngIf="isMobileDevice" (click)="navigateTo('resumen-presupuesto')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="cash-outline" slot="start"></ion-icon>
         <ion-card-title>Resumen Presupuesto</ion-card-title>
@@ -153,7 +155,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="isAdmin" (click)="navigateTo('usuarios')">
+    <ion-card *ngIf="isAdmin" (click)="navigateTo('usuarios')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="people-outline" slot="start"></ion-icon>
         <ion-card-title>Usuarios</ion-card-title>

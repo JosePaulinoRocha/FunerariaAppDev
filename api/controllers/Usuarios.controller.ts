@@ -17,21 +17,23 @@ export const Login = async (req: Request, res: Response) => {
       const user = users[0];
       console.log('Usuario encontrado:', user);
 
-      if (password === user.password) {
-        const payload = {
-          userId: user.userId,
-          isAdmin: user.isAdmin,
-        };
-        const token = jwt.sign(payload, jwtSecret, { expiresIn: jwtExpiresIn });
-
-        // Eliminar password y CambioContra antes de enviar
-        const { password, ...safeUser } = user;
-
-        return res.json({ success: true, token, user: safeUser });
-      } else {
+      // Comparar la contraseña ingresada con la encriptada en la DB
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
         console.log('Contraseña incorrecta');
         return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
       }
+
+      const payload = {
+        userId: user.userId,
+        isAdmin: user.isAdmin,
+      };
+      const token = jwt.sign(payload, jwtSecret, { expiresIn: jwtExpiresIn });
+
+      // Eliminar password y CambioContra antes de enviar
+      const { password: _, ...safeUser } = user;
+
+      return res.json({ success: true, token, user: safeUser });
     } else {
       console.log('Usuario no encontrado');
       return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
@@ -62,31 +64,33 @@ export const ObtenerUsuarios = async (req: Request, res: Response) => {
     }
 };
 
-
 export const PostUsers = async (req: Request, res: Response) => {
   let con;
   let result;
   const { fullName, phone, email, RolID, isAdmin } = req.body;
+  const plainPassword = '123456'; 
+
   try {
       con = await connect();
 
-      // Verificar si ya existe un usuario con el mismo email
       let query = 'SELECT COUNT(*) AS count FROM usuarios WHERE email = ?';
       const [rows] = await con.query(query, [email]);
 
-      // rows debería contener el resultado de la consulta
       if ((rows as any).length > 0 && (rows as any)[0].count > 0) {
           result = { message: 'Email already exists. User not created.' };
       } else {
-          // Si no existe, proceder con la inserción
+          // Encriptar contraseña
+          const saltRounds = 10;
+          const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
+
           query = 'INSERT INTO usuarios (fullName, phone, email, RolID, isAdmin, password) VALUES (?, ?, ?, ?, ?, ?)';
-          const values = [fullName, phone, email, RolID, isAdmin, 123456];
+          const values = [fullName, phone, email, RolID, isAdmin, hashedPassword];
           await con.query(query, values);
+
           result = { message: 'User created successfully' };
       }
   } catch (error) {
-      console.log('Error en Usuarios');
-      console.log(error);
+      console.log('Error en Usuarios', error);
       result = { message: 'Error creating user' };
   } finally {
       await con?.end();
@@ -133,17 +137,19 @@ export const ObtenerRoles = async (req: Request, res: Response) => {
   }
 };
 
-
-
 export const UpdatePassword = async (req: Request, res: Response) => {
   const { userId, newPassword } = req.body;
   let con;
   try {
     con = await connect();
 
+    // Encriptar la nueva contraseña
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
     // Actualizar contraseña y establecer CambioContra a 1
     const query = 'UPDATE usuarios SET password = ?, CambioContra = 1 WHERE userId = ?';
-    await con.query(query, [newPassword, userId]);
+    await con.query(query, [hashedPassword, userId]);
 
     return res.json({ success: true, message: 'Contraseña actualizada correctamente y cambio registrado.' });
   } catch (error) {
@@ -153,5 +159,3 @@ export const UpdatePassword = async (req: Request, res: Response) => {
     await con?.end();
   }
 };
-
-

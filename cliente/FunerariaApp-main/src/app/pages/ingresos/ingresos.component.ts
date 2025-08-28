@@ -71,6 +71,7 @@ export class IngresosComponent implements OnInit {
   itemsPerPage: number = 10;
   totalPages: number = 1;
   itemsPerPageOptions: number[] = [10, 20, 50, 100, 500, 1000];
+  isMobileDevice: boolean = false;
 
   updateTotalPages() {
     this.totalPages = Math.ceil(this.incomes.length / this.itemsPerPage);
@@ -134,9 +135,14 @@ export class IngresosComponent implements OnInit {
 
 
   ngOnInit() {
+    this.isMobileDevice = this.isMobile();
     this.loadIngresos();
   }
 
+  private isMobile(): boolean {
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+  }
 
   triggerFileInputEgresosNuevo() {
     const fileInput = document.getElementById('fileInputEgresosNuevo') as HTMLInputElement;

@@ -15,8 +15,6 @@ import { forkJoin } from 'rxjs';
 import { LoadingController } from '@ionic/angular';
 
 
-
-
 interface Combinacion {
   CombinacionID: number;
   validado: boolean;
@@ -94,6 +92,8 @@ export class AppComponent {
 
   errorMessage: string | null = null;
 
+  currentPage = '';
+
   getIconColor(iconName: string): string {
     switch (iconName) {
       case 'git-compare':
@@ -110,6 +110,31 @@ export class AppComponent {
         return 'black';
     }
   }
+
+  private routeMap: { [key: string]: string } = {
+    '/home': 'Home',
+    '/ingresos': 'Ingresos',
+    '/ingresos-egresos': 'Ingresos - Egresos',
+    '/gallery': 'Galería',
+    '/usuarios': 'Usuarios',
+    '/reconciliaciones': 'Reconciliaciones',
+    '/reconciliaciones-historial': 'Historial Reconciliaciones',
+    '/combinaciones': 'Combinaciones',
+    '/transferencias': 'Transferencias',
+    '/proyeccion': 'Proyección',
+    '/reportes': 'Reportes',
+    '/resumen-presupuesto': 'Resumen Presupuesto',
+    '/resumen-presupuesto-segmentos': 'Resumen por Segmentos',
+    '/resumen-presupuesto-categorias': 'Resumen por Categorías',
+    '/compilaciones': 'Compilaciones',
+    '/reportes-conciliados': 'Reportes Conciliados',
+    '/presupuesto': 'Presupuesto',
+    '/presupuesto-mensual': 'Presupuesto Mensual',
+    '/presupuesto-mensual-frecuencia': 'Presupuesto Frecuencia',
+    '/presupuesto-mensual-cuentas': 'Presupuesto Cuentas',
+    '/proveedores': 'Proveedores',
+    '/ingresos-api': 'Ingresos API'
+  };
 
   constructor(private menu: MenuController, private router: Router, private authService: AuthService, private _notificacionServ: NotificacionesServices, private _ingresoApiServ: IngresosApiServices, private alertController: AlertController, private loadingController: LoadingController) {
     addIcons({ 
@@ -130,6 +155,13 @@ export class AppComponent {
 
     this.authService.isAdmin$.subscribe(isAdmin => {
       this.isAdmin = isAdmin;
+    });
+
+    this.router.events.subscribe(event => {
+      if (event.constructor.name === "NavigationEnd") {
+        const url = this.router.url.split('?')[0]; // limpiar query params
+        this.currentPage = this.routeMap[url] || '';
+      }
     });
 
   }

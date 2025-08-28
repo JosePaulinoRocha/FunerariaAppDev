@@ -138,6 +138,7 @@
       <thead class="header-row">
         <tr class="color_header_tabla">
           <th>Filtrar</th> <!-- Nueva columna para botón -->
+          <th *ngIf="columnaNombre === 'Segmento'">Reasignar</th>
           <th>Tipo</th>
           <th>{{ columnaNombre }}</th>
           <th>Monto total</th>
@@ -158,6 +159,14 @@
         >
           <td style="text-align: center;">
             <span (click)="filtrarPorItem(item)" style="cursor: pointer; font-size: 14px;">🔍</span>
+          </td>
+          <td *ngIf="columnaNombre === 'Segmento'" style="text-align: center;">
+            <ion-button 
+              fill="clear" 
+              size="small" 
+              (click)="abrirModalReasignacion(item)">
+              <ion-icon name="swap-horizontal-outline"></ion-icon>
+            </ion-button>
           </td>
           <td>{{ getTipoIngresoDescripcion(item.TipoIngreso) }}</td>
           <td>{{ getNombreColumna(item) }}</td>

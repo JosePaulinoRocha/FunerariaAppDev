@@ -81,4 +81,18 @@ export class CompilacionesServices {
     return this.http.get(url, { params });
   }
 
+
+  crearReasignacion(data: any): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}CrearReasignacion`;
+    return this.http.post(url, data);
+  }
+
+  getReasignaciones(fechaInicio: string, fechaFin?: string | null): Observable<any[]> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}GetReasignaciones`;
+    const params: any = { fechaInicio };
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get<any[]>(url, { params });
+  }
+
+
 }

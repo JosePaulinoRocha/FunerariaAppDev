@@ -10,6 +10,8 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { saveAs } from 'file-saver';
+import { ModalController } from '@ionic/angular';
+import { ReasignarModalComponent } from './modal/reasignar-modal.component';
 
 interface Compilacion {
   SegmentoID: number;
@@ -69,7 +71,7 @@ export class ReportesConciliadosComponent implements OnInit {
 
   filtroSegmento: 'Todos' | 'Cobranza' | 'Funeraria' | 'Ventas' = 'Todos';
 
-  constructor(private _compilacionServ: CompilacionesServices) {}
+  constructor(private _compilacionServ: CompilacionesServices, private modalCtrl: ModalController) {}
 
   getNombreColumna(item: any): string {
     if (this.columnaNombre === 'Segmento') return item.NombreSegmento;
@@ -195,6 +197,31 @@ export class ReportesConciliadosComponent implements OnInit {
 
     this.loadIngresos();
     this.loadEgresos();
+  }
+
+  async abrirModalReasignacion(item: any) {
+    const modal = await this.modalCtrl.create({
+      component: ReasignarModalComponent,
+      cssClass: 'reasignar-modal-css',
+      componentProps: {
+        segmentoId: item.SegmentoID,
+        nombreSegmento: item.NombreSegmento,
+        totalMonto: item.TotalMonto,
+        tipoMovimiento: item.TipoIngreso,
+        fechaInicio: this.selectedDateStart,
+        fechaFin: this.selectedDateEnd,
+        filtroSegmento: this.filtroSegmento
+      }
+    });
+
+    modal.onDidDismiss().then((dataReturned) => {
+      if (dataReturned.data) {
+        // console.log('Reasignación realizada:', dataReturned.data);
+        this.loadDatos();
+      }
+    });
+
+    return await modal.present();
   }
 
   onFiltroSegmentoChange(event: Event) {    const select = event.target as HTMLSelectElement;

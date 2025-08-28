@@ -95,49 +95,93 @@
     <ion-button color="light" (click)="resetSearch()">Reset</ion-button>
   </div>
 
-
-
-  <div class="income-list">
-    <div class="income-card" *ngFor="let income of paginatedIncomes">
+  <!-- 🔹 MÓVIL: Cards -->
+  <div class="income-list" *ngIf="isMobileDevice">
+    <div class="income-card" 
+        *ngFor="let income of paginatedIncomes"
+        [ngClass]="{'ingreso-card': income.TipoIngreso.data[0] === 0, 
+                    'egreso-card': income.TipoIngreso.data[0] !== 0}">
       <ion-item (click)="openModal(income)">
         <ion-avatar slot="start">
           <ion-icon name="cash" size="large" color="primary"></ion-icon>
         </ion-avatar>
         <ion-label>
           <div class="income-details">
-
             <div class="income-column">
-
-              <h2><ion-icon name="home" slot="start"></ion-icon> ID: {{ income.IngresoID }}</h2>
-              <h2>
-                <ion-icon name="trail-sign" slot="start"></ion-icon> 
-                Tipo captura: {{ income.TipoIngreso.data[0] === 0 ? 'Ingreso' : 'Egreso' }}
-              </h2>
-              <p><ion-icon name="layers" slot="start"></ion-icon> Segmento: {{ income.NombreSegmento }}</p>
-              <p><ion-icon name="pricetag" slot="start"></ion-icon> Categoría: {{ income.NombreCategoria }}</p>
-              <p><ion-icon name="pricetags" slot="start"></ion-icon> Subcategoría: {{ income.NombreSubcategoria }}</p>
-              <p style="font-size: 11px;"><ion-icon name="document" slot="start"></ion-icon> Concepto: {{ income.NombreConcepto }}</p>
-              <p><ion-icon name="clipboard" slot="start"></ion-icon> Descripción: {{ income.Descripcion }}</p>
-              
+              <h2>ID: {{ income.IngresoID }}</h2>
+              <p>Tipo: {{ income.TipoIngreso.data[0] === 0 ? 'Ingreso' : 'Egreso' }}</p>
+              <p>Segmento: {{ income.NombreSegmento }}</p>
+              <p>Categoría: {{ income.NombreCategoria }}</p>
+              <p>Subcategoría: {{ income.NombreSubcategoria }}</p>
+              <p>Concepto: {{ income.NombreConcepto }}</p>
+              <p>Descripción: {{ income.Descripcion }}</p>
             </div>
-
             <div class="income-column">
-
-              <p><ion-icon name="business" slot="start"></ion-icon> Proveedor: {{ income.Proveedor }}</p>
-              <p><ion-icon name="cube" slot="start"></ion-icon> Piezas: {{ income.Piezas }}</p>
-              <p><ion-icon name="card" slot="start"></ion-icon> Tipo Cuenta: {{ income.TipoCuenta }}</p>
-              <p><ion-icon name="card" slot="start"></ion-icon> Cuenta: {{ income.NombreCuenta }}</p>
-              <h2><ion-icon name="card" slot="start"></ion-icon> RFC: {{ income.RFC }}</h2>
-              <p><ion-icon name="cash" slot="start"></ion-icon> Monto: {{ income.Monto | currency }}</p>
-              <h2><ion-icon name="calendar" slot="start"></ion-icon> Fecha: {{ income.Fecha }}</h2>
-              <p><ion-icon name="person-add" slot="start"></ion-icon> Usuario Recibe: {{ income.NombreUsuarioRecibe }}</p>
-
+              <p>Proveedor: {{ income.Proveedor }}</p>
+              <p>Piezas: {{ income.Piezas }}</p>
+              <p>Tipo Cuenta: {{ income.TipoCuenta }}</p>
+              <p>Cuenta: {{ income.NombreCuenta }}</p>
+              <p>RFC: {{ income.RFC }}</p>
+              <p>Monto: {{ income.Monto | currency }}</p>
+              <p>Fecha: {{ income.Fecha }}</p>
+              <p>Usuario: {{ income.NombreUsuarioRecibe }}</p>
             </div>
-
           </div>
         </ion-label>
       </ion-item>
     </div>
+  </div>
+
+  <!-- 🔹 ESCRITORIO: Tabla -->
+  <div class="table-container" *ngIf="!isMobileDevice">
+    <table class="table income-table">
+      <thead class="header-row color_header_tabla">
+        <tr>
+          <th>ID</th>
+          <th>Editar</th>
+          <th>Tipo</th>
+          <th>Segmento</th>
+          <th>Categoría</th>
+          <th>Subcategoría</th>
+          <th>Concepto</th>
+          <th>Descripción</th>
+          <th>Proveedor</th>
+          <th>Piezas</th>
+          <th>Tipo Cuenta</th>
+          <th>Cuenta</th>
+          <th>RFC</th>
+          <th>Monto</th>
+          <th>Fecha</th>
+          <th>Usuario</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let income of paginatedIncomes" 
+            [ngClass]="{'ingreso-row': income.TipoIngreso.data[0] === 0, 
+                        'egreso-row': income.TipoIngreso.data[0] !== 0}">
+          <td>{{ income.IngresoID }}</td>
+          <td>
+            <ion-button fill="clear" (click)="openModal(income)">
+              <ion-icon name="create-outline" color="primary"></ion-icon>
+            </ion-button>
+          </td>
+          <td>{{ income.TipoIngreso.data[0] === 0 ? 'Ingreso' : 'Egreso' }}</td>
+          <td>{{ income.NombreSegmento }}</td>
+          <td>{{ income.NombreCategoria }}</td>
+          <td>{{ income.NombreSubcategoria }}</td>
+          <td>{{ income.NombreConcepto }}</td>
+          <td>{{ income.Descripcion }}</td>
+          <td>{{ income.Proveedor }}</td>
+          <td>{{ income.Piezas }}</td>
+          <td>{{ income.TipoCuenta }}</td>
+          <td>{{ income.NombreCuenta }}</td>
+          <td>{{ income.RFC }}</td>
+          <td>{{ income.Monto | currency }}</td>
+          <td>{{ income.Fecha }}</td>
+          <td>{{ income.NombreUsuarioRecibe }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <ion-footer class="margin_footer">
