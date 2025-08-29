@@ -12,7 +12,7 @@ router.get('/GetUltimaFechaConciliacion', authenticateJWT, GetUltimaFechaConcili
 router.get('/GetResumenIngresosReconciliados', authenticateJWT, GetResumenIngresosReconciliados);
 router.get('/GetResumenEgresosReconciliados', authenticateJWT, GetResumenEgresosReconciliados);
 
-router.post('/CrearReasignacion', authenticateJWT, CrearReasignacion);
+router.post('/CrearReasignacion', authenticateJWT, CrearReasignacion); 
 router.get('/GetReasignaciones', authenticateJWT, GetReasignaciones);
 
 
