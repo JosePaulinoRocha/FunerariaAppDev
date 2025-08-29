@@ -361,7 +361,7 @@ export const CrearReasignacion = async (req: Request, res: Response) => {
     if (varianteDestino === originKey) {
       // Solo restar del registro de la variante desde donde se abrió el modal
       const [fromRows] = await con.query<any[]>(`
-        SELECT * FROM Reasignaciones
+        SELECT * FROM reasignaciones
         WHERE SegmentoID = ? AND VarianteDestino = ? AND TipoMovimiento = ? AND FechaInicio = ? AND FechaFin = ?
       `, [segmentoIdOriginal, req.body.filtroSegmento, tipoMovimiento, fechaInicio, fechaFin || fechaInicio]);
 
@@ -370,11 +370,11 @@ export const CrearReasignacion = async (req: Request, res: Response) => {
 
         if (nuevoMonto > 0) {
           await con.query(`
-            UPDATE Reasignaciones SET Monto = ? WHERE ReasignacionID = ?
+            UPDATE reasignaciones SET Monto = ? WHERE ReasignacionID = ?
           `, [nuevoMonto, fromRows[0].ReasignacionID]);
         } else {
           await con.query(`
-            DELETE FROM Reasignaciones WHERE ReasignacionID = ?
+            DELETE FROM reasignaciones WHERE ReasignacionID = ?
           `, [fromRows[0].ReasignacionID]);
         }
       }
@@ -386,7 +386,7 @@ export const CrearReasignacion = async (req: Request, res: Response) => {
     // 1️⃣ Restar del registro de origen (si no es un retorno al origen)
     if (req.body.filtroSegmento.toLowerCase() !== 'todos') {
       await con.query(`
-        UPDATE Reasignaciones
+        UPDATE reasignaciones
         SET Monto = Monto - ?
         WHERE SegmentoID = ? AND VarianteDestino = ? AND TipoMovimiento = ? AND FechaInicio = ? AND FechaFin = ?
       `, [montoReasignado, segmentoIdOriginal, req.body.filtroSegmento, tipoMovimiento, fechaInicio, fechaFin || fechaInicio]);
@@ -394,17 +394,17 @@ export const CrearReasignacion = async (req: Request, res: Response) => {
 
     // 2️⃣ Sumar al registro existente de la variante destino
     const [destinoRows] = await con.query<any[]>(`
-      SELECT * FROM Reasignaciones
+      SELECT * FROM reasignaciones
       WHERE SegmentoID = ? AND VarianteDestino = ? AND TipoMovimiento = ? AND FechaInicio = ? AND FechaFin = ?
     `, [segmentoIdOriginal, varianteDestino, tipoMovimiento, fechaInicio, fechaFin || fechaInicio]);
 
     if (destinoRows.length > 0) {
       await con.query(`
-        UPDATE Reasignaciones SET Monto = Monto + ? WHERE ReasignacionID = ?
+        UPDATE reasignaciones SET Monto = Monto + ? WHERE ReasignacionID = ?
       `, [montoReasignado, destinoRows[0].ReasignacionID]);
     } else {
       await con.query(`
-        INSERT INTO Reasignaciones
+        INSERT INTO reasignaciones
           (SegmentoID, Monto, VarianteDestino, FechaInicio, FechaFin, TipoMovimiento)
         VALUES (?, ?, ?, ?, ?, ?)
       `, [segmentoIdOriginal, montoReasignado, varianteDestino, fechaInicio, fechaFin || fechaInicio, tipoMovimiento]);
