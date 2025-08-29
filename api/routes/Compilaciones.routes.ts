@@ -3,7 +3,7 @@ import { authenticateJWT } from '../middlewares/authMiddleware';
 import { GetResumenIngresosEgresos, GetUltimaFechaConDatos, GetResumenIngresosReconciliados, GetResumenEgresosReconciliados, 
     GetUltimaFechaConciliacion, CrearReasignacion, GetReasignaciones } from '../controllers/Compilaciones.controller';
 
-const router = Router();
+const router = Router(); 
 
 router.get('/GetResumenIngresosEgresos', authenticateJWT, GetResumenIngresosEgresos);
 router.get('/GetUltimaFechaConDatos', authenticateJWT, GetUltimaFechaConDatos);
