@@ -341,24 +341,58 @@ export const GetResumenEgresosReconciliados = async (req: Request, res: Response
 export const CrearReasignacion = async (req: Request, res: Response) => {
   let con;
   try {
-    const { segmentoIdOriginal, varianteDestino, totalMonto, montoReasignado, fechaInicio, fechaFin, tipoMovimiento, filtroSegmento } = req.body;
+    const { 
+      segmentoIdOriginal, 
+      varianteDestino, 
+      montoReasignado, 
+      fechaInicio, 
+      fechaFin, 
+      tipoMovimiento, 
+      originKey // variante de origen real del segmento
+    } = req.body;
 
-    if (!segmentoIdOriginal || !varianteDestino || !montoReasignado || !fechaInicio || tipoMovimiento === undefined || !filtroSegmento) {
+    if (!segmentoIdOriginal || !varianteDestino || !montoReasignado || !fechaInicio || tipoMovimiento === undefined || !originKey) {
       return res.status(400).json({ message: "Faltan parámetros requeridos" });
     }
 
     con = await connect();
 
-    // 1️⃣ Restar el monto desde la variante filtro (desde donde se abrió el modal)
-    if (filtroSegmento.toLowerCase() !== 'todos') {
+    // 🔹 Caso especial: si el destino es la misma que el origen real
+    if (varianteDestino === originKey) {
+      // Solo restar del registro de la variante desde donde se abrió el modal
+      const [fromRows] = await con.query<any[]>(`
+        SELECT * FROM Reasignaciones
+        WHERE SegmentoID = ? AND VarianteDestino = ? AND TipoMovimiento = ? AND FechaInicio = ? AND FechaFin = ?
+      `, [segmentoIdOriginal, req.body.filtroSegmento, tipoMovimiento, fechaInicio, fechaFin || fechaInicio]);
+
+      if (fromRows.length > 0) {
+        const nuevoMonto = fromRows[0].Monto - montoReasignado;
+
+        if (nuevoMonto > 0) {
+          await con.query(`
+            UPDATE Reasignaciones SET Monto = ? WHERE ReasignacionID = ?
+          `, [nuevoMonto, fromRows[0].ReasignacionID]);
+        } else {
+          await con.query(`
+            DELETE FROM Reasignaciones WHERE ReasignacionID = ?
+          `, [fromRows[0].ReasignacionID]);
+        }
+      }
+
+      // No crear registro nuevo para el origen
+      return res.json({ message: "Reasignación revertida al origen correctamente" });
+    }
+
+    // 1️⃣ Restar del registro de origen (si no es un retorno al origen)
+    if (req.body.filtroSegmento.toLowerCase() !== 'todos') {
       await con.query(`
         UPDATE Reasignaciones
         SET Monto = Monto - ?
         WHERE SegmentoID = ? AND VarianteDestino = ? AND TipoMovimiento = ? AND FechaInicio = ? AND FechaFin = ?
-      `, [montoReasignado, segmentoIdOriginal, filtroSegmento, tipoMovimiento, fechaInicio, fechaFin || fechaInicio]);
+      `, [montoReasignado, segmentoIdOriginal, req.body.filtroSegmento, tipoMovimiento, fechaInicio, fechaFin || fechaInicio]);
     }
 
-    // 2️⃣ Sumar al registro existente de la variante destino si existe
+    // 2️⃣ Sumar al registro existente de la variante destino
     const [destinoRows] = await con.query<any[]>(`
       SELECT * FROM Reasignaciones
       WHERE SegmentoID = ? AND VarianteDestino = ? AND TipoMovimiento = ? AND FechaInicio = ? AND FechaFin = ?

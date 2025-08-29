@@ -35,6 +35,7 @@ export class ReasignarModalComponent implements OnInit {
 
   ngOnInit() {
     this.cargarOpciones();
+    console.log('segmento variante', this.filtroSegmento)
   }
 
   cargarOpciones() {
@@ -44,22 +45,41 @@ export class ReasignarModalComponent implements OnInit {
       { clave: 'ventas', nombre: 'Ventas (Sala)' },
     ];
 
-    const nombreLower = this.nombreSegmento.toLowerCase();
-    const filtroLower = this.filtroSegmento?.toLowerCase();
+    const nombreLower = (this.nombreSegmento || '').toLowerCase();
+    const filtroLower = (this.filtroSegmento || 'Todos').toString().toLowerCase();
+
+    // Determina explícitamente la variante "origen" basada en el nombre del segmento
+    let originKey: string | null = null;
+    if (nombreLower.includes('cobranza')) originKey = 'cobranza';
+    else if (nombreLower.includes('funeraria')) originKey = 'funeraria';
+    else if (nombreLower.includes('sala') || nombreLower.includes('ventas')) originKey = 'ventas';
 
     this.opcionesVariantes = todasLasVariantes.filter(v => {
-      // No mostrar la variante de origen
-      if (nombreLower.includes(v.clave)) return false;
+      // 1) Nunca mostrar la variante que coincide con el filtro actual (si no es "todos")
+      if (filtroLower !== 'todos' && v.clave === filtroLower) {
+        return false;
+      }
 
-      // No mostrar la variante que está actualmente filtrada
-      if (v.clave === filtroLower) return false;
+      // 2) Ocultar la variante de origen cuando:
+      //    - estoy en "Todos" (no permitir reasignar a la variante origen desde la vista global), OR
+      //    - o estoy abriendo el modal desde la misma variante origen (no reasignar a sí misma)
+      if (originKey && v.clave === originKey && (filtroLower === 'todos' || filtroLower === originKey)) {
+        return false;
+      }
 
-      // No mostrar ventas si el segmento tiene "sala" en el nombre
-      if (v.clave === 'ventas' && nombreLower.includes('sala')) return false;
-
+      // 3) En cualquier otro caso permitir la variante (ej. abrir desde Cobranza y origen es Ventas -> permitir Ventas)
       return true;
     });
   }
+
+  detectarOrigen(nombre: string): string {
+    const lower = nombre.toLowerCase();
+    if (lower.includes('cobranza')) return 'cobranza';
+    if (lower.includes('funeraria')) return 'funeraria';
+    if (lower.includes('sala') || lower.includes('ventas')) return 'ventas';
+    return 'otros';
+  }
+
 
   cerrarModal() {
     this.modalCtrl.dismiss();
@@ -106,7 +126,8 @@ export class ReasignarModalComponent implements OnInit {
         fechaInicio: this.fechaInicio,
         fechaFin: this.fechaFin,
         tipoMovimiento: this.tipoMovimiento,
-        filtroSegmento: this.filtroSegmento
+        filtroSegmento: this.filtroSegmento,
+        originKey: this.detectarOrigen(this.nombreSegmento)
       })
       .subscribe({
         next: async (res: any) => {
