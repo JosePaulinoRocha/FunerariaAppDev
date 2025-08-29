@@ -13,7 +13,7 @@ router.get('/GetResumenIngresosReconciliados', authenticateJWT, GetResumenIngres
 router.get('/GetResumenEgresosReconciliados', authenticateJWT, GetResumenEgresosReconciliados);
 
 router.post('/CrearReasignacion', authenticateJWT, CrearReasignacion); 
-router.get('/GetReasignaciones', authenticateJWT, GetReasignaciones);
+router.get('/GetReasignaciones', authenticateJWT, GetReasignaciones);  
 
 
 export default router;
