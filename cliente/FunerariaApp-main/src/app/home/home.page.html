@@ -75,6 +75,17 @@
       </ion-card-content>
     </ion-card>
 
+    <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('presupuesto-semanal')" class="home-card">
+      <ion-card-content>
+        <ion-icon color="primary" name="bar-chart-outline"></ion-icon>
+        <ion-card-title>Presupuesto semanal</ion-card-title>
+      </ion-card-content>
+      <ion-card-content>
+        <p>Gestion de presupuesto por periodo de tiempo.</p>
+      </ion-card-content>
+    </ion-card>
+
+
     <ion-card *ngIf="!isMobileDevice" (click)="navigateTo('combinaciones')" class="home-card">
       <ion-card-content>
         <ion-icon color="primary" name="folder-outline" slot="start"></ion-icon>

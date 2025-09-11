@@ -1,0 +1,174 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Presupuesto Semanal</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-button style="margin: 1rem;" expand="block" color="success" (click)="abrirModalPresupuesto()">
+    Nuevo Presupuesto
+  </ion-button>
+
+  <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin: 1rem;">
+    <ion-button color="tertiary" (click)="triggerFileInputPresupuesto()">
+      Importar Presupuesto
+    </ion-button>
+    <input
+      type="file"
+      accept=".xlsx, .xls"
+      (change)="onFileChangePresupuesto($event)"
+      style="display: none"
+      id="fileInputPresupuesto"
+    />
+
+    <!-- Filtros por fecha junto al botón -->
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <input type="date" [(ngModel)]="fechaFiltroInicio" (change)="onDateChange()" class="custom-select" />
+      <span>a</span>
+      <input type="date" [(ngModel)]="fechaFiltroFin" (change)="onDateChange()" class="custom-select" />
+    </div>
+  </div>
+
+  <!-- Switch entre tabla y gráfica -->
+  <ion-segment [(ngModel)]="modoVista" (ionChange)="onModoVistaChange()" style="margin: 1rem;">
+    <ion-segment-button value="tabla">Tabla</ion-segment-button>
+    <ion-segment-button value="grafica">Gráfica</ion-segment-button>
+  </ion-segment>
+
+  <!-- Totales -->
+  <div class="totals-summary">
+    <ion-card>
+      <ion-card-header class="card-header ingreso-header">
+        <ion-card-title>Egreso Planeado</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        {{ totalPlaneado | currency:'MXN':'symbol' }}
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header class="card-header egreso-header">
+        <ion-card-title>Egreso Real</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        {{ totalReal | currency:'MXN':'symbol' }}
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="modoVista === 'tabla'" class="table-container">
+    <table class="table">
+      <thead class="header-row">
+        <tr class="color_header_tabla">
+          <th>ID</th>
+          <th>Segmento</th>
+          <th>Categoría</th>
+          <th>Fecha Inicio</th>
+          <th>Fecha Fin</th>
+          <th>Planeado</th>
+          <th>Real</th>
+          <th>Cuenta</th>
+          <th>Gasto x Cuenta</th>
+          <th>Borrar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let item of presupuestoPaginado"
+          class="data-row"
+          [ngClass]="{
+            'fila-verde': item.GastoReal > 0 && item.GastoReal <= item.PresupuestoPlaneado,
+            'fila-roja': item.GastoReal > item.PresupuestoPlaneado
+          }"
+        >
+          <td>{{ item.PresupuestoID }}</td>
+          <td>{{ item.SegmentoNombre }}</td>
+          <td>{{ item.CategoriaNombre }}</td>
+          <td>{{ item.FechaInicio | date:'dd/MM/yyyy' }}</td>
+          <td>{{ item.FechaFin | date:'dd/MM/yyyy' }}</td>
+          <td>{{ item.PresupuestoPlaneado | currency:'MXN':'symbol' }}</td>
+          <td>{{ item.GastoReal | currency:'MXN':'symbol' }}</td>
+          <td>{{ item.NombreCuenta || '-' }}</td>
+          <td>{{ item.GastoRealPorCuenta | currency:'MXN':'symbol' }}</td>
+          <td>
+            <ion-icon 
+              name="trash-outline" 
+              color="danger" 
+              style="cursor: pointer; font-size: 14px;" 
+              (click)="eliminarPresupuesto(item.PresupuestoID)">
+            </ion-icon>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Mensaje cuando no hay datos -->
+  <div *ngIf="!isLoading && presupuestoPaginado.length === 0" style="text-align:center; padding: 1rem; color: gray;">
+    No hay registros para las fechas seleccionadas.
+  </div>
+
+  <!-- Gráfica -->
+  <div *ngIf="modoVista === 'grafica'" style="padding: 1rem 0;">
+    <h2 class="chart-title">Presupuesto vs Real por Categoría</h2>
+    <div class="chart-container auto-height">
+      <canvas id="barChartPresupuesto"></canvas>
+    </div>
+  </div>
+
+  <!-- Barra de carga -->
+  <div *ngIf="isLoading" class="loading-bar" style="margin-top: 25%;">
+    <ion-progress-bar type="indeterminate"></ion-progress-bar>
+    <p>Cargando registros, por favor espere...</p>
+  </div>
+
+</ion-content>
+
+<ion-footer *ngIf="modoVista === 'tabla' && !isLoading">
+  <ion-toolbar>
+
+    <!-- Botón Anterior a la izquierda -->
+    <ion-buttons slot="start">
+      <ion-button [disabled]="paginaActual === 1" (click)="paginaAnterior()">
+        Anterior
+      </ion-button>
+    </ion-buttons>
+
+    <!-- Texto de páginas en el centro -->
+    <ion-title>
+      Página {{ paginaActual }} de {{ totalPaginas }}
+    </ion-title>
+
+    <!-- Botón Siguiente + selector de registros a la derecha -->
+    <ion-buttons slot="end" style="align-items:center;">
+      <ion-button [disabled]="paginaActual === totalPaginas" (click)="paginaSiguiente()">
+        Siguiente
+      </ion-button>
+
+      <ion-select
+        [(ngModel)]="tamanoPagina"
+        interface="popover"
+        placeholder="Registros"
+        (ionChange)="paginaActual = 1"
+        style="min-width:100px; margin-left:0.5rem;"
+      >
+        <ion-select-option [value]="5">5</ion-select-option>
+        <ion-select-option [value]="10">10</ion-select-option>
+        <ion-select-option [value]="20">20</ion-select-option>
+        <ion-select-option [value]="50">50</ion-select-option>
+        <ion-select-option [value]="100">100</ion-select-option>
+        <ion-select-option [value]="200">200</ion-select-option>
+        <ion-select-option [value]="500">500</ion-select-option>
+      </ion-select>
+    </ion-buttons>
+
+  </ion-toolbar>
+</ion-footer>
+
+
+

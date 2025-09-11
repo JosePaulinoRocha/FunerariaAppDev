@@ -1,0 +1,72 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Nuevo Presupuesto</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="modalController.dismiss()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list lines="full">
+
+    <!-- Segmento -->
+    <ion-item button detail="true" (click)="openSegmentoModal()">
+      <ion-label>
+        <h2>Segmento</h2>
+        <p *ngIf="segmentoSeleccionado">{{ segmentoSeleccionado.NombreSegmento }}</p>
+        <p *ngIf="!segmentoSeleccionado" class="placeholder">Selecciona un segmento</p>
+      </ion-label>
+    </ion-item>
+
+    <!-- Categoría -->
+    <ion-item button detail="true" (click)="openCategoriaModal()">
+      <ion-label>
+        <h2>Categoría</h2>
+        <p *ngIf="categoriaSeleccionada">{{ categoriaSeleccionada.NombreCategoria }}</p>
+        <p *ngIf="!categoriaSeleccionada" class="placeholder">Selecciona una categoría</p>
+      </ion-label>
+    </ion-item>
+
+    <!-- Fecha Inicio -->
+    <ion-item>
+        <ion-label position="stacked">Fecha Inicio</ion-label>
+        <ion-input
+            type="date"
+            [(ngModel)]="fechaInicio">
+        </ion-input>
+    </ion-item>
+
+    <!-- Fecha Fin -->
+    <ion-item>
+        <ion-label position="stacked">Fecha Fin</ion-label>
+        <ion-input
+            type="date"
+            [(ngModel)]="fechaFin">
+        </ion-input>
+    </ion-item>
+
+    <!-- Monto -->
+    <ion-item>
+      <ion-label position="stacked">Monto</ion-label>
+      <ion-input
+        type="number"
+        [(ngModel)]="monto"
+        placeholder="0.00">
+      </ion-input>
+    </ion-item>
+
+  </ion-list>
+
+  <ion-footer>
+    <ion-toolbar>
+      <ion-button
+        expand="block"
+        color="primary"
+        (click)="guardarPresupuesto()"
+        [disabled]="!segmentoSeleccionado || !categoriaSeleccionada || !fechaInicio || !fechaFin || !monto || monto <= 0">
+        Guardar Presupuesto
+      </ion-button>
+    </ion-toolbar>
+  </ion-footer>
+</ion-content>

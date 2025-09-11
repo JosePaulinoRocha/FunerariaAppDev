@@ -133,7 +133,8 @@ export class AppComponent {
     '/presupuesto-mensual-frecuencia': 'Presupuesto Frecuencia',
     '/presupuesto-mensual-cuentas': 'Presupuesto Cuentas',
     '/proveedores': 'Proveedores',
-    '/ingresos-api': 'Ingresos API'
+    '/ingresos-api': 'Ingresos API',
+    '/presupuesto-semanal': 'Presupuesto Semanal'
   };
 
   constructor(private menu: MenuController, private router: Router, private authService: AuthService, private _notificacionServ: NotificacionesServices, private _ingresoApiServ: IngresosApiServices, private alertController: AlertController, private loadingController: LoadingController) {

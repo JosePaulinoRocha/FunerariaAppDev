@@ -29,7 +29,7 @@
   }
   
   .data-row td {
-    // padding: 8px;
+    padding: 8px;
     text-align: center;
     border: 1px solid #ddd;
     white-space: nowrap; 
@@ -190,7 +190,8 @@
 
 
 .button-select-group button {
-  border-radius: 4px;
+  border-radius: 4px 0 0 4px;
+  border-right: none;
   height: 40px;
 }
 
@@ -229,10 +230,11 @@
 
 .chart-container {
   position: relative;
-  width: 100%;
-  max-width: 700px; /* o el tamaño que prefieras */
+  width: 80%;
   height: 250px;
-  margin: 0 auto 20px auto; /* centrar horizontalmente + separación abajo */
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 10px;
   overflow: hidden;
   background: linear-gradient(145deg, #eef2f5, #d9e2ec);
@@ -276,7 +278,7 @@
 }
 
 .egreso-header {
-  background-color: var(--ion-color-danger);
+  background-color: var(--ion-color-warning);
   color: white;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
@@ -345,47 +347,22 @@
 /* 🔹 Cambiar tamaño de fuente en móviles */
 @media (max-width: 768px) {
   .totals-summary ion-card ion-card-content {
-    font-size: 14px !important;
+    font-size: 12px !important;
   }
 }
 
-.seleccionados-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+
+/* Verde para registros sin gasto aún */
+.fila-verde {
+  background-color: #e6f7e6 !important;
 }
 
-.selector-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  border-radius: 50px;
-  font-weight: bold;
-  font-size: 0.95rem;
-  color: white;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  transition: transform 0.2s ease;
+/* Rojo para los que exceden el presupuesto */
+.fila-roja {
+  background-color: #fde0e0 !important;
 }
 
-.selector-pill:hover {
-  transform: scale(1.05);
-}
-
-/* Estilos por tipo */
-.selector-pill.segmento {
-  background-color: #4a90e2; /* azul vivo */
-}
-
-.selector-pill.categoria {
-  background-color: #28a745; /* verde */
-}
-
-.selector-pill.subcategoria {
-  background-color: #ff9800; /* naranja */
+/* Opcional: suavizar hover */
+.table .data-row:hover {
+  filter: brightness(0.95);
 }
