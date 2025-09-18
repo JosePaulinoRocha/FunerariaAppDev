@@ -67,6 +67,8 @@ interface Income {
 
   MontoParcialBandera: number;
 
+  CuentaID: number;
+
 
   [key: string]: any; // Para permitir acceso dinámico
 }
@@ -1100,5 +1102,21 @@ export class IngresosEgresosComponent implements OnInit {
       });
     }
   }
+
+  confirmDeleteIncome(ingresoID: number) {
+    if (confirm('¿Estás seguro de que deseas eliminar este ingreso?')) {
+      this._ingresoServ.deleteIncome(ingresoID).subscribe({
+        next: () => {
+          alert('Ingreso eliminado correctamente.');
+          this.loadDataBasedOnContext();
+        },
+        error: (err) => {
+          console.error('Error al eliminar ingreso', err);
+          alert('Ocurrió un error al eliminar el ingreso.');
+        }
+      });
+    }
+  }
+
   
 }

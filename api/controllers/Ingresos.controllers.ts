@@ -155,7 +155,38 @@ export const DeleteComprobante = async (req: Request, res: Response) => {
     }
 };
 
-  
+export const DeleteIncome = async (req: Request, res: Response) => {
+  let con;
+  const ingresoID = parseInt(req.params.IngresoID);
+
+  if (isNaN(ingresoID)) {
+      return res.status(400).json({ message: 'IngresoID inválido' });
+  }
+
+  try {
+      con = await connect();
+
+      const [result]: any = await con.query(
+        `DELETE FROM ingresos 
+         WHERE IngresoID = ? AND Reconciliado = 0 AND TipoIngreso = 0 AND (CuentaID IS NULL OR CuentaID = 0)`,
+        [ingresoID]
+      );
+
+      if (result.affectedRows === 0) {
+          return res.status(404).json({ message: 'Ingreso no encontrado o no cumple las condiciones para eliminar' });
+      }
+
+      return res.json({ message: 'Ingreso eliminado correctamente' });
+
+  } catch (error) {
+      console.error('Error eliminando ingreso', error);
+      return res.status(500).json({ message: 'Error eliminando ingreso' });
+  } finally {
+      await con?.end();
+  }
+};
+
+
 export const ObtenerIngresosPorFiltro = async (req: Request, res: Response) => {
     let con;
     let result;

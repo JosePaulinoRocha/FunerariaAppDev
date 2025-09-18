@@ -65,7 +65,7 @@ export class PresupuestoSemanalComponent implements OnInit {
         if (row && row.FechaInicio && row.FechaFin) {
           this.fechaFiltroInicio = row.FechaInicio;
           this.fechaFiltroFin = row.FechaFin;
-          console.log('📌 Fechas obtenidas directamente:', this.fechaFiltroInicio, this.fechaFiltroFin);
+          // console.log('📌 Fechas obtenidas directamente:', this.fechaFiltroInicio, this.fechaFiltroFin);
         }
         this.loadPresupuesto();
       },
@@ -77,7 +77,7 @@ export class PresupuestoSemanalComponent implements OnInit {
   }
 
   onDateChange() {
-    console.log('📌 Fechas seleccionadas:', this.fechaFiltroInicio, this.fechaFiltroFin);
+    // console.log('📌 Fechas seleccionadas:', this.fechaFiltroInicio, this.fechaFiltroFin);
     this.loadPresupuesto();
   }
 
@@ -180,8 +180,11 @@ export class PresupuestoSemanalComponent implements OnInit {
     this._presupuestoService.getPresupuestoSemanal(this.fechaFiltroInicio, this.fechaFiltroFin)
       .subscribe({
         next: (data) => {
+          console.log(data);
           this.presupuesto = (data || []).map((it: any) => ({
             ...it,
+            FechaInicio: it.FechaInicio ? it.FechaInicio.split('T')[0] : '',
+            FechaFin: it.FechaFin ? it.FechaFin.split('T')[0] : '',
             PresupuestoPlaneado: Number(it.PresupuestoPlaneado ?? it.Monto ?? 0),
             GastoReal: Number(it.GastoReal ?? 0),
             NombreCuenta: it.NombreCuenta ? String(it.NombreCuenta).trim() : ''
@@ -304,11 +307,9 @@ export class PresupuestoSemanalComponent implements OnInit {
     const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     if (!canvas) return;
 
-    // 🔹 Función para formatear la fecha
     const formatDate = (dateStr: string) => {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return dateStr;
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      if (!dateStr) return '';
+      return dateStr;
     };
 
     // 🔹 Agrupar por Segmento + Categoría + Rango de fechas, evitando duplicados por ID

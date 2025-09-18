@@ -8,7 +8,7 @@ import { ActualizarDescripcion, ObtenerIngresos, ObtenerIngresosParametros, Obte
     ObtenerIngresosOptimizado, PostIngresos, UpdateIngresos, ObtenerConceptos, ObtenerSegmentos, ObtenerCategorias, 
     ObtenerSubcategorias, ObtenerUsuarios, ObtenerCombinaciones, ObtenerEstatus, updateCombination, ObtenerCuentas, 
     ObtenerCombinacionesSegmento, PostIngresosComprobante, asignarCuenta, asignarCuentasMasivas, ObtenerProveedores, 
-    asignarCuentaContable, ObtenerCuentasContables, DeleteComprobante } from '../controllers/Ingresos.controllers';
+    asignarCuentaContable, ObtenerCuentasContables, DeleteComprobante, DeleteIncome } from '../controllers/Ingresos.controllers';
 
 const router = Router();
 
@@ -50,6 +50,8 @@ router.get('/GetIngresos', authenticateJWT, ObtenerIngresos);
 router.get('/GetIngresosParametros', authenticateJWT, ObtenerIngresosParametros);
 
 router.put('/DeleteComprobante/:IngresoID', authenticateJWT, DeleteComprobante);
+
+router.delete('/DeleteIncome/:IngresoID', authenticateJWT, DeleteIncome);
 
 router.get('/GetIngresosPorFiltro/:filtro', authenticateJWT, ObtenerIngresosPorFiltro);
 

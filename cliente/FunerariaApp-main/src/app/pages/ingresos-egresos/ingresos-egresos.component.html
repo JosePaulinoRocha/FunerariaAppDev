@@ -156,6 +156,7 @@
             <input type="checkbox" [checked]="masterCheckbox" (change)="toggleSelectAll($event)" />
           </th>
           <th>ID</th>
+          <th *ngIf="isAdmin"></th>
           <th *ngIf="isAdmin">Cuenta</th>
           <th *ngIf="isAdmin">Combinacion</th>
           <th (click)="sortTable('Fecha')">
@@ -246,6 +247,15 @@
             <input type="checkbox" [(ngModel)]="income['selected']" (change)="onSelectIncome(income)" />
           </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.IngresoID }}</td>
+          <td *ngIf="isAdmin">
+            <ion-icon
+              name="trash-outline"
+              [color]="(income.Reconciliado === 0 && !income.CuentaID && income.TipoIngreso.data.includes(0)) ? 'danger' : 'medium'"
+              [style.font-size]="'20px'"
+              [style.cursor]="(income.Reconciliado === 0 && !income.CuentaID && income.TipoIngreso.data.includes(0)) ? 'pointer' : 'default'"
+              (click)="(income.Reconciliado === 0 && !income.CuentaID && income.TipoIngreso.data.includes(0)) ? confirmDeleteIncome(income.IngresoID) : null">
+            </ion-icon>
+          </td>
           <td *ngIf="isAdmin">
             <ion-icon
               style="color: green; cursor: pointer;"

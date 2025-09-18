@@ -97,6 +97,10 @@ export class IngresosServices {
     return this.http.put(url, {});
   }
 
+  deleteIncome(ingresoID: number): Observable<any> {
+    const url = `${this.myAppUrl}${this.MyApiUrl}/DeleteIncome/${ingresoID}`;
+    return this.http.delete(url);
+  }
 
   getIngresosPorFiltro(
     filtro: string,
