@@ -307,10 +307,10 @@ export class AppComponent {
   }
   
   
-  
   getAfectacionesDesde2000() {
     this.errorMessage = null;
-    const fechaInicio = '2024-10-01'; // Fecha de inicio: 1 de enero de 2000
+    // const fechaInicio = '2024-10-01'; // Fecha de inicio
+    const fechaInicio = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split('T')[0]; // Hoy - 1 mes
     const fechaFin = new Date().toISOString().split('T')[0]; // Fecha actual
 
     // Obtener el token para la API
