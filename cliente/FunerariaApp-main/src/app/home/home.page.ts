@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { IonicModule, ModalController  } from '@ionic/angular';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/Servicios/AuthService';
 import { CommonModule } from '@angular/common';
 import { ChangePasswordModalComponent } from './modal/modal.component';
-
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -13,26 +13,49 @@ import { ChangePasswordModalComponent } from './modal/modal.component';
   standalone: true,
   imports: [IonicModule, CommonModule],
 })
-
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   isAdmin: boolean = false;
   user: any;
   isMobileDevice: boolean = false;
+  userLoaded: boolean = false;
 
-  constructor(private router: Router, private authService: AuthService, private modalController: ModalController) {}
+  private subscriptions: Subscription[] = [];
+
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private modalController: ModalController
+  ) {}
 
   ngOnInit() {
-
     this.isMobileDevice = this.isMobile();
 
-    this.authService.isAdminSubject.subscribe((isAdmin) => {
+    // Suscribirse al usuario reactivo
+    const userSub = this.authService.user$.subscribe(user => {
+      this.user = user;
+      this.userLoaded = !!user;
+      if (user) {
+        this.checkPasswordChange();
+      }
+    });
+    this.subscriptions.push(userSub);
+
+    // Suscribirse a cambios de admin
+    const adminSub = this.authService.isAdmin$.subscribe(isAdmin => {
       this.isAdmin = isAdmin;
     });
+    this.subscriptions.push(adminSub);
+  }
 
+  ngOnDestroy() {
+    // Limpiar todas las suscripciones
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
 
-    this.user = JSON.parse(sessionStorage.getItem('user') || '{}');
-    this.checkPasswordChange();
-
+  tienePermiso(ruta: string): boolean {
+    if (!this.userLoaded) return false;
+    if (this.isAdmin) return true;
+    return this.user?.permisos?.includes(`/${ruta}`);
   }
 
   private isMobile(): boolean {
@@ -41,7 +64,7 @@ export class HomePage implements OnInit {
   }
 
   async checkPasswordChange() {
-    const isDefaultPassword = this.user.CambioContra?.data[0] === 0;
+    const isDefaultPassword = this.user?.CambioContra?.data[0] === 0;
 
     if (isDefaultPassword) {
       const modal = await this.modalController.create({
@@ -53,7 +76,7 @@ export class HomePage implements OnInit {
       const { data: updated } = await modal.onDidDismiss();
       if (updated) {
         this.user.CambioContra.data[0] = 1;
-        sessionStorage.setItem('user', JSON.stringify(this.user));
+        this.authService.setUser(this.user); // Actualizar también el BehaviorSubject
       }
     }
   }

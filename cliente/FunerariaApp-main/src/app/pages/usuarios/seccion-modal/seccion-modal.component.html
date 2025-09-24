@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>{{ isEditMode ? 'Modificar Sección' : 'Añadir Sección' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form (ngSubmit)="saveSeccion()">
+    <ion-list>
+      <ion-item style="margin-top: 16px;">
+        <ion-label position="stacked">ID</ion-label>
+        <ion-input [(ngModel)]="seccion.PermisoID" name="PermisoID" disabled></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Nombre de la Sección</ion-label>
+        <ion-input [(ngModel)]="seccion.NombrePermiso" name="NombrePermiso" required></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Ruta</ion-label>
+        <ion-input [(ngModel)]="seccion.Ruta" name="Ruta" required></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-footer>
+      <ion-button expand="full" type="submit">{{ isEditMode ? 'Modificar' : 'Añadir' }}</ion-button>
+    </ion-footer>
+  </form>
+</ion-content>

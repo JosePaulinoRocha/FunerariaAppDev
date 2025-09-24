@@ -173,13 +173,13 @@
         <thead class="header-row">
           <tr class="color_header_tabla">
             <th>ID</th>
-            <th *ngIf="isAdmin">Editar</th>
+            <th>Editar</th>
             <th>Fecha Gasto</th>
             <th><span style="margin-left: 10rem;"></span>Concepto Gasto<span style="margin-left: 10rem;"></span></th>
             <th>Monto</th>
             <th><span style="margin-left: 2rem;"></span>Proveedor<span style="margin-left: 2rem;"></span></th>
             <th><span style="margin-left: 4rem;"></span>Segmento<span style="margin-left: 4rem;"></span></th>
-            <th *ngIf="isAdmin">Estatus</th>
+            <th>Estatus</th>
             <th style="background-color: greenyellow; color: black;"><span style="margin-left: 2rem;"></span>Estatus<span style="margin-left: 2rem;"></span></th>
             <th style="background-color: greenyellow; color: black;"><span style="margin-left: 4rem;"></span>Cuenta<span style="margin-left: 4rem;"></span></th>
             <th style="background-color: greenyellow; color: black;"><span style="margin-left: 2rem;"></span>TipoCuenta<span style="margin-left: 2rem;"></span></th>
@@ -193,7 +193,7 @@
         <tbody>
           <tr *ngFor="let gastos of paginatedPresupuesto" class="data-row">
             <td>{{ gastos.GastoID }}</td>
-            <td *ngIf="isAdmin">
+            <td>
               <ion-icon 
                 name="create-outline" 
                 (click)="asignarDatos(gastos)"
@@ -207,7 +207,7 @@
             <td>{{ gastos.Monto }}</td>
             <td>{{ gastos.NombreProveedor }}</td>
             <td>{{ gastos.NombreSegmento }}</td>
-            <td *ngIf="isAdmin">
+            <td>
               <ion-icon 
                 name="create-outline" 
                 (click)="asignarEstatus(gastos)"

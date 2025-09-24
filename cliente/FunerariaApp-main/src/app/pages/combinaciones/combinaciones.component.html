@@ -47,8 +47,8 @@
       <thead class="header-row">
         <tr class="color_header_tabla">
           <th>ID</th>
-          <th *ngIf="isAdmin">Validar</th>
-          <th *ngIf="isAdmin">Eliminar</th>
+          <th>Validar</th>
+          <th>Eliminar</th>
           <th>Segmento</th>
           <th>Categoria</th>
           <th>Subcategoria</th>
@@ -60,7 +60,7 @@
       <tbody>
         <tr *ngFor="let combinacion of paginatedCombinaciones" class="data-row">
           <td>{{ combinacion.CombinacionID }}</td>
-          <td *ngIf="isAdmin">
+          <td>
             <ion-icon 
               [name]="combinacion.validado ? 'close-circle-sharp' : 'checkbox'" 
               (click)="validarCombinacion(combinacion.CombinacionID, combinacion.validado)"
@@ -69,7 +69,7 @@
               aria-label="Validar">
             </ion-icon>
           </td>
-          <td *ngIf="isAdmin">
+          <td>
             <ion-icon 
               name="trash" 
               (click)="eliminarCombinacion(combinacion.CombinacionID)"

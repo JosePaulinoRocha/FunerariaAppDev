@@ -85,7 +85,7 @@
             <th>Fecha ultimo gasto</th>
             <th>Dia Limite</th>
             <th>Dias Pendientes (Vencimiento)</th>
-            <th *ngIf="isAdmin">Guardar periodo</th>
+            <th>Guardar periodo</th>
             <th style="background-color: greenyellow; color: black;"><span style="margin-left: 12rem;"></span>Periodo en el que se vence<span style="margin-left: 12rem;"></span></th>
           </tr>
         </thead>
@@ -106,7 +106,7 @@
             <td>{{ gastoMensualFrecuencia.UltimaFecha }}</td>
             <td>{{ gastoMensualFrecuencia.DiaLimite }}</td>
             <td>{{ gastoMensualFrecuencia.DiasPendientes }}</td>
-            <td *ngIf="isAdmin">
+            <td>
               <ion-icon 
                 name="create-outline" 
                 (click)="gastoMensualFrecuencia.Guardado === 1 ? null : asignarPeriodo(gastoMensualFrecuencia)"

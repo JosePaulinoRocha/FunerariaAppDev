@@ -10,7 +10,7 @@ interface Categoria {
 }
 
 @Component({
-  selector: 'app-categoria-modal',
+  selector: 'app-categoria_presupuesto-modal',
   templateUrl: './categoria-modal.component.html',
   styleUrls: ['./categoria-modal.component.scss'],
   standalone: true,

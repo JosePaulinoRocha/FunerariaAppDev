@@ -156,9 +156,9 @@
             <input type="checkbox" [checked]="masterCheckbox" (change)="toggleSelectAll($event)" />
           </th>
           <th>ID</th>
-          <th *ngIf="isAdmin"></th>
-          <th *ngIf="isAdmin">Cuenta</th>
-          <th *ngIf="isAdmin">Combinacion</th>
+          <th></th>
+          <th>Cuenta</th>
+          <th>Combinacion</th>
           <th (click)="sortTable('Fecha')">
             Fecha
             <span *ngIf="sortField === 'Fecha'">
@@ -247,7 +247,7 @@
             <input type="checkbox" [(ngModel)]="income['selected']" (change)="onSelectIncome(income)" />
           </td>
           <td (click)="income.CuentaContable !== null ? asignarCuentaContable(income.IngresoID) : null">{{ income.IngresoID }}</td>
-          <td *ngIf="isAdmin">
+          <td>
             <ion-icon
               name="trash-outline"
               [color]="(income.Reconciliado === 0 && !income.CuentaID && income.TipoIngreso.data.includes(0)) ? 'danger' : 'medium'"
@@ -256,7 +256,7 @@
               (click)="(income.Reconciliado === 0 && !income.CuentaID && income.TipoIngreso.data.includes(0)) ? confirmDeleteIncome(income.IngresoID) : null">
             </ion-icon>
           </td>
-          <td *ngIf="isAdmin">
+          <td>
             <ion-icon
               style="color: green; cursor: pointer;"
               name="key-sharp"
@@ -264,7 +264,7 @@
               aria-label="Asignar Cuenta">
             </ion-icon>
           </td>
-          <td *ngIf="isAdmin">
+          <td>
             <ion-icon
               name="git-compare"
               (click)="editarCombinacion(income.IngresoID)"

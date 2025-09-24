@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import path from 'path';
 
 import Usuarios from "./routes/Usuarios.routes"
+import Permisos from "./routes/Permisos.routes"
 import Ingresos from "./routes/Ingresos.routes"
 import Reconciliaciones from "./routes/Reconciliaciones.routes"
 import Combinaciones from "./routes/Combinaciones.routes"
@@ -66,6 +67,7 @@ export class App {
     routes() {
        
         this.app.use('/api/usuarios', Usuarios);
+        this.app.use('/api/permisos', Permisos);
         this.app.use('/api/ingresos', Ingresos);
         this.app.use('/api/reconciliaciones', Reconciliaciones);
         this.app.use('/api/combinaciones', Combinaciones);

@@ -10,34 +10,36 @@ export const Login = async (req: Request, res: Response) => {
   let con;
   try {
     con = await connect();
-    const query = 'SELECT * FROM usuarios WHERE email = ?';
-    const [users] = await con.query(query, [email]) as any[];
+    const [users] = await con.query('SELECT * FROM usuarios WHERE email = ?', [email]) as any[];
 
-    if (users.length > 0) {
-      const user = users[0];
-      console.log('Usuario encontrado:', user);
-
-      // Comparar la contraseña ingresada con la encriptada en la DB
-      const match = await bcrypt.compare(password, user.password);
-      if (!match) {
-        console.log('Contraseña incorrecta');
-        return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
-      }
-
-      const payload = {
-        userId: user.userId,
-        isAdmin: user.isAdmin,
-      };
-      const token = jwt.sign(payload, jwtSecret, { expiresIn: jwtExpiresIn });
-
-      // Eliminar password y CambioContra antes de enviar
-      const { password: _, ...safeUser } = user;
-
-      return res.json({ success: true, token, user: safeUser });
-    } else {
-      console.log('Usuario no encontrado');
+    if (users.length === 0) {
       return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
     }
+
+    const user = users[0];
+    console.log('Usuario encontrado:', user);
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      console.log('Contraseña incorrecta');
+      return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
+    }
+
+    const rolId = user.RolID;
+    const [permisosRows] = await con.query(
+      'SELECT p.Ruta FROM rol_permisos rp JOIN permisos p ON rp.PermisoID = p.PermisoID WHERE rp.RolID = ?',
+      [rolId]
+    ) as any[];
+
+    const permisos = permisosRows.map((p: any) => p.Ruta);
+
+    const { password: _, ...safeUser } = user;
+    safeUser.permisos = permisos; 
+
+    const payload = { userId: user.userId, isAdmin: user.isAdmin };
+    const token = jwt.sign(payload, jwtSecret, { expiresIn: jwtExpiresIn });
+
+    return res.json({ success: true, token, user: safeUser });
   } catch (error) {
     console.log('Error en Login:', error);
     return res.status(500).json({ success: false, message: 'Error en el servidor' });
@@ -45,6 +47,7 @@ export const Login = async (req: Request, res: Response) => {
     await con?.end();
   }
 };
+
 
 export const ObtenerUsuarios = async (req: Request, res: Response) => {
     let con;

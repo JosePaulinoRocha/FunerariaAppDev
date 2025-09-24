@@ -4,7 +4,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -12,16 +11,16 @@ export class AuthService {
 
   private myAppUrl: string; 
 
-
-
-  // BehaviorSubject para almacenar el estado de autenticación y el rol de admin
+  // BehaviorSubject para estado de login y rol admin
   public loggedInSubject = new BehaviorSubject<boolean>(this.isLoggedIn());
   public isLoggedIn$ = this.loggedInSubject.asObservable();
 
   public isAdminSubject = new BehaviorSubject<boolean>(this.isAdmin());
   public isAdmin$ = this.isAdminSubject.asObservable();
 
-
+  // NUEVO: BehaviorSubject para el usuario completo
+  public userSubject = new BehaviorSubject<any>(this.getStoredUser());
+  public user$ = this.userSubject.asObservable();
 
   constructor(private http: HttpClient) {
     this.myAppUrl = environment.endpoint;
@@ -40,24 +39,37 @@ export class AuthService {
   }
 
   isAdmin(): boolean {
+    const user = this.getStoredUser();
+    return user ? user.isAdmin === 1 : false;
+  }
+
+  // NUEVO: obtener usuario desde sessionStorage
+  private getStoredUser(): any {
     const user = sessionStorage.getItem('user');
-    if (user) {
-      const userObj = JSON.parse(user);
-      return userObj.isAdmin === 1; // 1 indica que es admin
-    }
-    return false;
+    return user ? JSON.parse(user) : null;
+  }
+
+  // NUEVO: actualizar usuario y emitir cambios
+  setUser(user: any) {
+    sessionStorage.setItem('user', JSON.stringify(user));
+    this.userSubject.next(user);
+    this.isAdminSubject.next(user.isAdmin === 1);
   }
 
   setSession(authResult: any) {
     sessionStorage.setItem('token', authResult.token);
     if (authResult.user) {
-      sessionStorage.setItem('user', JSON.stringify(authResult.user));
+      this.setUser(authResult.user); // usar setUser para mantener reactividad
     }
+    this.loggedInSubject.next(true);
   }
 
   logout() {
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('user');
+    this.userSubject.next(null);
+    this.isAdminSubject.next(false);
+    this.loggedInSubject.next(false);
   }
 
   private getAuthHeaders() {

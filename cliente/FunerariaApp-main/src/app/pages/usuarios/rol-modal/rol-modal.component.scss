@@ -1,0 +1,50 @@
+:host {
+    ion-header {
+      --background: #3880ff; /* Color del header */
+      --color: #fff; /* Color del texto del header */
+    }
+  
+    ion-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  
+    ion-content {
+      --background: #f4f4f4; /* Color de fondo del contenido */
+      padding: 16px;
+    }
+  
+    form {
+      display: flex;
+      flex-direction: column;
+  
+      ion-item {
+        margin-bottom: 16px;
+      }
+  
+      ion-button {
+        margin-top: 16px;
+        margin-bottom: 16px;
+      }
+    }
+  
+    ion-label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+  
+    ion-input,
+    ion-checkbox {
+      --background: #D4D4D4;
+      --border-radius: 8px;
+      --padding-start: 10px;
+      margin-bottom: 10px;
+    }
+  
+    ion-footer {
+      display: flex;
+      justify-content: center;
+    }
+  }
+  

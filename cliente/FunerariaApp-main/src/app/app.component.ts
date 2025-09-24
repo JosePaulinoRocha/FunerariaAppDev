@@ -1,7 +1,7 @@
 import { Component, OnDestroy  } from '@angular/core';
 import { IonicModule, MenuController, AlertController } from "@ionic/angular";
 import { RouterModule, Router } from '@angular/router';
-import { folder, folderOutline , barChart ,calendar, layers, pricetag, pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, chatboxEllipses, business, home, analytics, images, personCircle, person, mail, call, shieldCheckmark, addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, time, alertCircle, warning, trash, create, cashOutline, peopleOutline, trashSharp, searchSharp, personCircleSharp, checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline, keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card, createOutline, walletOutline, chevronForward, cardOutline, saveOutline, calendarOutline, barChartOutline, eyeOff, cloudDownloadOutline, cloudUploadOutline, trashOutline, documentOutline, downloadOutline, albumsOutline, pricetagOutline, pricetagsOutline, filterOutline } from "ionicons/icons";
+import { folder, folderOutline , barChart ,calendar, layers, pricetag, pricetags, clipboard, cube, construct, wallet, calendarClear, personAdd, refresh, chatboxEllipses, business, home, analytics, images, personCircle, person, mail, call, shieldCheckmark, addCircleOutline, close, accessibility, logOut, document, cash, checkmarkDone, time, alertCircle, warning, trash, create, cashOutline, peopleOutline, trashSharp, searchSharp, personCircleSharp, checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline, keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card, createOutline, walletOutline, chevronForward, cardOutline, saveOutline, calendarOutline, barChartOutline, eyeOff, cloudDownloadOutline, cloudUploadOutline, trashOutline, documentOutline, downloadOutline, albumsOutline, pricetagOutline, pricetagsOutline, filterOutline, shieldOutline, idCardOutline, documentTextOutline, linkOutline } from "ionicons/icons";
 import { addIcons } from 'ionicons';
 import { AuthService } from 'src/app/Servicios/AuthService';
 import { CommonModule } from '@angular/common';
@@ -93,6 +93,7 @@ export class AppComponent {
   errorMessage: string | null = null;
 
   currentPage = '';
+  user: any;
 
   getIconColor(iconName: string): string {
     switch (iconName) {
@@ -147,7 +148,7 @@ export class AppComponent {
       checkbox, gitCompare, closeCircleSharp, notificationsOutline, alertCircleOutline, arrowBackOutline, arrowForwardOutline,
       keySharp, closeCircleOutline, checkmarkCircleOutline, swapHorizontalOutline, trailSign, card, createOutline, walletOutline, 
       chevronForward, cardOutline, saveOutline, trashOutline, documentOutline, downloadOutline, albumsOutline, 
-      pricetagOutline, pricetagsOutline, filterOutline
+      pricetagOutline, pricetagsOutline, filterOutline, shieldOutline, idCardOutline, documentTextOutline, linkOutline
     });
 
     this.authService.isLoggedIn$.subscribe(isLoggedIn => {
@@ -170,10 +171,10 @@ export class AppComponent {
   ngOnInit() {
     this.isMobileDevice = this.isMobile();
 
-    this.authService.isLoggedIn$
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(isLoggedIn => {
-        this.isLoggedIn = isLoggedIn;
+    const userSub = this.authService.user$.pipe(takeUntil(this.unsubscribe$))
+      .subscribe(user => {
+        this.user = user;
+        this.isLoggedIn = !!user;
         if (this.isLoggedIn) {
           this.loadCombinacionesNotificaciones();
           this.loadReconciliacionesNotificaciones();
@@ -181,14 +182,18 @@ export class AppComponent {
           this.loadHistorialIngresos();
         }
       });
-  
-    this.authService.isAdmin$
-      .pipe(takeUntil(this.unsubscribe$))
+      
+    const adminSub = this.authService.isAdmin$.pipe(takeUntil(this.unsubscribe$))
       .subscribe(isAdmin => {
         this.isAdmin = isAdmin;
-    });
+      });
   }
 
+  tienePermiso(ruta: string): boolean {
+    if (!this.user) return false;
+    if (this.isAdmin) return true;
+    return this.user.permisos?.includes(`/${ruta}`);
+  }
 
   private isMobile(): boolean {
     const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;

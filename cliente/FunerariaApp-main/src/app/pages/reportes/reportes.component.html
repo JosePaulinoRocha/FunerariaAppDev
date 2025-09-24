@@ -90,7 +90,7 @@
           <th><span style="margin-left: 6rem;"></span>Categoría<span style="margin-left: 6rem;"></span></th>
           <th><span style="margin-left: 6rem;"></span>Subcategoría<span style="margin-left: 6rem;"></span></th>
           <th><span style="margin-left: 10rem;"></span>Concepto<span style="margin-left: 10rem;"></span></th>
-          <th *ngIf="isAdmin">Dictaminar</th>
+          <th>Dictaminar</th>
           <th>Monto Dictaminado</th>
           <th>Frecuencia Dictaminada</th>
           <th>Monto Total</th>
@@ -110,7 +110,7 @@
           <td>{{ reporte.NombreCategoria }}</td>
           <td>{{ reporte.NombreSubcategoria }}</td>
           <td>{{ reporte.NombreConcepto }}</td>
-          <td *ngIf="isAdmin">
+          <td>
             <ion-icon 
               name="create-outline" 
               (click)="asignarMonto_Frecuencia(reporte)"

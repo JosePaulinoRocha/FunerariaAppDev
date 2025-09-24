@@ -10,7 +10,7 @@ interface Segmento {
 }
 
 @Component({
-  selector: 'app-segmento-modal',
+  selector: 'app-segmento_presupuesto-modal',
   templateUrl: './segmento-modal.component.html',
   styleUrls: ['./segmento-modal.component.scss'],
   standalone: true,

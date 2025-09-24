@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { CanActivate, Router, ActivatedRouteSnapshot, UrlTree } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -7,13 +7,28 @@ import { CanActivate, Router } from '@angular/router';
 export class AuthGuard implements CanActivate {
   constructor(private router: Router) {}
 
-  canActivate(): boolean {
-    const user = sessionStorage.getItem('user');
-    if (user) {
+  canActivate(route: ActivatedRouteSnapshot): boolean | UrlTree {
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+
+    if (!user || !user.userId) {
+      // No está logueado
+      return this.router.parseUrl('/login');
+    }
+
+    // Si es admin, puede acceder a cualquier ruta
+    if (user.isAdmin === 1) {
+      return true;
+    }
+
+    // Construir la ruta solicitada
+    const requestedRoute = '/' + (route.url.map(segment => segment.path).join('/'));
+
+    // Verificar permisos del usuario
+    if (user.permisos && user.permisos.includes(requestedRoute)) {
       return true;
     } else {
-      this.router.navigate(['/login']);
-      return false;
+      // No tiene permiso
+      return this.router.parseUrl('/home');
     }
   }
 }

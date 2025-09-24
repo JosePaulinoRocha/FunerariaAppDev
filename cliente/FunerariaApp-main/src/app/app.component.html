@@ -1,5 +1,5 @@
 <ion-app>
-  <ion-menu side="start" contentId="main-content">
+  <ion-menu *ngIf="isLoggedIn" side="start" contentId="main-content">
     <ion-header>
       <ion-toolbar color="primary">
         <ion-title>Menu</ion-title>
@@ -10,47 +10,48 @@
       <ion-list>
         <ion-menu-toggle>
 
-          <ion-item routerLink="/home" routerDirection="root">
+          <ion-item *ngIf="tienePermiso('home')" routerLink="/home" routerDirection="root">
             <ion-icon slot="start" name="home"></ion-icon>
             <ion-label icon="home">Home</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="!isMobileDevice" routerLink="/ingresos" routerDirection="root">
+          <ion-item *ngIf="tienePermiso('ingresos') && !isMobileDevice" routerLink="/ingresos" routerDirection="root">
             <ion-icon slot="start" name="analytics"></ion-icon>
             <ion-label>Captura de ingresos y egresos</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="!isMobileDevice" routerLink="/ingresos-egresos" routerDirection="root">
+          <ion-item *ngIf="tienePermiso('ingresos-egresos') && !isMobileDevice" routerLink="/ingresos-egresos" routerDirection="root">
             <ion-icon slot="start" name="bar-Chart"></ion-icon>
             <ion-label>Ingresos / Egresos</ion-label>
           </ion-item>
 
-          <ion-item routerLink="/compilaciones" routerDirection="root">
+          <!-- Oculto para usuario limitado -->
+          <ion-item *ngIf="tienePermiso('compilaciones')" routerLink="/compilaciones" routerDirection="root">
             <ion-icon slot="start" name="bar-Chart"></ion-icon>
             <ion-label>Compilaciones</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="!isMobileDevice" routerLink="/presupuesto-semanal" routerDirection="root">
+          <ion-item *ngIf="tienePermiso('presupuesto-semanal') && !isMobileDevice" routerLink="/presupuesto-semanal" routerDirection="root">
             <ion-icon slot="start" name="analytics"></ion-icon>
             <ion-label>Presupuesto semanal</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="!isMobileDevice" routerLink="/ingresos-egresos" routerDirection="root">
+          <ion-item *ngIf="tienePermiso('reportes-conciliados') && !isMobileDevice" routerLink="/reportes-conciliados" routerDirection="root">
             <ion-icon slot="start" name="analytics"></ion-icon>
             <ion-label>Reportes conciliados</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="!isMobileDevice" routerLink="/reconciliaciones" routerDirection="root">
+          <ion-item *ngIf="tienePermiso('reconciliaciones') && !isMobileDevice" routerLink="/reconciliaciones" routerDirection="root">
             <ion-icon slot="start" name="folder"></ion-icon>
             <ion-label>Reconciliaciones</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="!isMobileDevice" routerLink="/reconciliaciones-historial" routerDirection="root">
+          <ion-item *ngIf="tienePermiso('reconciliaciones-historial') && !isMobileDevice" routerLink="/reconciliaciones-historial" routerDirection="root">
             <ion-icon slot="start" name="folder"></ion-icon>
             <ion-label>Reconciliaciones historial</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="!isMobileDevice" routerLink="/transferencias" routerDirection="root">
+          <ion-item *ngIf="tienePermiso('transferencias') && !isMobileDevice" routerLink="/transferencias" routerDirection="root">
             <ion-icon slot="start" name="swap-horizontal-outline"></ion-icon>
             <ion-label>Transferencias</ion-label>
           </ion-item>
@@ -80,17 +81,17 @@
             <ion-label>Reportes</ion-label>
           </ion-item> -->
 
-          <ion-item *ngIf="isAdmin" button (click)="navigateTo('usuarios')">
+          <ion-item *ngIf="tienePermiso('usuarios')" button (click)="navigateTo('usuarios')">
             <ion-icon slot="start" [name]="'people-outline'"></ion-icon>
             <ion-label>Usuarios</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="isMobileDevice" routerLink="/proyeccion" routerDirection="root">
+          <ion-item *ngIf="tienePermiso('proyeccion') && isMobileDevice" routerLink="/proyeccion" routerDirection="root">
             <ion-icon slot="start" name="home"></ion-icon>
             <ion-label icon="home">Proyeccion</ion-label>
           </ion-item>
 
-          <ion-item *ngIf="isMobileDevice" routerLink="/resumen-presupuesto" routerDirection="root">
+          <ion-item *ngIf="tienePermiso('resumen-presupuesto') && isMobileDevice" routerLink="/resumen-presupuesto" routerDirection="root">
             <ion-icon slot="start" name="bar-Chart"></ion-icon>
             <ion-label icon="home">Resumen Presupuesto</ion-label>
           </ion-item>
@@ -104,7 +105,6 @@
       </ion-list>
     </ion-content>
   </ion-menu>
-
 
   <ion-header *ngIf="isLoggedIn">
     <ion-toolbar color="primary">
@@ -126,16 +126,12 @@
     </ion-toolbar>
   </ion-header>
 
-
-  <!-- Barra de carga con barra de progreso -->
   <div *ngIf="isLoading" class="loading-bar">
     <ion-progress-bar type="indeterminate"></ion-progress-bar>
     <p>Cargando registros, por favor espere...</p>
   </div>
 
-
   <ion-router-outlet id="main-content"></ion-router-outlet>
-
 
   <ion-popover [isOpen]="isNotificationsOpen" (ionPopoverDidDismiss)="isNotificationsOpen = false">
     <ng-template>
@@ -147,6 +143,5 @@
       </ion-list>
     </ng-template>
   </ion-popover>
-
 
 </ion-app>

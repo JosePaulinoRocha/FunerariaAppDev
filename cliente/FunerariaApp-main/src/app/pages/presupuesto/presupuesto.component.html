@@ -151,10 +151,10 @@
             <th>Monto Promedio</th>
             <th>Piezas Promedio</th>
             <th>Frecuencia Promedio (dias)</th>
-            <th *ngIf="isAdmin">Dictaminar</th>
+            <th>Dictaminar</th>
             <th style="background-color: greenyellow; color: black;">Monto Dictaminado</th>
             <th style="background-color: greenyellow; color: black;">Frecuencia Dictaminada (dias)</th>
-            <th *ngIf="isAdmin && modoFiltro === 'asignarCuenta'">Cuenta y Dia Limite</th>
+            <th *ngIf="modoFiltro === 'asignarCuenta'">Cuenta y Dia Limite</th>
             <th *ngIf="modoFiltro === 'asignarCuenta'" style="background-color: greenyellow; color: black;"><span style="margin-left: 2rem;"></span>Cuenta<span style="margin-left: 2rem;"></span></th>
             <th *ngIf="modoFiltro === 'asignarCuenta' && (filtroAsignarCuenta === 'periodico')" style="background-color: greenyellow; color: black;">Día Límite</th>
           </tr>
@@ -170,7 +170,7 @@
             <td>{{ presupuesto.PromedioMonto }}</td>
             <td>{{ presupuesto.PromedioPiezas }}</td>
             <td>{{ presupuesto.FrecuenciaPromedio }}</td>
-            <td *ngIf="isAdmin">
+            <td>
               <ion-icon 
                 name="create-outline" 
                 (click)="asignarMonto_Frecuencia(presupuesto)"
@@ -183,7 +183,7 @@
             <td style="background-color: yellow;">
               {{ presupuesto.FrecuenciaDictaminada == -1 ? 'Extra Ordinario' : presupuesto.FrecuenciaDictaminada }}
             </td>
-            <td *ngIf="isAdmin && modoFiltro === 'asignarCuenta'">
+            <td *ngIf="modoFiltro === 'asignarCuenta'">
               <ion-icon 
                 name="create-outline" 
                 (click)="asignarCuenta_DiaLimite(presupuesto)"

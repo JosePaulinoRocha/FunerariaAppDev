@@ -48,8 +48,8 @@
         <thead class="header-row">
           <tr class="color_header_tabla">
             <th>ID</th>
-            <th *ngIf="isAdmin">Eliminar</th>
-            <th *ngIf="isAdmin">Reintegro</th>
+            <th>Eliminar</th>
+            <th>Reintegro</th>
             <th><span style="margin-left: 2rem;"></span> Fecha <span style="margin-left: 2rem;"></span></th>
             <th>Saldo</th>
             <th>Cuenta ID</th>
@@ -60,7 +60,7 @@
         <tbody>
           <tr *ngFor="let reconciliacion of paginatedReconciliaciones" class="data-row">
             <td>{{ reconciliacion.ReconciliacionID }}</td>
-            <td *ngIf="isAdmin">
+            <td>
               <ion-icon 
                 name="trash-sharp" 
                 (click)="deleteReconciliacion(reconciliacion.ReconciliacionID)"
@@ -68,7 +68,7 @@
                 aria-label="Eliminar">
               </ion-icon>
             </td>
-            <td *ngIf="isAdmin">
+            <td>
               <ion-icon 
                 name="cash" 
                 (click)="ReintegracionesEgresos(reconciliacion.ReconciliacionID)"
@@ -116,7 +116,7 @@
       <tbody>
         <tr *ngFor="let reintegracion of reintegracionesData" class="data-row">
           <td>{{ reintegracion.IngresoID }}</td>
-          <td *ngIf="isAdmin">
+          <td>
             <ion-icon 
               name="cash" 
               (click)="RealizarReintegro(reintegracion.IngresoID)"

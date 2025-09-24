@@ -3,9 +3,9 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Usuarios</ion-title>
+    <ion-title>Administración</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="openModal()">
+      <ion-button (click)="openModal()" *ngIf="currentView === 'usuarios'">
         <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -13,46 +13,108 @@
 </ion-header>
 
 <ion-content>
-  <ion-searchbar [(ngModel)]="searchTerm" placeholder="Buscar usuario"></ion-searchbar>
+  <!-- Cambiar entre secciones -->
+  <ion-segment style="margin-top: 1rem;" [(ngModel)]="currentView">
+    <ion-segment-button value="usuarios">
+      <ion-label>Usuarios</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="roles">
+      <ion-label>Roles</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="secciones">
+      <ion-label>Secciones</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
-  <ion-button expand="block" (click)="openModal()" style="margin: 10px;">
-    <ion-icon name="add-circle-outline"></ion-icon>
-    Añadir Usuario
-  </ion-button>
-  
-  <div class="user-list">
-    <div class="user-card" *ngFor="let user of filteredUsers()" (click)="openModal(user)">
-      <ion-item>
-        <ion-avatar slot="start">
-          <ion-icon name="person-circle" size="large" color="primary"></ion-icon>
-        </ion-avatar>
-        <ion-label>
-          <h2><ion-icon name="accessibility" slot="start"></ion-icon> Usuario ID: {{ user.userId }}</h2>
-          <h2><ion-icon name="person" slot="start"></ion-icon> Nombre: {{ user.fullName }}</h2>
-          <p><ion-icon name="mail" slot="start"></ion-icon> Correo: {{ user.email }}</p>
-          <p><ion-icon name="call" slot="start"></ion-icon> Teléfono: {{ user.phone }}</p>
-          <p *ngIf="user.isAdmin"><ion-icon name="shield-checkmark" slot="start"></ion-icon> Administrador</p>
-          <p><ion-icon name="person-circle-sharp" slot="start"></ion-icon> Rol: {{ user.NombreRol }}</p>
-        </ion-label>
-      </ion-item>
+  <!-- ===================== USUARIOS ===================== -->
+  <ng-container *ngIf="currentView === 'usuarios'">
+    <ion-searchbar [(ngModel)]="searchTerm" placeholder="Buscar usuario"></ion-searchbar>
+
+    <ion-button expand="block" (click)="openModal()" style="margin: 10px;">
+      <ion-icon name="add-circle-outline"></ion-icon>
+      Añadir Usuario
+    </ion-button>
+    
+    <div class="user-list">
+      <div class="user-card" *ngFor="let user of filteredUsers()" (click)="openModal(user)">
+        <ion-item>
+          <ion-avatar slot="start">
+            <ion-icon name="person-circle" size="large" color="primary"></ion-icon>
+          </ion-avatar>
+          <ion-label>
+            <h2><ion-icon name="accessibility"></ion-icon> Usuario ID: {{ user.userId }}</h2>
+            <h2><ion-icon name="person"></ion-icon> Nombre: {{ user.fullName }}</h2>
+            <p><ion-icon name="mail"></ion-icon> Correo: {{ user.email }}</p>
+            <p><ion-icon name="call"></ion-icon> Teléfono: {{ user.phone }}</p>
+            <p><ion-icon name="shield-checkmark"></ion-icon> Administrador</p>
+            <p><ion-icon name="person-circle-sharp"></ion-icon> Rol: {{ user.NombreRol }}</p>
+          </ion-label>
+        </ion-item>
+      </div>
     </div>
-  </div>
 
-  <ion-footer>
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-button (click)="previousPage()" [disabled]="currentPage === 1">
-          <ion-icon name="arrow-back-outline"></ion-icon>
-          Anterior
-        </ion-button>
-      </ion-buttons>
-      <ion-title>Página {{currentPage}} de {{totalPages()}}</ion-title>
-      <ion-buttons slot="end">
-        <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages()">
-          Siguiente
-          <ion-icon name="arrow-forward-outline"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-footer>
+    <ion-footer>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="previousPage()" [disabled]="currentPage === 1">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+            Anterior
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Página {{currentPage}} de {{totalPages()}}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages()">
+            Siguiente
+            <ion-icon name="arrow-forward-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-footer>
+  </ng-container>
+
+  <!-- ===================== ROLES ===================== -->
+
+  <ion-button expand="block" (click)="openRolModal()" *ngIf="currentView === 'roles'" style="margin: 10px;">
+    <ion-icon name="add-circle-outline"></ion-icon>
+    Añadir Rol
+  </ion-button>
+
+  <ng-container *ngIf="currentView === 'roles'">
+    <div class="user-list">
+      <div class="user-card" *ngFor="let rol of roles" (click)="openRolModal(rol)">
+        <ion-item>
+          <ion-avatar slot="start">
+            <ion-icon name="shield-outline" size="large" color="tertiary"></ion-icon>
+          </ion-avatar>
+          <ion-label>
+            <h2><ion-icon name="shield-checkmark"></ion-icon> Rol: {{ rol.NombreRol }}</h2>
+            <p><ion-icon name="id-card-outline"></ion-icon> ID: {{ rol.RolID }}</p>
+          </ion-label>
+        </ion-item>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ===================== SECCIONES ===================== -->
+
+  <ion-button expand="block" (click)="openSeccionModal()" *ngIf="currentView === 'secciones'" style="margin: 10px;">
+    <ion-icon name="add-circle-outline"></ion-icon>
+    Añadir Sección
+  </ion-button>
+
+  <ng-container *ngIf="currentView === 'secciones'">
+    <div class="user-list">
+      <div class="user-card" *ngFor="let sec of secciones" (click)="openSeccionModal(sec)">
+        <ion-item>
+          <ion-avatar slot="start">
+            <ion-icon name="albums-outline" size="large" color="warning"></ion-icon>
+          </ion-avatar>
+          <ion-label>
+            <h2><ion-icon name="document-text-outline"></ion-icon> {{ sec.NombrePermiso }}</h2>
+            <p><ion-icon name="link-outline"></ion-icon> Ruta: {{ sec.Ruta }}</p>
+          </ion-label>
+        </ion-item>
+      </div>
+    </div>
+  </ng-container>
 </ion-content>
