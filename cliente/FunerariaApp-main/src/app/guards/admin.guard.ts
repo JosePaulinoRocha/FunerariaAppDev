@@ -1,19 +1,19 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { Router, Route, UrlSegment, UrlTree } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AdminGuard implements CanActivate {
+export class AdminGuard {
   constructor(private router: Router) {}
 
-  canActivate(): boolean {
+  canMatch(route: Route, segments: UrlSegment[]): boolean | UrlTree {
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+
     if (user && user.isAdmin === 1) {
       return true;
     } else {
-      this.router.navigate(['/home']);
-      return false;
+      return this.router.parseUrl('/home');
     }
   }
 }

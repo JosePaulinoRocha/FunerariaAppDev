@@ -13,7 +13,7 @@
     <p>Gestiona tus ingresos y egresos de manera rápida y segura</p>
   </div>
 
-  <div class="card-container" *ngIf="userLoaded">
+  <div class="card-container" *ngIf="user as u">
 
     <ion-card *ngIf="!isMobileDevice && tienePermiso('ingresos')" (click)="navigateTo('ingresos')" class="home-card">
       <ion-card-content>

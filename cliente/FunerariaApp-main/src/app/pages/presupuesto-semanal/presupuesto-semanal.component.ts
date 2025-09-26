@@ -180,7 +180,7 @@ export class PresupuestoSemanalComponent implements OnInit {
     this._presupuestoService.getPresupuestoSemanal(this.fechaFiltroInicio, this.fechaFiltroFin)
       .subscribe({
         next: (data) => {
-          console.log(data);
+          // console.log(data);
           this.presupuesto = (data || []).map((it: any) => ({
             ...it,
             FechaInicio: it.FechaInicio ? it.FechaInicio.split('T')[0] : '',

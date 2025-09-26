@@ -53,9 +53,9 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   tienePermiso(ruta: string): boolean {
-    if (!this.userLoaded) return false;
+    if (!this.user) return false;
     if (this.isAdmin) return true;
-    return this.user?.permisos?.includes(`/${ruta}`);
+    return Array.isArray(this.user.permisos) && this.user.permisos.includes(`/${ruta}`);
   }
 
   private isMobile(): boolean {
@@ -76,7 +76,7 @@ export class HomePage implements OnInit, OnDestroy {
       const { data: updated } = await modal.onDidDismiss();
       if (updated) {
         this.user.CambioContra.data[0] = 1;
-        this.authService.setUser(this.user); // Actualizar también el BehaviorSubject
+        this.authService.setUser(this.user);
       }
     }
   }

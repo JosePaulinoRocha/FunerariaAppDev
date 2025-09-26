@@ -1,0 +1,27 @@
+.not-found-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+
+  .content {
+    text-align: center;
+
+    h1 {
+      font-size: 6rem;
+      margin-bottom: 1rem;
+      color: var(--ion-color-primary);
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+    }
+
+    ion-button {
+      font-size: 1rem;
+      --padding-start: 20px;
+      --padding-end: 20px;
+    }
+  }
+}

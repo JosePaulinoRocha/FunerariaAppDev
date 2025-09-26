@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot, UrlTree } from '@angular/router';
+import { Router, Route, UrlSegment, UrlTree } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AuthGuard implements CanActivate {
+export class AuthGuard {
   constructor(private router: Router) {}
 
-  canActivate(route: ActivatedRouteSnapshot): boolean | UrlTree {
+  canMatch(route: Route, segments: UrlSegment[]): boolean | UrlTree {
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
 
     if (!user || !user.userId) {
@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
     }
 
     // Construir la ruta solicitada
-    const requestedRoute = '/' + (route.url.map(segment => segment.path).join('/'));
+    const requestedRoute = '/' + segments.map(s => s.path).join('/');
 
     // Verificar permisos del usuario
     if (user.permisos && user.permisos.includes(requestedRoute)) {

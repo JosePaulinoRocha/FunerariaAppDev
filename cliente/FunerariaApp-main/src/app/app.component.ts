@@ -629,7 +629,7 @@ importarIngresos() {
     this.isLoggedIn = false;  
     this.router.navigate(['/login']); 
     this.authService.logout();
-    this.unsubscribe$.next();  // Desuscribir inmediatamente al cerrar sesión
+    // this.unsubscribe$.next();
     this.isLoggedIn = false;
   }
 
@@ -637,7 +637,7 @@ importarIngresos() {
   async presentLoading(message: string) {
     const loading = await this.loadingController.create({
       message: message,
-      spinner: 'crescent', // Puedes cambiar el spinner a 'lines', 'bubbles', etc.
+      spinner: 'crescent', 
     });
     await loading.present();
     return loading;
