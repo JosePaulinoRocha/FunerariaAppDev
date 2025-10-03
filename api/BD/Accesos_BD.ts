@@ -21,3 +21,14 @@ export async function connect() {
 //         timezone: 'local',
 //     });
 // }
+
+
+// export async function connect() {
+//     return mysql.createConnection({
+//         host: 'localhost',
+//         user: 'root',
+//         password: '',
+//         database: 'systemab_funeraria_db_test',
+//         timezone: 'local',
+//     });
+// }
