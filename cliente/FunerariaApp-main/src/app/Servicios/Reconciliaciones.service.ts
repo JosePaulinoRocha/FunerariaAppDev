@@ -72,8 +72,10 @@ export class ReconciliacionesServices {
     return this.http.put<any>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlUpdateIngresos}`, reconciliacionUpdates);
   }
 
-  getReconciliaciones(): Observable<Reconciliacion[]> {
-    return this.http.get<Reconciliacion[]>(`${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlReconciliacion}`);
+  getReconciliaciones(limit: number, offset: number): Observable<{ data: Reconciliacion[], total: number }> {
+    return this.http.get<{ data: Reconciliacion[], total: number }>(
+      `${this.myAppUrl}${this.MyApiUrl}${this.MyApiUrlReconciliacion}?limit=${limit}&offset=${offset}`
+    );
   }
 
   deleteReconciliacion(reconciliacionID: number): Observable<any> {

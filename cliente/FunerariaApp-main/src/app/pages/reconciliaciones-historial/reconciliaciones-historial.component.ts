@@ -27,7 +27,7 @@ export class ReconciliacionesHistorialComponent  implements OnInit {
   reconciliaciones: Reconciliacion[] = [];
   paginatedReconciliaciones: Reconciliacion[] = [];
   currentPage: number = 1;
-  itemsPerPage: number = 8;
+  itemsPerPage: number = 10;
   totalPages: number = 0;
   isAdmin: boolean = false;
   showReintegracionesTable: boolean = false;
@@ -85,62 +85,60 @@ export class ReconciliacionesHistorialComponent  implements OnInit {
   }
 
   loadReconciliaciones() {
-    this._reconciliacionServ.getReconciliaciones().subscribe((data: Reconciliacion[]) => {
-      // Ordenar los datos por IngresoID en orden descendente
-      data.sort((a, b) => b.ReconciliacionID - a.ReconciliacionID);
-  
-      this.reconciliaciones = data.map(reconciliacion => ({
-        ...reconciliacion,
-        Fecha: new Date(reconciliacion.Fecha).toISOString().split('T')[0], // Formatear la fecha
-      }));
-      
-      // console.log("esta es la data de reconciliaciones: ", this.reconciliaciones);
-      this.totalPages = Math.ceil(this.reconciliaciones.length / this.itemsPerPage);
-      this.updatePaginatedReconciliaciones();
-    }, (error) => {
-      console.error('Error fetching incomes', error); 
-    });
-  }
+    const offset = (this.currentPage - 1) * this.itemsPerPage;
 
-  updatePaginatedReconciliaciones() {
-    this.totalPages = Math.ceil(this.reconciliaciones.length / this.itemsPerPage);
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    this.paginatedReconciliaciones = this.reconciliaciones.slice(startIndex, startIndex + this.itemsPerPage);
+    this._reconciliacionServ.getReconciliaciones(this.itemsPerPage, offset)
+      .subscribe((response) => {
+        this.reconciliaciones = response.data.map(r => ({
+          ...r,
+          Fecha: new Date(r.Fecha).toISOString().split('T')[0],
+        }));
+
+        // total viene del backend → sirve para saber cuántas páginas hay
+        this.totalPages = Math.ceil(response.total / this.itemsPerPage);
+      }, (error) => {
+        console.error('Error fetching reconciliaciones:', error);
+      });
   }
 
   prevPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.updatePaginatedReconciliaciones();
+      this.loadReconciliaciones();
     }
   }
 
   nextPage() {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.updatePaginatedReconciliaciones();
+      this.loadReconciliaciones();
     }
   }
 
   applySearch() {
-    // Asegurarse de que dateSearchValues tenga valores predeterminados para campos de fecha
     for (let field of this.selectedFields) {
       if (this.isDateField(field) && !this.dateSearchValues[field]) {
         this.dateSearchValues[field] = { startDate: '', endDate: '' };
       }
     }
-  
-    this._reconciliacionServ.getReconciliaciones().subscribe((data: Reconciliacion[]) => {
-      this.reconciliaciones = data
-        .filter(reconciliacion => this.matchesSearch(reconciliacion))
-        .sort((a, b) => b.ReconciliacionID - a.ReconciliacionID) // Ordenar los datos por IngresoID en orden descendente
-        .map(reconciliacion => ({
-          ...reconciliacion,
-          Fecha: new Date(reconciliacion.Fecha).toISOString().split('T')[0], // Formatear la fecha
-        }));
-      this.totalPages = Math.ceil(this.reconciliaciones.length / this.itemsPerPage);
-      this.updatePaginatedReconciliaciones();
-    });
+
+    const offset = (this.currentPage - 1) * this.itemsPerPage;
+
+    this._reconciliacionServ.getReconciliaciones(this.itemsPerPage, offset)
+      .subscribe((response) => {
+        const filtered = response.data
+          .filter(r => this.matchesSearch(r))
+          .sort((a, b) => b.ReconciliacionID - a.ReconciliacionID)
+          .map(r => ({
+            ...r,
+            Fecha: new Date(r.Fecha).toISOString().split('T')[0],
+          }));
+
+        this.reconciliaciones = filtered;
+        this.totalPages = Math.ceil(response.total / this.itemsPerPage);
+      }, (error) => {
+        console.error('Error al aplicar búsqueda:', error);
+      });
   }
 
   resetSearch() {

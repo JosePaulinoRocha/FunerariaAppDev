@@ -161,24 +161,41 @@ export const ActualizarIngresos = async (req: Request, res: Response) => {
 };
 
 
-
 export const ObtenerReconciliaciones = async (req: Request, res: Response) => {
-    let con;
-    let result;
-    try {
-        con = await connect();
-        let query = 'SELECT * FROM vistareconciliaciones';
-        const ingresos = (await con.query(query))[0] as any[];
-        result = ingresos;
-    } catch (error) {
-        console.log('Error en Ingresos');
-        console.log(error);
-        result = null;
-    } finally {
-        await con?.end();
-        return res.json(result);
-    }
+  let con;
+  try {
+    con = await connect();
+
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = parseInt(req.query.offset as string) || 0;
+
+    // Trae los datos de la página actual
+    const [rows] = await con.query<RowDataPacket[]>(`
+      SELECT * 
+      FROM vistareconciliaciones
+      ORDER BY ReconciliacionID DESC
+      LIMIT ? OFFSET ?;
+    `, [limit, offset]);
+
+    // Cuenta el total de registros
+    const [totalResult] = await con.query<RowDataPacket[]>(`
+      SELECT COUNT(*) AS total FROM vistareconciliaciones;
+    `);
+
+    const total = totalResult[0]?.total || 0;
+
+    return res.json({
+      data: rows,
+      total
+    });
+  } catch (error) {
+    console.error('Error en ObtenerReconciliaciones:', error);
+    return res.status(500).json({ error: 'Error al obtener las reconciliaciones' });
+  } finally {
+    await con?.end();
+  }
 };
+
 
 export const EliminarReconciliacion = async (req: Request, res: Response) => {
     const { reconciliacionID } = req.params;
